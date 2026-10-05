@@ -46,7 +46,7 @@ export default async function ResultsPage({ searchParams }: { searchParams: Prom
        WHERE ${where.join(" AND ")} ORDER BY g.date DESC, g.id DESC LIMIT ${PAGE} OFFSET ${(page - 1) * PAGE}`,
     )
     .all(params) as Row[];
-  const teams = (sqlite.prepare("SELECT DISTINCT home AS t FROM games WHERE season = ? ORDER BY home").all(season) as { t: string }[]).map((r) => r.t);
+  const teams = (sqlite.prepare("SELECT home AS t FROM games WHERE season = ? UNION SELECT away FROM games WHERE season = ? ORDER BY t").all(season, season) as { t: string }[]).map((r) => r.t);
   const qs = (patch: Record<string, string | number | undefined>) => {
     const p = new URLSearchParams();
     const merged = { ...sp, ...patch };

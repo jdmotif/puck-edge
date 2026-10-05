@@ -20,6 +20,7 @@ async function save(form: FormData) {
     dailyLossLimit: num("dailyLossLimit"),
     weeklyLossLimit: num("weeklyLossLimit"),
     sessionReminderMinutes: num("sessionReminderMinutes"),
+    oddsCountry: form.get("oddsCountry") === "US" ? "US" : "CA",
   });
   revalidatePath("/", "layout");
   redirect("/settings?saved=1");
@@ -51,6 +52,14 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           <Field name="kellyFraction" label="Kelly fraction" value={s.kellyFraction} hint="0.25 = quarter Kelly (default). Full Kelly is very aggressive." />
           <Field name="maxStakePct" label="Max stake per bet (% of bankroll)" value={+(s.maxStakePct * 100).toFixed(2)} />
           <Field name="startingBankroll" label="Starting bankroll ($)" value={s.startingBankroll} />
+          <label className="block">
+            <span className="text-sm">Where you bet</span>
+            <select name="oddsCountry" defaultValue={s.oddsCountry} className={input}>
+              <option value="CA">Canada (FanDuel lines)</option>
+              <option value="US">United States (DraftKings lines)</option>
+            </select>
+            <span className="text-xs text-muted">Totals and puck-line prices come from this country&apos;s NHL betting partner, and best prices are limited to its books.</span>
+          </label>
         </Card>
         <Card className="space-y-3">
           <h2 className="text-sm font-semibold">Responsible gambling</h2>
@@ -64,7 +73,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       <Card className="mt-4 text-sm">
         <h2 className="mb-1 font-semibold">Data</h2>
         <p className="text-ink-2">{games} games stored. {lastSync ? `Last sync ${new Date(lastSync.started_at).toLocaleString()}${lastSync.finished_at ? `, added ${lastSync.games_added} (${lastSync.message})` : " (didn't finish)"}.` : "The backfill hasn't run yet."}</p>
-        <p className="mt-1 text-xs text-muted">Run <code className="text-ink">npm run sync</code> nightly (see README for a scheduler example). Odds: {process.env.ODDS_API_KEY ? "The Odds API key is set." : "no ODDS_API_KEY set; totals and puck lines are model-only."}</p>
+        <p className="mt-1 text-xs text-muted">Run <code className="text-ink">npm run sync</code> nightly (see README for a scheduler example). Odds: {process.env.ODDS_API_KEY ? "The Odds API key is set." : "no ODDS_API_KEY set; moneyline, totals and puck-line prices come from the free NHL feeds."}</p>
       </Card>
     </>
   );

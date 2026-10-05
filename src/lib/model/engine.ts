@@ -134,10 +134,9 @@ export function predictGame(input: GameInput, league: League, params = loadMoney
 /** Totals model: each side's expected goals = league rate × attack × opponent defence × goalie × venue × rest. */
 export function expectedGoals(home: TeamProfile, away: TeamProfile, homeGoalie: GoalieProfile, awayGoalie: GoalieProfile, league: League) {
   const lg = league.leagueGoalsPerTeamGame();
-  const lgSv = league.leagueSavePct();
   // How the expected starter compares with the team's overall save % (the defence term already includes it).
   const goalieFactor = (g: GoalieProfile, team: TeamProfile) =>
-    clamp((1 - g.savePct) / Math.max(0.05, 1 - (team.gp ? team.teamSavePct : lgSv)), 0.8, 1.25);
+    clamp((1 - g.savePct) / Math.max(0.05, 1 - team.teamSavePct), 0.8, 1.25);
   const rest = (t: TeamProfile) => (t.backToBack ? 1 - B2B_FACTOR : 1);
   const restAgainst = (t: TeamProfile) => (t.backToBack ? 1 + B2B_FACTOR : 1);
   const homeXg = lg * (home.gfpg / lg) * (away.gapg / lg) * goalieFactor(awayGoalie, away) * HOME_GOAL_FACTOR * rest(home) * restAgainst(away);

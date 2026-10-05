@@ -14,7 +14,7 @@ type Row = Record<string, string | number | null> & { href?: string };
 function fmt(v: string | number | null, c: Column) {
   if (v === null || v === undefined) return "–";
   if (typeof v !== "number") return v;
-  if (c.format === "toi") return `${Math.floor(v / 60)}:${String(Math.round(v % 60)).padStart(2, "0")}`;
+  if (c.format === "toi") return `${Math.floor(Math.round(v) / 60)}:${String(Math.round(v) % 60).padStart(2, "0")}`;
   if (c.format === "sv") return v.toFixed(3).replace(/^0/, "");
   return c.decimals !== undefined ? v.toFixed(c.decimals) : String(v);
 }

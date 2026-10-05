@@ -9,7 +9,11 @@ export const american = (decimal: number) => {
 export const money = (n: number) => `${n < 0 ? "−" : ""}$${Math.abs(n).toFixed(2)}`;
 export const units = (n: number) => `${n >= 0 ? "+" : "−"}${Math.abs(n).toFixed(2)}u`;
 export const record = (r: { w: number; l: number; otl: number }) => `${r.w}-${r.l}-${r.otl}`;
-export const toiFmt = (sec: number) => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, "0")}`;
+// Round first so 1199.6 s reads 20:00, not 19:60.
+export const toiFmt = (sec: number) => {
+  const s = Math.round(sec);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+};
 export const svPct = (sv: number) => sv.toFixed(3).replace(/^0/, "");
 export function ago(ms: number) {
   const s = Math.max(0, Math.round((Date.now() - ms) / 1000));

@@ -132,7 +132,13 @@ function priced(modelProb: number, side: SidePrice | undefined, settings: Settin
 }
 
 /** Reasons for a team-side pick, strongest first, from the model's own feature contributions. */
-function teamReasons(sideIsHome: boolean, p: GamePrediction, card: { home: TeamSide; away: TeamSide }, hot: Map<string, PropProjection | undefined>): string[] {
+function teamReasons(
+  sideIsHome: boolean,
+  p: GamePrediction,
+  card: { home: TeamSide; away: TeamSide },
+  hot: Map<string, PropProjection | undefined>,
+  marketProb: number | null,
+): string[] {
   const us = sideIsHome ? card.home : card.away;
   const them = sideIsHome ? card.away : card.home;
   const usP = sideIsHome ? p.home : p.away;
@@ -172,6 +178,12 @@ function teamReasons(sideIsHome: boolean, p: GamePrediction, card: { home: TeamS
   const h = hot.get(us.abbrev);
   if (h && h.last5Gp >= 3 && h.last5Points >= h.last5Gp * 1.2) scored.push({ w: 0.02, text: `${h.name.split(" ").slice(-1)[0]} ${h.last5Points} pts in last ${h.last5Gp} GP` });
   if (us.streak.startsWith("W") && Number(us.streak.slice(1)) >= 3) scored.push({ w: 0.015, text: `${us.abbrev} on a ${us.streak} streak` });
+  // An underdog value pick can have few factors in its favour: the reason is the price itself.
+  const modelProb = sideIsHome ? p.homeWin : p.awayWin;
+  if (scored.length < 3 && marketProb !== null && modelProb > marketProb)
+    scored.push({ w: 0.001, text: `Market gives ${us.abbrev} ${(marketProb * 100).toFixed(0)}%, the model ${(modelProb * 100).toFixed(0)}%: a closer game than the price says` });
+  if (scored.length < 3)
+    scored.push({ w: 0, text: `In net: ${us.goalie.name}${us.goalie.savePct ? ` (${svPct(us.goalie.savePct)})` : ""} vs ${them.goalie.name}${them.goalie.savePct ? ` (${svPct(them.goalie.savePct)})` : ""}` });
   return scored.sort((a, b) => b.w - a.w).slice(0, 5).map((s) => s.text);
 }
 
@@ -181,18 +193,21 @@ export async function buildSlate(date: string): Promise<Slate> {
   const season = seasonFor(date);
   const yesterday = new Date(Date.parse(date + "T12:00:00Z") - 86_400_000).toISOString().slice(0, 10);
 
-  const [schedule, score, standings, prevSchedule, oddsApi] = await Promise.all([
+  const [schedule, score, standings, prevSchedule, oddsApi, partnerOdds] = await Promise.all([
     api.schedule(date),
     api.score(date),
     api.standings("now"),
     api.schedule(yesterday),
     fetchOddsApi(),
+    api.partnerOdds(settings.oddsCountry),
   ]);
   const games = (schedule.data?.gameWeek.find((d) => d.date === date)?.games ?? []).filter((g) => g.gameType === 2 || g.gameType === 3 || g.gameType === 1);
   const playedYesterday = new Set(
     (prevSchedule.data?.gameWeek.find((d) => d.date === yesterday)?.games ?? []).flatMap((g) => [g.homeTeam.abbrev, g.awayTeam.abbrev]),
   );
   const partners = score.data?.oddsPartners ?? [];
+  const partnerBook = partnerOdds.data?.bettingPartner.name ?? "";
+  const partnerGames = new Map((partnerOdds.data?.games ?? []).map((pg) => [pg.gameId, pg]));
   const scoreById = new Map((score.data?.games ?? []).map((g) => [g.id, g]));
 
   const league = leagueAsOf(date, season);
@@ -253,7 +268,8 @@ export async function buildSlate(date: string): Promise<Slate> {
     };
     const home = side(g.homeTeam.abbrev, true, homeGoalie);
     const away = side(g.awayTeam.abbrev, false, awayGoalie);
-    const market = marketFor(g, partners, oddsApi.events);
+    const pg = partnerGames.get(g.id);
+    const market = marketFor(g, partners, oddsApi.events, pg && { game: pg, book: partnerBook }, settings.oddsCountry);
 
     // Uncertainty flags feed the confidence tier.
     const uncertainty: string[] = [];
@@ -300,7 +316,7 @@ export async function buildSlate(date: string): Promise<Slate> {
         ...s,
         isValue: hasHistory && s.edge !== null && s.edge >= settings.edgeThreshold,
         confidence: confidenceFor(s.edge, prob, settings.edgeThreshold, u),
-        reasons: teamReasons(homeSide, pred, cardSides, hot),
+        reasons: teamReasons(homeSide, pred, cardSides, hot, s.marketProb ?? null),
       });
     }
 
@@ -364,7 +380,7 @@ export async function buildSlate(date: string): Promise<Slate> {
           `${fav.abbrev} win by 2+ in ${((homeFav ? pl.homeMinus15 : pl.awayMinus15) * 100).toFixed(0)}% of simulated scores`,
           `${(pred.regTie * 100).toFixed(0)}% chance of overtime (a one-goal game either way)`,
           `Includes empty-net goals: ~18% of one-goal leads late become two`,
-          ...teamReasons(homeSide, pred, cardSides, hot).slice(0, 2),
+          ...teamReasons(homeSide, pred, cardSides, hot, null).slice(0, 2),
         ],
       });
     }
@@ -421,7 +437,9 @@ export async function buildSlate(date: string): Promise<Slate> {
       ? oddsApi.error
         ? `The Odds API: ${oddsApi.error}`
         : "Moneylines from the NHL schedule feed; totals and puck lines from The Odds API."
-      : "Moneylines from the NHL schedule feed. Add ODDS_API_KEY for totals and puck-line prices; until then those are model-only.",
+      : partnerGames.size
+        ? `Moneylines from the NHL schedule feed; totals and puck lines from ${partnerBook} via the NHL partner feed (${settings.oddsCountry}). Best prices are from ${settings.oddsCountry} books where available.`
+        : "Moneylines from the NHL schedule feed. No totals or puck-line prices right now: add ODDS_API_KEY for more books; until then those are model-only.",
     modelFitted: params.fitted,
     modelGames: params.n,
     hasHistory: cards.length ? cards.every((c) => c.uncertainty.every((u) => !u.startsWith("No stored games"))) : true,

@@ -3,7 +3,7 @@ import { api } from "@/lib/nhl/client";
 import { GameLogChart, type LogPoint } from "@/components/GameLogChart";
 import { Card, Empty, PageTitle, StaleBanner, Tabs } from "@/components/ui";
 import type { PlayerGameLogEntry } from "@/lib/nhl/types";
-import { svPct } from "@/lib/format";
+import { svPct, toiFmt } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -66,7 +66,7 @@ async function SkaterLog({ id, season, line }: { id: number; season: number; lin
   const Row = ({ label, s }: { label: string; s: ReturnType<typeof split> }) => (
     <tr className="border-t border-line [&>td]:px-2 [&>td]:py-1 [&>td]:text-right">
       <td className="!text-left">{label}</td><td>{s.gp}</td><td>{s.g}</td><td>{s.a}</td><td className="font-semibold">{s.p}</td>
-      <td>{s.gp ? (s.p / s.gp).toFixed(2) : "–"}</td><td>{s.sog}</td><td>{s.gp ? `${Math.floor(s.toi / 60)}:${String(Math.round(s.toi % 60)).padStart(2, "0")}` : "–"}</td>
+      <td>{s.gp ? (s.p / s.gp).toFixed(2) : "–"}</td><td>{s.sog}</td><td>{s.gp ? toiFmt(s.toi) : "–"}</td>
     </tr>
   );
   return (
