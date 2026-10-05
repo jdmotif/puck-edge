@@ -616,3 +616,24 @@ export interface PartnerGameResponse {
     awayTeam: { id: number; name: Localized; abbrev: string; logo: string; odds: { description: string; value: number; qualifier: string }[] };
   }[];
 }
+
+// ---------- gamecenter/{id}/play-by-play (only the parts we use) ----------
+// On game day rosterSpots lists each team's active roster (23 each); once the game starts it shrinks to the 20 who dressed.
+export interface RosterSpot {
+  teamId: number;
+  playerId: number;
+  firstName: Localized;
+  lastName: Localized;
+  sweaterNumber?: number;
+  positionCode: string;
+}
+
+export interface PlayByPlayResponse {
+  id: number;
+  gameDate: string;
+  startTimeUTC: string;
+  gameState: GameState;
+  awayTeam: { id: number; abbrev: string };
+  homeTeam: { id: number; abbrev: string };
+  rosterSpots?: RosterSpot[];
+}

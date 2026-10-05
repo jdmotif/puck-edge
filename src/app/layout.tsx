@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
 
 const NAV = [
   { href: "/", label: "Tonight" },
+  { href: "/lineups", label: "Lineups" },
   { href: "/schedule", label: "Schedule" },
   { href: "/results", label: "Results" },
   { href: "/standings", label: "Standings" },
