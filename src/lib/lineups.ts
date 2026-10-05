@@ -2,10 +2,11 @@
 //
 // What the NHL API actually publishes (checked 2026-10-05):
 // - Before game day: nothing lineup-specific.
-// - On game day, before puck drop: play-by-play `rosterSpots` lists each team's active roster (23 players),
+// - On game day, hours before puck drop: play-by-play `rosterSpots` lists each team's active roster (23 players),
 //   so injured/reserve players drop out, but it doesn't say who dresses or who starts in net.
-// - Once the game starts: `rosterSpots` shrinks to the 20 who dressed and the box score marks the
-//   starting goalie (`starter: true`). That's the first point anything is official.
+// - About 20-25 minutes before puck drop: `rosterSpots` shrinks to the 20 who dressed (18 skaters, 2 goalies).
+//   The skaters are then confirmed; the starting goalie still isn't.
+// - Once the game starts: the box score marks the starting goalie (`starter: true`).
 // - Line combinations are never published. We order lines and pairs by recent ice time.
 import { sqlite } from "@/db";
 import { api, todayIso, type Fetched } from "@/lib/nhl/client";
@@ -52,7 +53,8 @@ export interface TeamLineup {
   goalieNote: string;
   extras: LineupPlayer[]; // on the active roster but not projected to dress
   gamesUsed: number;
-  rosterSource: "game-day" | "team-roster" | "dressed";
+  // dressed-pregame: the NHL has posted the 20 who dressed, so skaters are confirmed but the goalie is still projected
+  rosterSource: "game-day" | "team-roster" | "dressed-pregame" | "dressed";
 }
 
 const isFwd = (pos: string) => pos === "C" || pos === "L" || pos === "R";
@@ -138,8 +140,10 @@ export function projectLineup(input: {
       .map((r) => player(r, sk.by))
       .slice(0, n);
 
-  const fwds = pickTop(isFwd, 12);
-  const dmen = pickTop((p) => p === "D", 6);
+  // A posted dressed list can be 11 F / 7 D, so keep everyone on it.
+  const all = rosterSource === "dressed-pregame";
+  const fwds = pickTop(isFwd, all ? Infinity : 12);
+  const dmen = pickTop((p) => p === "D", all ? Infinity : 6);
   const dressed = new Set([...fwds, ...dmen].map((p) => p.id));
   const extras = [...pool.values()].filter((r) => r.pos !== "G" && !dressed.has(r.id)).map((r) => player(r, sk.by));
 
@@ -249,6 +253,12 @@ function rosterFromClub(r: RosterResponse | null): RosterEntry[] {
   }));
 }
 
+/** A game-day roster of at most 18 skaters is the dressed list, not the 23-man active roster. */
+export function isDressedList(roster: RosterEntry[]): boolean {
+  const skaters = roster.filter((r) => r.pos !== "G").length;
+  return skaters > 0 && skaters <= 18;
+}
+
 export interface GameLineups {
   game: ScheduleGame;
   away: TeamLineup;
@@ -273,7 +283,7 @@ export async function loadLineups(date = todayIso()) {
         const history = teamHistory(t.abbrev, g.gameDate ?? date);
         if (stats) return officialLineup({ team: t.abbrev, stats: stats[key], history, final: DONE.has(state) });
         let roster = rosterFromSpots(pbp.data, t.id);
-        let rosterSource: TeamLineup["rosterSource"] = "game-day";
+        let rosterSource: TeamLineup["rosterSource"] = isDressedList(roster) ? "dressed-pregame" : "game-day";
         if (!roster.length) {
           roster = rosterFromClub((await api.roster(t.abbrev)).data);
           rosterSource = "team-roster";

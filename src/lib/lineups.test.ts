@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildLines, officialLineup, projectLineup, type HistoryGame, type LineupPlayer, type RosterEntry } from "./lineups";
+import { buildLines, isDressedList, officialLineup, projectLineup, type HistoryGame, type LineupPlayer, type RosterEntry } from "./lineups";
 import boxFixture from "../../fixtures/gamecenter_2026020035_boxscore.json";
 import type { BoxscoreResponse } from "./nhl/types";
 
@@ -84,5 +84,25 @@ describe("officialLineup", () => {
     expect(t.forwards.flat()).toHaveLength(box.playerByGameStats!.homeTeam.forwards.length);
     expect(t.defense.flat()).toHaveLength(box.playerByGameStats!.homeTeam.defense.length);
     expect(t.goalie?.id).toBe(box.playerByGameStats!.homeTeam.goalies.find((g) => g.starter)!.playerId);
+  });
+});
+
+describe("isDressedList", () => {
+  it("tells the 20 dressed apart from the 23-man active roster", () => {
+    const skaters = (n: number): RosterEntry[] => Array.from({ length: n }, (_, i) => ({ id: i, name: `S${i}`, pos: i < 6 ? "D" : "C" }));
+    const goalies: RosterEntry[] = [{ id: 90, name: "G1", pos: "G" }, { id: 91, name: "G2", pos: "G" }];
+    expect(isDressedList([...skaters(18), ...goalies])).toBe(true);
+    expect(isDressedList([...skaters(21), ...goalies])).toBe(false);
+    expect(isDressedList([])).toBe(false);
+  });
+});
+
+describe("projectLineup with the posted dressed list", () => {
+  it("keeps an 11 F / 7 D lineup intact", () => {
+    const dressed = roster.filter((r) => r.id !== 111 && r.id !== 113).concat({ id: 206, name: "D6", pos: "D" });
+    const t = projectLineup({ team: "X", gameDate: "2026-10-10", roster: dressed, history: history(5, { goalieStarts: [1], first: "2026-10-08" }), rosterSource: "dressed-pregame" });
+    expect(t.forwards.flat()).toHaveLength(11);
+    expect(t.defense.flat()).toHaveLength(7);
+    expect(t.extras).toHaveLength(0);
   });
 });

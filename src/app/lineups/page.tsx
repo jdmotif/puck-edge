@@ -41,8 +41,8 @@ export default async function LineupsPage({ searchParams }: { searchParams: Prom
         ]}
       />
       <p className="mb-4 text-xs text-muted">
-        The NHL confirms who dressed and who starts in net only once the game begins, so lineups are projected until then: the skaters
-        who dressed most in each team&apos;s last 5 games (from today&apos;s active roster when the NHL has posted it), lines ordered by
+        The NHL posts who dressed about 20 minutes before puck drop and confirms the starting goalie only once the game begins. Until
+        then lineups are projected: the skaters who dressed most in each team&apos;s last 5 games (from today&apos;s active roster when the NHL has posted it), lines ordered by
         average ice time, and the goalie with the most starts in the last 10 (the backup on a back-to-back). Line combinations are never
         published by the NHL, so they&apos;re always an estimate from ice time.
       </p>
@@ -64,7 +64,13 @@ export default async function LineupsPage({ searchParams }: { searchParams: Prom
                 </a>
                 <span className="flex items-center gap-2 text-xs text-muted">
                   <LocalTime iso={game.startTimeUTC} />
-                  {statusOf({ game, away, home }) === "official" ? <Pill tone="good">Official</Pill> : <Pill tone="warn">Projected</Pill>}
+                  {statusOf({ game, away, home }) === "official" ? (
+                    <Pill tone="good">Official</Pill>
+                  ) : away.rosterSource === "dressed-pregame" && home.rosterSource === "dressed-pregame" ? (
+                    <Pill tone="accent">Skaters confirmed</Pill>
+                  ) : (
+                    <Pill tone="warn">Projected</Pill>
+                  )}
                 </span>
               </div>
               <div className="grid gap-4 md:grid-cols-2">
@@ -99,9 +105,11 @@ function TeamColumn({ t }: { t: TeamLineup }) {
         <span className="text-xs text-muted">
           {official
             ? "Dressed roster from the NHL"
-            : t.rosterSource === "game-day"
-              ? `Today's active roster · last ${t.gamesUsed} games`
-              : `Team roster (game-day roster not posted yet) · last ${t.gamesUsed} games`}
+            : t.rosterSource === "dressed-pregame"
+              ? "Dressed skaters confirmed by the NHL · goalie projected"
+              : t.rosterSource === "game-day"
+                ? `Today's active roster · last ${t.gamesUsed} games`
+                : `Team roster (game-day roster not posted yet) · last ${t.gamesUsed} games`}
         </span>
       </div>
 

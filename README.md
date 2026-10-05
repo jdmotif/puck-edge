@@ -65,7 +65,7 @@ Player props are always model-only: neither free feed carries prop prices.
 |---|---|
 | **Tonight** (`/`) | Every game: local start time, venue, records, L10, streak, rest / back-to-back, probable goalies with SV% and GAA, win probabilities, projected total and a **Best Pick** card. Expand for every pick, props and reasons. `←/→` to browse other days. |
 | **Game** (`/game/[id]`) | Preview before puck drop (all picks + player projections), full box score afterwards (scoring, three stars, skaters, goalies, and how the model's picks graded). |
-| **Lineups** | Each game's lines, pairs and starting goalie. Official once the game starts (the NHL only confirms who dressed and who started in net at puck drop); projected before that from the last 5 games' ice time and the last 10 goalie starts, limited to the game-day active roster once the NHL posts it. |
+| **Lineups** | Each game's lines, pairs and starting goalie. Skaters are confirmed when the NHL posts the dressed roster about 20 minutes before puck drop, and the goalie once the game starts; projected before that from the last 5 games' ice time and the last 10 goalie starts, limited to the game-day active roster once the NHL posts it. |
 | **Schedule** | Month and week calendar, filterable by team. |
 | **Results** | Every completed game of the season with final score, OT/SO marker, goal scorers and three stars. Filter by team, date range and result type. |
 | **Standings** | Wild card, division, conference and league views. Team pages have stats, roster, schedule, home/road splits and head-to-head history. |
