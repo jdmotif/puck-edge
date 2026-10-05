@@ -1,6 +1,6 @@
 import { sqlite } from "@/db";
 import { api } from "@/lib/nhl/client";
-import { Card, Empty, PageTitle, Pill, StaleBanner, TeamLogo } from "@/components/ui";
+import { Card, Empty, Pill, StaleBanner, StatTile, TEAM_COLORS, TeamLogo } from "@/components/ui";
 import { LocalTime } from "@/components/LocalTime";
 import { svPct, toiFmt } from "@/lib/format";
 import { latestNews } from "@/lib/news";
@@ -36,11 +36,16 @@ export default async function TeamPage({ params, searchParams }: { params: Promi
 
   return (
     <>
-      <div className="mb-4 flex items-center gap-3">
-        <TeamLogo abbrev={team} size={48} />
-        <PageTitle sub={row ? `${row.divisionName} · ${row.wins}-${row.losses}-${row.otLosses}, ${row.points} pts` : undefined}>
-          {row?.teamName.default ?? team}
-        </PageTitle>
+      <div
+        className="card relative mb-5 flex items-center gap-4 overflow-hidden px-5 py-5 sm:px-6"
+        style={{ background: `linear-gradient(110deg, color-mix(in srgb, ${TEAM_COLORS[team] ?? "#3d6bff"} 30%, var(--surface)) 0%, var(--surface) 65%)` }}
+      >
+        <TeamLogo abbrev={team} size={72} />
+        <div className="min-w-0">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-2">{row ? `${row.conferenceName} · ${row.divisionName}` : "NHL"}</div>
+          <h1 className="font-display text-3xl font-bold uppercase leading-none tracking-wide sm:text-4xl">{row?.teamName.default ?? team}</h1>
+          {row && <p className="tabular mt-1.5 text-sm text-ink-2">{row.wins}-{row.losses}-{row.otLosses} · <span className="font-semibold text-ink">{row.points} pts</span></p>}
+        </div>
       </div>
       <StaleBanner items={[standings, stats, roster, sched]} />
 
@@ -56,10 +61,7 @@ export default async function TeamPage({ params, searchParams }: { params: Promi
             ["Goal diff", `${row.goalDifferential > 0 ? "+" : ""}${row.goalDifferential}`],
             ["League rank", `#${row.leagueSequence}`],
           ].map(([k, v]) => (
-            <Card key={k} className="!p-3">
-              <div className="text-xs text-muted">{k}</div>
-              <div className="tabular text-lg font-semibold">{v}</div>
-            </Card>
+            <StatTile key={k} label={k} value={v} />
           ))}
         </div>
       )}
@@ -67,18 +69,18 @@ export default async function TeamPage({ params, searchParams }: { params: Promi
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           <Card className="overflow-x-auto !p-0">
-            <h2 className="px-3 pt-3 text-sm font-semibold">Skaters</h2>
+            <h2 className="px-3 pt-3 font-display text-lg font-bold uppercase tracking-wide">Skaters</h2>
             {skaters.length ? (
               <table className="tabular mt-2 w-full min-w-[560px] text-sm">
                 <thead className="text-xs text-muted">
-                  <tr className="[&>th]:px-2 [&>th]:py-1 [&>th]:text-right [&>th:first-child]:text-left">
+                  <tr className="[&>th]:px-2 [&>th]:py-2 [&>th]:text-right [&>th:first-child]:text-left">
                     <th>Player</th><th>Pos</th><th>GP</th><th>G</th><th>A</th><th>P</th><th>PPG</th><th>SOG</th><th>TOI</th><th>+/-</th>
                   </tr>
                 </thead>
                 <tbody>
                   {skaters.map((s) => (
-                    <tr key={s.playerId} className="border-t border-line [&>td]:px-2 [&>td]:py-1 [&>td]:text-right">
-                      <td className="!text-left"><a className="hover:text-accent" href={`/players/${s.playerId}`}>{s.firstName.default} {s.lastName.default}</a></td>
+                    <tr key={s.playerId} className="border-t border-line [&>td]:px-2 [&>td]:py-2 [&>td]:text-right">
+                      <td className="!text-left"><a className="hover:text-accent-2" href={`/players/${s.playerId}`}>{s.firstName.default} {s.lastName.default}</a></td>
                       <td className="text-muted">{s.positionCode}</td><td>{s.gamesPlayed}</td><td>{s.goals}</td><td>{s.assists}</td>
                       <td className="font-semibold">{s.points}</td><td>{s.powerPlayGoals}</td><td>{s.shots}</td><td>{toiFmt(s.avgTimeOnIcePerGame)}</td>
                       <td>{s.plusMinus > 0 ? "+" : ""}{s.plusMinus}</td>
@@ -87,15 +89,15 @@ export default async function TeamPage({ params, searchParams }: { params: Promi
                 </tbody>
               </table>
             ) : <p className="p-3 text-sm text-muted">No stats yet.</p>}
-            <h2 className="mt-4 px-3 text-sm font-semibold">Goalies</h2>
+            <h2 className="mt-4 px-3 font-display text-lg font-bold uppercase tracking-wide">Goalies</h2>
             <table className="tabular mt-2 mb-2 w-full text-sm">
               <thead className="text-xs text-muted">
-                <tr className="[&>th]:px-2 [&>th]:py-1 [&>th]:text-right [&>th:first-child]:text-left"><th>Goalie</th><th>GP</th><th>GS</th><th>W-L-OT</th><th>SV%</th><th>GAA</th><th>SO</th></tr>
+                <tr className="[&>th]:px-2 [&>th]:py-2 [&>th]:text-right [&>th:first-child]:text-left"><th>Goalie</th><th>GP</th><th>GS</th><th>W-L-OT</th><th>SV%</th><th>GAA</th><th>SO</th></tr>
               </thead>
               <tbody>
                 {(stats.data?.goalies ?? []).map((g) => (
-                  <tr key={g.playerId} className="border-t border-line [&>td]:px-2 [&>td]:py-1 [&>td]:text-right">
-                    <td className="!text-left"><a className="hover:text-accent" href={`/players/${g.playerId}`}>{g.firstName.default} {g.lastName.default}</a></td>
+                  <tr key={g.playerId} className="border-t border-line [&>td]:px-2 [&>td]:py-2 [&>td]:text-right">
+                    <td className="!text-left"><a className="hover:text-accent-2" href={`/players/${g.playerId}`}>{g.firstName.default} {g.lastName.default}</a></td>
                     <td>{g.gamesPlayed}</td><td>{g.gamesStarted}</td><td>{g.wins}-{g.losses}-{g.overtimeLosses}</td>
                     <td>{svPct(g.savePercentage)}</td><td>{g.goalsAgainstAverage.toFixed(2)}</td><td>{g.shutouts}</td>
                   </tr>
@@ -105,7 +107,7 @@ export default async function TeamPage({ params, searchParams }: { params: Promi
           </Card>
 
           <Card>
-            <h2 className="mb-2 text-sm font-semibold">Head to head (stored games, this and last season)</h2>
+            <h2 className="mb-2 font-display text-lg font-bold uppercase tracking-wide">Head to head (stored games, this and last season)</h2>
             <form className="mb-3 flex gap-2 text-sm">
               <select name="vs" defaultValue={vs ?? ""} className="rounded-md border border-line bg-surface-2 px-2 py-1">
                 <option value="">Pick an opponent</option>
@@ -118,7 +120,7 @@ export default async function TeamPage({ params, searchParams }: { params: Promi
                 <p className="mb-2 text-sm">{team} {h2hWins}–{h2h.length - h2hWins} vs {vs}</p>
                 <ul className="space-y-1 text-sm">
                   {h2h.map((g) => (
-                    <li key={g.id}><a className="flex gap-2 hover:text-accent" href={`/game/${g.id}`}>
+                    <li key={g.id}><a className="flex gap-2 hover:text-accent-2" href={`/game/${g.id}`}>
                       <span className="w-24 text-muted">{g.date}</span>
                       <span>{g.away} {g.as_} @ {g.home} {g.hs}{g.lpt !== "REG" ? ` (${g.lpt})` : ""}</span>
                     </a></li>
@@ -140,11 +142,11 @@ export default async function TeamPage({ params, searchParams }: { params: Promi
             </Card>
           )}
           <Card>
-            <h2 className="mb-2 text-sm font-semibold">Upcoming</h2>
+            <h2 className="mb-2 font-display text-lg font-bold uppercase tracking-wide">Upcoming</h2>
             {upcoming.length ? (
               <ul className="space-y-1 text-sm">
                 {upcoming.slice(0, 10).map((g) => (
-                  <li key={g.id}><a href={`/game/${g.id}`} className="flex justify-between hover:text-accent">
+                  <li key={g.id}><a href={`/game/${g.id}`} className="flex justify-between hover:text-accent-2">
                     <span>{g.homeTeam.abbrev === team ? `vs ${g.awayTeam.abbrev}` : `@ ${g.homeTeam.abbrev}`}</span>
                     <span className="text-muted"><LocalTime iso={g.startTimeUTC} format="datetime" /></span>
                   </a></li>
@@ -153,7 +155,7 @@ export default async function TeamPage({ params, searchParams }: { params: Promi
             ) : <Empty>No upcoming games.</Empty>}
           </Card>
           <Card>
-            <h2 className="mb-2 text-sm font-semibold">Recent</h2>
+            <h2 className="mb-2 font-display text-lg font-bold uppercase tracking-wide">Recent</h2>
             <ul className="space-y-1 text-sm">
               {done.slice(-10).reverse().map((g) => {
                 const home = g.homeTeam.abbrev === team;
@@ -161,7 +163,7 @@ export default async function TeamPage({ params, searchParams }: { params: Promi
                 const them = home ? g.awayTeam.score : g.homeTeam.score;
                 const won = (us ?? 0) > (them ?? 0);
                 return (
-                  <li key={g.id}><a href={`/game/${g.id}`} className="flex items-center justify-between hover:text-accent">
+                  <li key={g.id}><a href={`/game/${g.id}`} className="flex items-center justify-between hover:text-accent-2">
                     <span>{home ? `vs ${g.awayTeam.abbrev}` : `@ ${g.homeTeam.abbrev}`}</span>
                     <span className="flex items-center gap-2 tabular">
                       <Pill tone={won ? "good" : "bad"}>{won ? "W" : g.gameOutcome?.lastPeriodType !== "REG" ? "OTL" : "L"}</Pill>
@@ -173,13 +175,13 @@ export default async function TeamPage({ params, searchParams }: { params: Promi
             </ul>
           </Card>
           <Card>
-            <h2 className="mb-2 text-sm font-semibold">Roster</h2>
+            <h2 className="mb-2 font-display text-lg font-bold uppercase tracking-wide">Roster</h2>
             {(["forwards", "defensemen", "goalies"] as const).map((k) => (
               <div key={k} className="mb-2">
                 <div className="text-xs uppercase text-muted">{k}</div>
                 <ul className="text-sm">
                   {(roster.data?.[k] ?? []).map((p) => (
-                    <li key={p.id}><a className="hover:text-accent" href={`/players/${p.id}`}><span className="inline-block w-7 text-muted tabular">{p.sweaterNumber ?? ""}</span>{p.firstName.default} {p.lastName.default}</a></li>
+                    <li key={p.id}><a className="hover:text-accent-2" href={`/players/${p.id}`}><span className="inline-block w-7 text-muted tabular">{p.sweaterNumber ?? ""}</span>{p.firstName.default} {p.lastName.default}</a></li>
                   ))}
                 </ul>
               </div>

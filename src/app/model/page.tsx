@@ -72,7 +72,7 @@ export default function ModelPage() {
           return (
             <Card key={m} className={losing ? "border-bad/60" : ""}>
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold">{MARKET_LABELS[m]}</h2>
+                <h2 className="font-display text-lg font-bold uppercase tracking-wide">{MARKET_LABELS[m]}</h2>
                 {losing ? <Pill tone="bad">Losing money</Pill> : s.roi !== null && s.priced >= 20 ? <Pill tone="good">Profitable</Pill> : null}
               </div>
               {s.n === 0 ? (
@@ -96,7 +96,7 @@ export default function ModelPage() {
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <Card>
-          <h2 className="mb-1 text-sm font-semibold">Moneyline calibration</h2>
+          <h2 className="mb-1 font-display text-lg font-bold uppercase tracking-wide">Moneyline calibration</h2>
           <p className="mb-2 text-xs text-muted">When the model says 60%, does that side win 60% of the time? Dots on the dashed line mean yes. Backtest = walk-forward predictions on stored games, refit each month on earlier games only.</p>
           {backtest.length || liveMl.length ? (
             <CalibrationChart series={[
@@ -111,7 +111,7 @@ export default function ModelPage() {
           )}
         </Card>
         <Card>
-          <h2 className="mb-1 text-sm font-semibold">Totals and puck line calibration (backtest)</h2>
+          <h2 className="mb-1 font-display text-lg font-bold uppercase tracking-wide">Totals and puck line calibration (backtest)</h2>
           <p className="mb-2 text-xs text-muted">Over 5.5 goals and home −1.5, predicted vs actual.</p>
           {backtest.length ? (
             <CalibrationChart series={[
@@ -124,7 +124,7 @@ export default function ModelPage() {
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <Card>
-          <h2 className="mb-2 text-sm font-semibold">Moneyline weights</h2>
+          <h2 className="mb-2 font-display text-lg font-bold uppercase tracking-wide">Moneyline weights</h2>
           <p className="mb-2 text-xs text-muted">
             {params.fitted ? `Logistic regression fitted on ${params.n} stored games${params.logLoss ? `, log loss ${params.logLoss.toFixed(4)}` : ""}.` : "Prior weights: the model refits once 300+ games are stored."}
             {" "}Positive = favours the team with more of it.
@@ -139,13 +139,13 @@ export default function ModelPage() {
           </table>
         </Card>
         <Card>
-          <h2 className="mb-2 text-sm font-semibold">Recent graded picks</h2>
+          <h2 className="mb-2 font-display text-lg font-bold uppercase tracking-wide">Recent graded picks</h2>
           {graded.length ? (
             <ul className="space-y-1 text-sm">
               {graded.slice(0, 25).map((g, i) => (
                 <li key={i} className="flex items-center gap-2">
                   <span className="w-20 text-xs text-muted">{g.date}</span>
-                  <a href={`/game/${g.gameId}`} className="flex-1 truncate hover:text-accent">{g.label}</a>
+                  <a href={`/game/${g.gameId}`} className="flex-1 truncate hover:text-accent-2">{g.label}</a>
                   <span className="tabular text-xs text-ink-2">{pct(g.p)}</span>
                   <Pill tone={g.result === "win" ? "good" : g.result === "loss" ? "bad" : "neutral"}>{g.result}</Pill>
                 </li>
