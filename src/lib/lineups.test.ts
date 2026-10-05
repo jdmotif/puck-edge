@@ -106,3 +106,14 @@ describe("projectLineup with the posted dressed list", () => {
     expect(t.extras).toHaveLength(0);
   });
 });
+
+describe("officialLineup while live", () => {
+  it("takes the goalie with ice time when the starter flag isn't set yet", () => {
+    const box = boxFixture as unknown as BoxscoreResponse;
+    const stats = box.playerByGameStats!.homeTeam;
+    const played = stats.goalies.find((g) => g.starter)!;
+    const live = { ...stats, goalies: [...stats.goalies].reverse().map((g) => ({ ...g, starter: null as unknown as boolean })) };
+    const t = officialLineup({ team: box.homeTeam.abbrev, stats: live, history: [], final: false });
+    expect(t.goalie?.id).toBe(played.playerId);
+  });
+});

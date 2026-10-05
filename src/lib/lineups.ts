@@ -199,7 +199,9 @@ export function officialLineup(input: { team: string; stats: BoxTeamStats; histo
   const goalies = stats.goalies.map(
     (g): GoaliePick => ({ id: g.playerId, name: g.name.default, number: g.sweaterNumber, pos: "G", toiSec: toiToSec(g.toi), gp: 0, starts: 0, lastStart: null }),
   );
-  const starterId = stats.goalies.find((g) => g.starter)?.playerId;
+  // `starter` is only filled in once the game is final; while it's live, the goalie with ice time started.
+  const starterId =
+    stats.goalies.find((g) => g.starter)?.playerId ?? [...stats.goalies].filter((g) => toiToSec(g.toi) > 0).sort((a, b) => toiToSec(b.toi) - toiToSec(a.toi))[0]?.playerId;
   const goalie = goalies.find((g) => g.id === starterId) ?? goalies[0] ?? null;
   return {
     team,
