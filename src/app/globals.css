@@ -41,3 +41,6 @@ body { font-feature-settings: "tnum" 1; -webkit-font-smoothing: antialiased; }
 
 @keyframes shimmer { 0% { opacity: .45 } 50% { opacity: .8 } 100% { opacity: .45 } }
 .skeleton { background: var(--surface-2); border-radius: 8px; animation: shimmer 1.4s ease-in-out infinite; }
+
+/* Let wide tables scroll inside their card instead of stretching grid columns past the viewport. */
+.grid > * { min-width: 0; }

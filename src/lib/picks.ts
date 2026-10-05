@@ -75,6 +75,7 @@ export interface Slate {
   oddsNote: string;
   modelFitted: boolean;
   modelGames: number;
+  hasHistory: boolean; // any stored games to judge teams by
 }
 
 const DONE = new Set(["OFF", "FINAL"]);
@@ -203,6 +204,8 @@ export async function buildSlate(date: string): Promise<Slate> {
   ]);
   const statsByTeam = new Map(teams.map((t, i) => [t, clubStats[i].data?.skaters ?? []]));
   const lgGoals = league.leagueGoalsPerTeamGame();
+  // Without stored games every team looks average, so edges are just the market's own spread.
+  const hasHistory = league.totals.games > 0 || league.prevTeams.size > 0;
   const lgSv = league.leagueSavePct();
 
   const cards: GameCard[] = games.map((g, i) => {
@@ -254,7 +257,8 @@ export async function buildSlate(date: string): Promise<Slate> {
 
     // Uncertainty flags feed the confidence tier.
     const uncertainty: string[] = [];
-    if (Math.min(pred.home.gp, pred.away.gp) < 10) uncertainty.push("Small sample: under 10 games stored for a team");
+    if (!hasHistory) uncertainty.push("No stored games yet: every team is treated as league-average, so no Value labels");
+    else if (Math.min(pred.home.gp, pred.away.gp) < 10) uncertainty.push("Small sample: under 10 games stored for a team");
     if (homeGoalie.status !== "confirmed" || awayGoalie.status !== "confirmed") uncertainty.push("Starting goalies not confirmed (projected from recent starts)");
     if (market.moneyline && Math.abs(pred.homeWin - market.moneyline.home.fair) > 0.12)
       uncertainty.push("Model and market disagree by over 12 points: check injuries and lineup news");
@@ -294,7 +298,7 @@ export async function buildSlate(date: string): Promise<Slate> {
         line: null,
         modelProb: prob,
         ...s,
-        isValue: s.edge !== null && s.edge >= settings.edgeThreshold,
+        isValue: hasHistory && s.edge !== null && s.edge >= settings.edgeThreshold,
         confidence: confidenceFor(s.edge, prob, settings.edgeThreshold, u),
         reasons: teamReasons(homeSide, pred, cardSides, hot),
       });
@@ -326,7 +330,7 @@ export async function buildSlate(date: string): Promise<Slate> {
         line,
         modelProb: prob,
         ...s,
-        isValue: s.edge !== null && s.edge >= settings.edgeThreshold,
+        isValue: hasHistory && s.edge !== null && s.edge >= settings.edgeThreshold,
         confidence: confidenceFor(s.edge, prob, settings.edgeThreshold, u),
         reasons: reasons.slice(0, 5),
       });
@@ -354,7 +358,7 @@ export async function buildSlate(date: string): Promise<Slate> {
         line,
         modelProb: prob,
         ...s,
-        isValue: s.edge !== null && s.edge >= settings.edgeThreshold,
+        isValue: hasHistory && s.edge !== null && s.edge >= settings.edgeThreshold,
         confidence: confidenceFor(s.edge, prob, settings.edgeThreshold, u),
         reasons: [
           `${fav.abbrev} win by 2+ in ${((homeFav ? pl.homeMinus15 : pl.awayMinus15) * 100).toFixed(0)}% of simulated scores`,
@@ -420,6 +424,7 @@ export async function buildSlate(date: string): Promise<Slate> {
       : "Moneylines from the NHL schedule feed. Add ODDS_API_KEY for totals and puck-line prices; until then those are model-only.",
     modelFitted: params.fitted,
     modelGames: params.n,
+    hasHistory: cards.length ? cards.every((c) => c.uncertainty.every((u) => !u.startsWith("No stored games"))) : true,
   };
 }
 

@@ -39,6 +39,11 @@ async function SlateView({ date }: { date: string }) {
   return (
     <>
       <StaleBanner items={slate.sources} />
+      {!slate.hasHistory && (
+        <div className="mb-4 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-sm">
+          No game history stored yet, so the model sees every team as average and won&apos;t label Value picks. Run <code>npm run sync</code> once to backfill this season and last (a few minutes).
+        </div>
+      )}
       {slate.cards.length === 0 ? (
         <Empty>No NHL games on this date.</Empty>
       ) : (
