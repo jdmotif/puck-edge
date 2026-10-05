@@ -11,7 +11,9 @@ Built with Next.js (App Router) + TypeScript + Tailwind, SQLite via Drizzle, and
 
 ## Setup
 
-Requires Node.js 20 or newer.
+Requires Node.js 22.13 or newer (Node 24 LTS recommended). The database uses Node's built-in SQLite,
+so `npm install` doesn't compile anything: no Python or Visual Studio build tools needed on Windows.
+Node prints a one-line `ExperimentalWarning: SQLite is an experimental feature` at startup; it's harmless.
 
 ```bash
 git clone https://github.com/jdmotif/puck-edge

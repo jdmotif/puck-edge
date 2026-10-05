@@ -1,5 +1,5 @@
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
+import { DatabaseSync } from "node:sqlite";
+import { drizzle } from "drizzle-orm/sqlite-proxy";
 import fs from "node:fs";
 import path from "node:path";
 import * as schema from "./schema";
@@ -48,18 +48,93 @@ CREATE TABLE IF NOT EXISTS sync_log (
   games_added INTEGER NOT NULL DEFAULT 0, message TEXT);
 `;
 
-function open() {
+/**
+ * Thin wrapper over Node's built-in SQLite (node:sqlite, Node 22.13+), so there's no native
+ * module to compile on install. Exposes the small better-sqlite3-style API the app uses.
+ */
+type Param = string | number | bigint | null | Uint8Array;
+type Params = Param[] | [Record<string, Param | undefined>];
+
+export interface Statement {
+  get(...params: Params): unknown;
+  all(...params: Params): unknown[];
+  run(...params: Params): { changes: number | bigint; lastInsertRowid: number | bigint };
+}
+
+export interface Sqlite {
+  prepare(sql: string): Statement;
+  exec(sql: string): void;
+  transaction<T>(fn: () => T): () => T;
+}
+
+function wrap(raw: DatabaseSync): Sqlite {
+  let depth = 0;
+  return {
+    prepare(sql) {
+      const st = raw.prepare(sql);
+      st.setAllowBareNamedParameters(true); // { id: 1 } binds @id
+      st.setAllowUnknownNamedParameters(true); // extra keys in a params object are ignored
+      // node:sqlite rejects undefined; treat it as NULL like better-sqlite3 callers expect.
+      const fix = (params: Params): Param[] =>
+        params.length === 1 && params[0] !== null && typeof params[0] === "object" && !(params[0] instanceof Uint8Array)
+          ? [Object.fromEntries(Object.entries(params[0]).map(([k, v]) => [k, v === undefined ? null : v])) as unknown as Param]
+          : (params as Param[]);
+      return {
+        get: (...p) => st.get(...(fix(p) as never[])),
+        all: (...p) => st.all(...(fix(p) as never[])),
+        run: (...p) => st.run(...(fix(p) as never[])),
+      };
+    },
+    exec: (sql) => raw.exec(sql),
+    transaction(fn) {
+      return () => {
+        // Nested calls join the outer transaction.
+        if (depth > 0) return fn();
+        depth++;
+        raw.exec("BEGIN");
+        try {
+          const out = fn();
+          raw.exec("COMMIT");
+          return out;
+        } catch (e) {
+          raw.exec("ROLLBACK");
+          throw e;
+        } finally {
+          depth--;
+        }
+      };
+    },
+  };
+}
+
+function open(): Sqlite {
   const file = process.env.DATABASE_PATH || path.join(process.cwd(), "data", "puck-edge.db");
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  const sqlite = new Database(file);
-  sqlite.pragma("journal_mode = WAL");
-  sqlite.pragma("busy_timeout = 5000");
-  sqlite.exec(DDL);
-  return sqlite;
+  if (file !== ":memory:") fs.mkdirSync(path.dirname(file), { recursive: true });
+  const raw = new DatabaseSync(file);
+  raw.exec("PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;");
+  raw.exec(DDL);
+  return wrap(raw);
 }
 
 // Reuse one connection across Next.js hot reloads.
-const g = globalThis as unknown as { __puckSqlite?: Database.Database };
+const g = globalThis as unknown as { __puckSqlite?: Sqlite };
 export const sqlite = g.__puckSqlite ?? (g.__puckSqlite = open());
-export const db = drizzle(sqlite, { schema });
+
+// Drizzle on top of the same connection (via its proxy driver), typed with ./schema.
+export const db = drizzle(
+  async (sql, params, method) => {
+    const st = sqlite.prepare(sql);
+    if (method === "run") {
+      st.run(...(params as Param[]));
+      return { rows: [] };
+    }
+    const toArrays = (r: unknown) => Object.values(r as Record<string, unknown>);
+    if (method === "get") {
+      const r = st.get(...(params as Param[]));
+      return { rows: r ? (toArrays(r) as never) : (undefined as never) };
+    }
+    return { rows: st.all(...(params as Param[])).map(toArrays) as never };
+  },
+  { schema },
+);
 export { schema };
