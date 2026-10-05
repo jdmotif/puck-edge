@@ -133,6 +133,11 @@ export class League {
     const gfpg = shrink(t.gp ? t.gf / t.gp : 0, t.gp, prior(p?.gp ? p.gf / p.gp : undefined, lg), K);
     const gapg = shrink(t.gp ? t.ga / t.gp : 0, t.gp, prior(p?.gp ? p.ga / p.gp : undefined, lg), K);
     const shotShare = shrink(t.sf + t.sa ? t.sf / (t.sf + t.sa) : 0.5, t.gp, prior(p && p.sf + p.sa ? p.sf / (p.sf + p.sa) : undefined, 0.5), K);
+    // Regressed like the goalie numbers; a raw .950 from three games would make any starter
+    // look far worse than "his team" and inflate the totals projection.
+    const lgSv = this.leagueSavePct();
+    const priorSv = p?.sa ? lgSv + (1 - p.ga / p.sa - lgSv) * 0.67 : lgSv;
+    const teamSavePct = shrink(t.sa ? 1 - t.ga / t.sa : lgSv, t.sa, priorSv, K * LEAGUE_DEFAULTS.shotsPerTeamGame);
     const last10 = t.results.slice(-10);
     // Points % over the last 10, weighted 1..10 toward the most recent game.
     let wSum = 0, wPts = 0;
@@ -162,7 +167,7 @@ export class League {
       l10,
       restDays: clamp(restDays, 0, 7),
       backToBack: restDays === 0,
-      teamSavePct: t.sa ? 1 - t.ga / t.sa : this.leagueSavePct(),
+      teamSavePct,
       record: recordOf(t.results),
       homeRecord: recordOf(homeRes),
       roadRecord: recordOf(roadRes),

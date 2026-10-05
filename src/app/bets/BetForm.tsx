@@ -27,7 +27,7 @@ export function BetForm({ games, prefill, bankroll, kelly, cap }: {
     const f = kellyFraction(p, dec, kelly, cap);
     return { f, amount: Math.round(f * bankroll * 100) / 100, implied: 1 / dec };
   }, [prob, dec, kelly, cap, bankroll]);
-  const input = "w-full rounded-md border border-line bg-surface-2 px-2 py-1.5";
+  const input = "mt-1 w-full border px-3 py-2";
 
   return (
     <form action={addBet} className="grid gap-3 text-sm sm:grid-cols-2">
@@ -94,7 +94,7 @@ export function BetForm({ games, prefill, bankroll, kelly, cap }: {
           suggestion.f > 0 ? (
             <>
               Suggested stake ({kelly === 1 ? "full" : `${kelly}×`} Kelly, capped at {(cap * 100).toFixed(1)}% of ${bankroll.toFixed(0)}):{" "}
-              <button type="button" className="font-semibold text-accent" onClick={() => setStake(suggestion.amount.toFixed(2))}>${suggestion.amount.toFixed(2)}</button>
+              <button type="button" className="font-semibold text-accent-2" onClick={() => setStake(suggestion.amount.toFixed(2))}>${suggestion.amount.toFixed(2)}</button>
               {" "}· price implies {(suggestion.implied * 100).toFixed(1)}%
             </>
           ) : (
@@ -108,7 +108,7 @@ export function BetForm({ games, prefill, bankroll, kelly, cap }: {
         <span className="text-xs text-muted">Notes</span>
         <input name="notes" className={input} />
       </label>
-      <button className="rounded-md bg-accent px-4 py-2 font-medium text-white sm:col-span-2">Log bet</button>
+      <button className="bg-accent px-4 py-2.5 font-semibold text-white sm:col-span-2">Log bet</button>
     </form>
   );
 }

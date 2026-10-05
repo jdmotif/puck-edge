@@ -1,11 +1,1389 @@
-{"id":2026020040,"season":20262027,"gameType":2,"limitedScoring":false,"gameDate":"2026-10-05","venue":{"default":"Benchmark International Arena"},"venueLocation":{"default":"Tampa"},"startTimeUTC":"2026-10-05T23:00:00Z","easternUTCOffset":"-04:00","venueUTCOffset":"-04:00","venueTimezone":"US/Eastern","tvBroadcasts":[],"gameState":"FUT","gameScheduleState":"OK",
-"awayTeam":{"id":4,"commonName":{"default":"Flyers"},"abbrev":"PHI","placeName":{"default":"Philadelphia"},"logo":"https://assets.nhle.com/logos/nhl/svg/PHI_light.svg","darkLogo":"https://assets.nhle.com/logos/nhl/svg/PHI_dark.svg","record":"0-1-2"},
-"homeTeam":{"id":14,"commonName":{"default":"Lightning"},"abbrev":"TBL","placeName":{"default":"Tampa Bay"},"logo":"https://assets.nhle.com/logos/nhl/svg/TBL_light.svg","darkLogo":"https://assets.nhle.com/logos/nhl/svg/TBL_dark.svg","record":"1-1-0"},
-"shootoutInUse":true,"maxPeriods":5,"regPeriods":3,"otInUse":true,"tiesInUse":false,
-"matchup":{"season":20262027,"gameType":2,
-"skaterComparison":{"contextLabel":"to_date","contextSeason":20262027,"leaders":[{"category":"points","awayLeader":{"playerId":8477948,"name":{"default":"T. Sanheim"},"firstName":{"default":"Travis"},"lastName":{"default":"Sanheim"},"sweaterNumber":6,"positionCode":"D","headshot":"https://assets.nhle.com/mugs/nhl/20262027/PHI/8477948.png","value":2},"homeLeader":{"playerId":8477404,"name":{"default":"J. Guentzel"},"firstName":{"default":"Jake"},"lastName":{"default":"Guentzel"},"sweaterNumber":59,"positionCode":"C","headshot":"https://assets.nhle.com/mugs/nhl/20262027/TBL/8477404.png","value":3}}]},
-"goalieComparison":{"contextLabel":"regular_season","contextSeason":20262027,
-"homeTeam":{"teamTotals":{"record":"1-1-0","gaa":3.0,"savePctg":0.869565,"shutouts":0,"gamesPlayed":2},"leaders":[{"playerId":8476883,"name":{"default":"A. Vasilevskiy"},"firstName":{"default":"Andrei"},"lastName":{"default":"Vasilevskiy"},"sweaterNumber":88,"headshot":"https://assets.nhle.com/mugs/nhl/20262027/TBL/8476883.png","positionCode":"G","gamesPlayed":2,"seasonPoints":2,"record":"1-1-0","gaa":2.59,"savePctg":0.889,"shutouts":0},{"playerId":8483710,"name":{"default":"D. Hildeby"},"firstName":{"default":"Dennis"},"lastName":{"default":"Hildeby"},"sweaterNumber":35,"headshot":"https://assets.nhle.com/mugs/nhl/20262027/TBL/8483710.png","positionCode":"G"}]},
-"awayTeam":{"teamTotals":{"record":"0-1-2","gaa":4.333333,"savePctg":0.893443,"shutouts":0,"gamesPlayed":3},"leaders":[{"playerId":8479361,"name":{"default":"J. Woll"},"firstName":{"default":"Joseph"},"lastName":{"default":"Woll"},"sweaterNumber":53,"headshot":"https://assets.nhle.com/mugs/nhl/20262027/PHI/8479361.png","positionCode":"G","gamesPlayed":2,"seasonPoints":2,"record":"0-0-2","gaa":2.87,"savePctg":0.929,"shutouts":0},{"playerId":8478435,"name":{"default":"D. Vladar"},"firstName":{"default":"Dan"},"lastName":{"default":"Vladar"},"sweaterNumber":80,"headshot":"https://assets.nhle.com/mugs/nhl/20262027/PHI/8478435.png","positionCode":"G","gamesPlayed":1,"seasonPoints":0,"record":"0-1-0","gaa":7.04,"savePctg":0.816,"shutouts":0}]}},
-"skaterSeasonStats":{"contextLabel":"regular_season","contextSeason":20262027,"skaters":[{"playerId":8477948,"teamId":4,"sweaterNumber":6,"name":{"default":"T. Sanheim"},"position":"D","gamesPlayed":3,"goals":1,"assists":1,"points":2,"plusMinus":-2,"pim":0,"avgPoints":0.67,"avgTimeOnIce":"24:22","gameWinningGoals":0,"shots":7,"shootingPctg":0.142857,"faceoffWinningPctg":0.0,"powerPlayGoals":0,"blockedShots":4,"hits":2}]},
-"goalieSeasonStats":{"contextLabel":"regular_season","contextSeason":20262027,"goalies":[{"playerId":8483710,"teamId":14,"sweaterNumber":35,"name":{"default":"D. Hildeby"}},{"playerId":8478435,"teamId":4,"sweaterNumber":80,"name":{"default":"D. Vladar"},"gamesPlayed":1,"wins":0,"losses":1,"otLosses":0,"shotsAgainst":38,"goalsAgainst":7,"goalsAgainstAvg":7.03714,"savePctg":0.815789,"shutouts":0,"saves":31,"toi":"59:41"}]}}}
+{
+  "id": 2026020040,
+  "season": 20262027,
+  "gameType": 2,
+  "limitedScoring": false,
+  "gameDate": "2026-10-05",
+  "venue": {
+    "default": "Benchmark International Arena"
+  },
+  "venueLocation": {
+    "default": "Tampa"
+  },
+  "startTimeUTC": "2026-10-05T23:00:00Z",
+  "easternUTCOffset": "-04:00",
+  "venueUTCOffset": "-04:00",
+  "venueTimezone": "US/Eastern",
+  "tvBroadcasts": [
+    {
+      "id": 324,
+      "market": "N",
+      "countryCode": "US",
+      "network": "NHLN",
+      "sequenceNumber": 35
+    },
+    {
+      "id": 581,
+      "market": "H",
+      "countryCode": "US",
+      "network": "The Spot",
+      "sequenceNumber": 211
+    },
+    {
+      "id": 322,
+      "market": "A",
+      "countryCode": "US",
+      "network": "NBCSP",
+      "sequenceNumber": 389
+    }
+  ],
+  "gameState": "FUT",
+  "gameScheduleState": "OK",
+  "awayTeam": {
+    "id": 4,
+    "commonName": {
+      "default": "Flyers"
+    },
+    "abbrev": "PHI",
+    "placeName": {
+      "default": "Philadelphia",
+      "fr": "Philadelphie"
+    },
+    "placeNameWithPreposition": {
+      "default": "Philadelphia",
+      "fr": "de Philadelphie"
+    },
+    "logo": "https://assets.nhle.com/logos/nhl/svg/PHI_light.svg",
+    "darkLogo": "https://assets.nhle.com/logos/nhl/svg/PHI_dark.svg",
+    "record": "0-1-2"
+  },
+  "homeTeam": {
+    "id": 14,
+    "commonName": {
+      "default": "Lightning"
+    },
+    "abbrev": "TBL",
+    "placeName": {
+      "default": "Tampa Bay"
+    },
+    "placeNameWithPreposition": {
+      "default": "Tampa Bay",
+      "fr": "de Tampa Bay"
+    },
+    "logo": "https://assets.nhle.com/logos/nhl/svg/TBL_light.svg",
+    "darkLogo": "https://assets.nhle.com/logos/nhl/svg/TBL_dark.svg",
+    "record": "1-1-0"
+  },
+  "shootoutInUse": true,
+  "maxPeriods": 5,
+  "regPeriods": 3,
+  "otInUse": true,
+  "tiesInUse": false,
+  "ticketsLink": "https://www.ticketmaster.com/event/0D0064F8CF249D61?brand=nhl&wt.mc_id=NHL_LEAGUE_TBL_GAMECENTER_PREVIEW_GM2&utm_source=NHL.com&utm_medium=client&utm_campaign=NHL_LEAGUE_TBL&utm_content=GAMECENTER_PREVIEW_GM2",
+  "ticketsLinkFr": "https://www.ticketmaster.com/event/0D0064F8CF249D61?brand=nhl&wt.mc_id=NHL_LEAGUE_TBL_GAMECENTER_PREVIEW_GM2&utm_source=NHL.com&utm_medium=client&utm_campaign=NHL_LEAGUE_TBL&utm_content=GAMECENTER_PREVIEW_GM2",
+  "matchup": {
+    "season": 20262027,
+    "gameType": 2,
+    "skaterComparison": {
+      "contextLabel": "to_date",
+      "contextSeason": 20262027,
+      "leaders": [
+        {
+          "category": "points",
+          "awayLeader": {
+            "playerId": 8477948,
+            "name": {
+              "default": "T. Sanheim"
+            },
+            "firstName": {
+              "default": "Travis"
+            },
+            "lastName": {
+              "default": "Sanheim"
+            },
+            "sweaterNumber": 6,
+            "positionCode": "D",
+            "headshot": "https://assets.nhle.com/mugs/nhl/20262027/PHI/8477948.png",
+            "value": 2
+          },
+          "homeLeader": {
+            "playerId": 8477404,
+            "name": {
+              "default": "J. Guentzel"
+            },
+            "firstName": {
+              "default": "Jake"
+            },
+            "lastName": {
+              "default": "Guentzel"
+            },
+            "sweaterNumber": 59,
+            "positionCode": "C",
+            "headshot": "https://assets.nhle.com/mugs/nhl/20262027/TBL/8477404.png",
+            "value": 3
+          }
+        },
+        {
+          "category": "goals",
+          "awayLeader": {
+            "playerId": 8480015,
+            "name": {
+              "default": "O. Tippett"
+            },
+            "firstName": {
+              "default": "Owen"
+            },
+            "lastName": {
+              "default": "Tippett"
+            },
+            "sweaterNumber": 74,
+            "positionCode": "R",
+            "headshot": "https://assets.nhle.com/mugs/nhl/20262027/PHI/8480015.png",
+            "value": 1
+          },
+          "homeLeader": {
+            "playerId": 8477404,
+            "name": {
+              "default": "J. Guentzel"
+            },
+            "firstName": {
+              "default": "Jake"
+            },
+            "lastName": {
+              "default": "Guentzel"
+            },
+            "sweaterNumber": 59,
+            "positionCode": "C",
+            "headshot": "https://assets.nhle.com/mugs/nhl/20262027/TBL/8477404.png",
+            "value": 1
+          }
+        },
+        {
+          "category": "assists",
+          "awayLeader": {
+            "playerId": 8478439,
+            "name": {
+              "default": "T. Konecny"
+            },
+            "firstName": {
+              "default": "Travis"
+            },
+            "lastName": {
+              "default": "Konecny"
+            },
+            "sweaterNumber": 11,
+            "positionCode": "R",
+            "headshot": "https://assets.nhle.com/mugs/nhl/20262027/PHI/8478439.png",
+            "value": 2
+          },
+          "homeLeader": {
+            "playerId": 8479542,
+            "name": {
+              "default": "B. Hagel"
+            },
+            "firstName": {
+              "default": "Brandon"
+            },
+            "lastName": {
+              "default": "Hagel"
+            },
+            "sweaterNumber": 38,
+            "positionCode": "L",
+            "headshot": "https://assets.nhle.com/mugs/nhl/20262027/TBL/8479542.png",
+            "value": 2
+          }
+        }
+      ]
+    },
+    "goalieComparison": {
+      "contextLabel": "regular_season",
+      "contextSeason": 20262027,
+      "homeTeam": {
+        "teamTotals": {
+          "record": "1-1-0",
+          "gaa": 3,
+          "savePctg": 0.869565,
+          "shutouts": 0,
+          "gamesPlayed": 2
+        },
+        "leaders": [
+          {
+            "playerId": 8476883,
+            "name": {
+              "default": "A. Vasilevskiy",
+              "cs": "A. Vasilevskij",
+              "fi": "A. Vasilevski",
+              "sk": "A. Vasilevskij"
+            },
+            "firstName": {
+              "default": "Andrei",
+              "cs": "Andrej",
+              "sk": "Andrej"
+            },
+            "lastName": {
+              "default": "Vasilevskiy",
+              "cs": "Vasilevskij",
+              "fi": "Vasilevski",
+              "sk": "Vasilevskij"
+            },
+            "sweaterNumber": 88,
+            "headshot": "https://assets.nhle.com/mugs/nhl/20262027/TBL/8476883.png",
+            "positionCode": "G",
+            "gamesPlayed": 2,
+            "seasonPoints": 2,
+            "record": "1-1-0",
+            "gaa": 2.59,
+            "savePctg": 0.889,
+            "shutouts": 0
+          },
+          {
+            "playerId": 8483710,
+            "name": {
+              "default": "D. Hildeby"
+            },
+            "firstName": {
+              "default": "Dennis"
+            },
+            "lastName": {
+              "default": "Hildeby"
+            },
+            "sweaterNumber": 35,
+            "headshot": "https://assets.nhle.com/mugs/nhl/20262027/TBL/8483710.png",
+            "positionCode": "G"
+          }
+        ]
+      },
+      "awayTeam": {
+        "teamTotals": {
+          "record": "0-1-2",
+          "gaa": 4.333333,
+          "savePctg": 0.893443,
+          "shutouts": 0,
+          "gamesPlayed": 3
+        },
+        "leaders": [
+          {
+            "playerId": 8479361,
+            "name": {
+              "default": "J. Woll"
+            },
+            "firstName": {
+              "default": "Joseph"
+            },
+            "lastName": {
+              "default": "Woll"
+            },
+            "sweaterNumber": 53,
+            "headshot": "https://assets.nhle.com/mugs/nhl/20262027/PHI/8479361.png",
+            "positionCode": "G",
+            "gamesPlayed": 2,
+            "seasonPoints": 2,
+            "record": "0-0-2",
+            "gaa": 2.87,
+            "savePctg": 0.929,
+            "shutouts": 0
+          },
+          {
+            "playerId": 8478435,
+            "name": {
+              "default": "D. Vladar",
+              "cs": "D. Vladař",
+              "sk": "D. Vladař"
+            },
+            "firstName": {
+              "default": "Dan"
+            },
+            "lastName": {
+              "default": "Vladar",
+              "cs": "Vladař",
+              "sk": "Vladař"
+            },
+            "sweaterNumber": 80,
+            "headshot": "https://assets.nhle.com/mugs/nhl/20262027/PHI/8478435.png",
+            "positionCode": "G",
+            "gamesPlayed": 1,
+            "seasonPoints": 0,
+            "record": "0-1-0",
+            "gaa": 7.04,
+            "savePctg": 0.816,
+            "shutouts": 0
+          }
+        ]
+      }
+    },
+    "skaterSeasonStats": {
+      "contextLabel": "regular_season",
+      "contextSeason": 20262027,
+      "skaters": [
+        {
+          "playerId": 8483460,
+          "teamId": 4,
+          "sweaterNumber": 5,
+          "name": {
+            "default": "D.Jiricek",
+            "cs": "D.Jiříček",
+            "sk": "D.Jiříček"
+          },
+          "position": "D",
+          "gamesPlayed": 1,
+          "goals": 0,
+          "assists": 0,
+          "points": 0,
+          "plusMinus": 0,
+          "pim": 0,
+          "avgPoints": 0,
+          "avgTimeOnIce": "13:10",
+          "gameWinningGoals": 0,
+          "shots": 1,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0,
+          "powerPlayGoals": 0,
+          "blockedShots": 1,
+          "hits": 1
+        },
+        {
+          "playerId": 8477948,
+          "teamId": 4,
+          "sweaterNumber": 6,
+          "name": {
+            "default": "T. Sanheim"
+          },
+          "position": "D",
+          "gamesPlayed": 3,
+          "goals": 1,
+          "assists": 1,
+          "points": 2,
+          "plusMinus": -2,
+          "pim": 0,
+          "avgPoints": 0.67,
+          "avgTimeOnIce": "24:22",
+          "gameWinningGoals": 0,
+          "shots": 7,
+          "shootingPctg": 0.142857,
+          "faceoffWinningPctg": 0,
+          "powerPlayGoals": 0,
+          "blockedShots": 4,
+          "hits": 2
+        },
+        {
+          "playerId": 8481546,
+          "teamId": 4,
+          "sweaterNumber": 8,
+          "name": {
+            "default": "C. York"
+          },
+          "position": "D",
+          "gamesPlayed": 3,
+          "goals": 0,
+          "assists": 0,
+          "points": 0,
+          "plusMinus": -2,
+          "pim": 0,
+          "avgPoints": 0,
+          "avgTimeOnIce": "22:26",
+          "gameWinningGoals": 0,
+          "shots": 2,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0,
+          "powerPlayGoals": 0,
+          "blockedShots": 6,
+          "hits": 4
+        },
+        {
+          "playerId": 8482142,
+          "teamId": 4,
+          "sweaterNumber": 9,
+          "name": {
+            "default": "J. Drysdale"
+          },
+          "position": "D",
+          "gamesPlayed": 3,
+          "goals": 0,
+          "assists": 0,
+          "points": 0,
+          "plusMinus": -3,
+          "pim": 2,
+          "avgPoints": 0,
+          "avgTimeOnIce": "20:51",
+          "gameWinningGoals": 0,
+          "shots": 1,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0,
+          "powerPlayGoals": 0,
+          "blockedShots": 8,
+          "hits": 2
+        },
+        {
+          "playerId": 8478424,
+          "teamId": 14,
+          "sweaterNumber": 10,
+          "name": {
+            "default": "J. Harkins"
+          },
+          "position": "C",
+          "gamesPlayed": 1,
+          "goals": 0,
+          "assists": 0,
+          "points": 0,
+          "plusMinus": -1,
+          "pim": 0,
+          "avgPoints": 0,
+          "avgTimeOnIce": "10:55",
+          "gameWinningGoals": 0,
+          "shots": 1,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0,
+          "powerPlayGoals": 0,
+          "blockedShots": 0,
+          "hits": 5
+        },
+        {
+          "playerId": 8475253,
+          "teamId": 4,
+          "sweaterNumber": 10,
+          "name": {
+            "default": "G. Wilson"
+          },
+          "position": "L"
+        },
+        {
+          "playerId": 8478439,
+          "teamId": 4,
+          "sweaterNumber": 11,
+          "name": {
+            "default": "T. Konecny"
+          },
+          "position": "R",
+          "gamesPlayed": 3,
+          "goals": 0,
+          "assists": 2,
+          "points": 2,
+          "plusMinus": -2,
+          "pim": 4,
+          "avgPoints": 0.67,
+          "avgTimeOnIce": "15:58",
+          "gameWinningGoals": 0,
+          "shots": 4,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0.75,
+          "powerPlayGoals": 0,
+          "blockedShots": 3,
+          "hits": 8
+        },
+        {
+          "playerId": 8476461,
+          "teamId": 4,
+          "sweaterNumber": 14,
+          "name": {
+            "default": "S. Couturier"
+          },
+          "position": "C",
+          "gamesPlayed": 3,
+          "goals": 0,
+          "assists": 1,
+          "points": 1,
+          "plusMinus": 0,
+          "pim": 2,
+          "avgPoints": 0.33,
+          "avgTimeOnIce": "16:01",
+          "gameWinningGoals": 0,
+          "shots": 2,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0.551724,
+          "powerPlayGoals": 0,
+          "blockedShots": 0,
+          "hits": 2
+        },
+        {
+          "playerId": 8483752,
+          "teamId": 14,
+          "sweaterNumber": 17,
+          "name": {
+            "default": "D. James"
+          },
+          "position": "C"
+        },
+        {
+          "playerId": 8483733,
+          "teamId": 4,
+          "sweaterNumber": 17,
+          "name": {
+            "default": "N. Grebenkin"
+          },
+          "position": "R"
+        },
+        {
+          "playerId": 8483731,
+          "teamId": 4,
+          "sweaterNumber": 20,
+          "name": {
+            "default": "A. Bump"
+          },
+          "position": "L",
+          "gamesPlayed": 3,
+          "goals": 0,
+          "assists": 0,
+          "points": 0,
+          "plusMinus": 0,
+          "pim": 0,
+          "avgPoints": 0,
+          "avgTimeOnIce": "12:08",
+          "gameWinningGoals": 0,
+          "shots": 4,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0,
+          "powerPlayGoals": 0,
+          "blockedShots": 0,
+          "hits": 7
+        },
+        {
+          "playerId": 8478010,
+          "teamId": 14,
+          "sweaterNumber": 21,
+          "name": {
+            "default": "B. Point"
+          },
+          "position": "C",
+          "gamesPlayed": 2,
+          "goals": 0,
+          "assists": 1,
+          "points": 1,
+          "plusMinus": 1,
+          "pim": 2,
+          "avgPoints": 0.5,
+          "avgTimeOnIce": "21:35",
+          "gameWinningGoals": 0,
+          "shots": 4,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0.333333,
+          "powerPlayGoals": 0,
+          "blockedShots": 2,
+          "hits": 0
+        },
+        {
+          "playerId": 8477989,
+          "teamId": 4,
+          "sweaterNumber": 22,
+          "name": {
+            "default": "C. Dvorak"
+          },
+          "position": "C",
+          "gamesPlayed": 3,
+          "goals": 0,
+          "assists": 1,
+          "points": 1,
+          "plusMinus": -1,
+          "pim": 2,
+          "avgPoints": 0.33,
+          "avgTimeOnIce": "16:44",
+          "gameWinningGoals": 0,
+          "shots": 4,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0.581395,
+          "powerPlayGoals": 0,
+          "blockedShots": 3,
+          "hits": 5
+        },
+        {
+          "playerId": 8476372,
+          "teamId": 4,
+          "sweaterNumber": 24,
+          "name": {
+            "default": "N. Seeler"
+          },
+          "position": "D",
+          "gamesPlayed": 3,
+          "goals": 0,
+          "assists": 0,
+          "points": 0,
+          "plusMinus": 0,
+          "pim": 4,
+          "avgPoints": 0,
+          "avgTimeOnIce": "17:35",
+          "gameWinningGoals": 0,
+          "shots": 1,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0,
+          "powerPlayGoals": 0,
+          "blockedShots": 10,
+          "hits": 3
+        },
+        {
+          "playerId": 8481719,
+          "teamId": 14,
+          "sweaterNumber": 24,
+          "name": {
+            "default": "M. Crozier"
+          },
+          "position": "D"
+        },
+        {
+          "playerId": 8479705,
+          "teamId": 14,
+          "sweaterNumber": 25,
+          "name": {
+            "default": "J. Viel"
+          },
+          "position": "L",
+          "gamesPlayed": 2,
+          "goals": 0,
+          "assists": 0,
+          "points": 0,
+          "plusMinus": -3,
+          "pim": 2,
+          "avgPoints": 0,
+          "avgTimeOnIce": "8:12",
+          "gameWinningGoals": 0,
+          "shots": 2,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0,
+          "powerPlayGoals": 0,
+          "blockedShots": 1,
+          "hits": 12
+        },
+        {
+          "playerId": 8480220,
+          "teamId": 4,
+          "sweaterNumber": 27,
+          "name": {
+            "default": "N. Cates"
+          },
+          "position": "L",
+          "gamesPlayed": 3,
+          "goals": 0,
+          "assists": 0,
+          "points": 0,
+          "plusMinus": -2,
+          "pim": 0,
+          "avgPoints": 0,
+          "avgTimeOnIce": "12:54",
+          "gameWinningGoals": 0,
+          "shots": 3,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0.53125,
+          "powerPlayGoals": 0,
+          "blockedShots": 1,
+          "hits": 0
+        },
+        {
+          "playerId": 8474151,
+          "teamId": 14,
+          "sweaterNumber": 27,
+          "name": {
+            "default": "R. McDonagh"
+          },
+          "position": "D",
+          "gamesPlayed": 2,
+          "goals": 0,
+          "assists": 0,
+          "points": 0,
+          "plusMinus": -1,
+          "pim": 2,
+          "avgPoints": 0,
+          "avgTimeOnIce": "15:49",
+          "gameWinningGoals": 0,
+          "shots": 1,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0,
+          "powerPlayGoals": 0,
+          "blockedShots": 3,
+          "hits": 1
+        },
+        {
+          "playerId": 8476878,
+          "teamId": 14,
+          "sweaterNumber": 28,
+          "name": {
+            "default": "Z. Girgensons"
+          },
+          "position": "C",
+          "gamesPlayed": 2,
+          "goals": 0,
+          "assists": 0,
+          "points": 0,
+          "plusMinus": -1,
+          "pim": 2,
+          "avgPoints": 0,
+          "avgTimeOnIce": "11:03",
+          "gameWinningGoals": 0,
+          "shots": 1,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0.5,
+          "powerPlayGoals": 0,
+          "blockedShots": 3,
+          "hits": 7
+        },
+        {
+          "playerId": 8480995,
+          "teamId": 14,
+          "sweaterNumber": 29,
+          "name": {
+            "default": "P. Holmberg"
+          },
+          "position": "R",
+          "gamesPlayed": 2,
+          "goals": 0,
+          "assists": 0,
+          "points": 0,
+          "plusMinus": -1,
+          "pim": 2,
+          "avgPoints": 0,
+          "avgTimeOnIce": "15:12",
+          "gameWinningGoals": 0,
+          "shots": 3,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 1,
+          "powerPlayGoals": 0,
+          "blockedShots": 0,
+          "hits": 1
+        },
+        {
+          "playerId": 8476826,
+          "teamId": 14,
+          "sweaterNumber": 37,
+          "name": {
+            "default": "Y. Gourde"
+          },
+          "position": "C"
+        },
+        {
+          "playerId": 8479542,
+          "teamId": 14,
+          "sweaterNumber": 38,
+          "name": {
+            "default": "B. Hagel"
+          },
+          "position": "L",
+          "gamesPlayed": 2,
+          "goals": 0,
+          "assists": 2,
+          "points": 2,
+          "plusMinus": 1,
+          "pim": 0,
+          "avgPoints": 1,
+          "avgTimeOnIce": "22:54",
+          "gameWinningGoals": 0,
+          "shots": 9,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0.333333,
+          "powerPlayGoals": 0,
+          "blockedShots": 0,
+          "hits": 1
+        },
+        {
+          "playerId": 8484387,
+          "teamId": 4,
+          "sweaterNumber": 39,
+          "name": {
+            "default": "M. Michkov",
+            "cs": "M. Mičkov",
+            "fi": "M. Mitshkov",
+            "sk": "M. Mičkov"
+          },
+          "position": "R",
+          "gamesPlayed": 3,
+          "goals": 1,
+          "assists": 0,
+          "points": 1,
+          "plusMinus": -2,
+          "pim": 2,
+          "avgPoints": 0.33,
+          "avgTimeOnIce": "15:06",
+          "gameWinningGoals": 0,
+          "shots": 4,
+          "shootingPctg": 0.25,
+          "faceoffWinningPctg": 1,
+          "powerPlayGoals": 0,
+          "blockedShots": 3,
+          "hits": 0
+        },
+        {
+          "playerId": 8481122,
+          "teamId": 4,
+          "sweaterNumber": 44,
+          "name": {
+            "default": "S. Benoit"
+          },
+          "position": "D",
+          "gamesPlayed": 2,
+          "goals": 0,
+          "assists": 0,
+          "points": 0,
+          "plusMinus": -1,
+          "pim": 2,
+          "avgPoints": 0,
+          "avgTimeOnIce": "15:59",
+          "gameWinningGoals": 0,
+          "shots": 1,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0,
+          "powerPlayGoals": 0,
+          "blockedShots": 0,
+          "hits": 4
+        },
+        {
+          "playerId": 8481533,
+          "teamId": 4,
+          "sweaterNumber": 46,
+          "name": {
+            "default": "T. Zegras"
+          },
+          "position": "C",
+          "gamesPlayed": 3,
+          "goals": 0,
+          "assists": 1,
+          "points": 1,
+          "plusMinus": -1,
+          "pim": 2,
+          "avgPoints": 0.33,
+          "avgTimeOnIce": "18:50",
+          "gameWinningGoals": 0,
+          "shots": 2,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0.363636,
+          "powerPlayGoals": 0,
+          "blockedShots": 0,
+          "hits": 0
+        },
+        {
+          "playerId": 8477149,
+          "teamId": 14,
+          "sweaterNumber": 49,
+          "name": {
+            "default": "S. Sabourin"
+          },
+          "position": "R"
+        },
+        {
+          "playerId": 8480426,
+          "teamId": 14,
+          "sweaterNumber": 51,
+          "name": {
+            "default": "C. D'Astous"
+          },
+          "position": "D",
+          "gamesPlayed": 2,
+          "goals": 1,
+          "assists": 0,
+          "points": 1,
+          "plusMinus": 0,
+          "pim": 0,
+          "avgPoints": 0.5,
+          "avgTimeOnIce": "16:27",
+          "gameWinningGoals": 0,
+          "shots": 3,
+          "shootingPctg": 0.333333,
+          "faceoffWinningPctg": 0,
+          "powerPlayGoals": 0,
+          "blockedShots": 3,
+          "hits": 2
+        },
+        {
+          "playerId": 8478569,
+          "teamId": 4,
+          "sweaterNumber": 52,
+          "name": {
+            "default": "N. Acciari"
+          },
+          "position": "C",
+          "gamesPlayed": 3,
+          "goals": 0,
+          "assists": 0,
+          "points": 0,
+          "plusMinus": -3,
+          "pim": 2,
+          "avgPoints": 0,
+          "avgTimeOnIce": "15:56",
+          "gameWinningGoals": 0,
+          "shots": 2,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0.585366,
+          "powerPlayGoals": 0,
+          "blockedShots": 5,
+          "hits": 8
+        },
+        {
+          "playerId": 8477499,
+          "teamId": 4,
+          "sweaterNumber": 55,
+          "name": {
+            "default": "R. Ristolainen"
+          },
+          "position": "D",
+          "gamesPlayed": 3,
+          "goals": 1,
+          "assists": 0,
+          "points": 1,
+          "plusMinus": 0,
+          "pim": 0,
+          "avgPoints": 0.33,
+          "avgTimeOnIce": "18:17",
+          "gameWinningGoals": 0,
+          "shots": 4,
+          "shootingPctg": 0.25,
+          "faceoffWinningPctg": 0,
+          "powerPlayGoals": 0,
+          "blockedShots": 7,
+          "hits": 4
+        },
+        {
+          "playerId": 8477404,
+          "teamId": 14,
+          "sweaterNumber": 59,
+          "name": {
+            "default": "J. Guentzel"
+          },
+          "position": "C",
+          "gamesPlayed": 2,
+          "goals": 1,
+          "assists": 2,
+          "points": 3,
+          "plusMinus": 2,
+          "pim": 0,
+          "avgPoints": 1.5,
+          "avgTimeOnIce": "21:10",
+          "gameWinningGoals": 0,
+          "shots": 5,
+          "shootingPctg": 0.2,
+          "faceoffWinningPctg": 0.625,
+          "powerPlayGoals": 0,
+          "blockedShots": 1,
+          "hits": 1
+        },
+        {
+          "playerId": 8478519,
+          "teamId": 14,
+          "sweaterNumber": 71,
+          "name": {
+            "default": "A. Cirelli"
+          },
+          "position": "C",
+          "gamesPlayed": 2,
+          "goals": 0,
+          "assists": 0,
+          "points": 0,
+          "plusMinus": 0,
+          "pim": 0,
+          "avgPoints": 0,
+          "avgTimeOnIce": "18:49",
+          "gameWinningGoals": 0,
+          "shots": 4,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0.533333,
+          "powerPlayGoals": 0,
+          "blockedShots": 3,
+          "hits": 2
+        },
+        {
+          "playerId": 8482159,
+          "teamId": 4,
+          "sweaterNumber": 71,
+          "name": {
+            "default": "T. Foerster"
+          },
+          "position": "R",
+          "gamesPlayed": 3,
+          "goals": 0,
+          "assists": 0,
+          "points": 0,
+          "plusMinus": -3,
+          "pim": 0,
+          "avgPoints": 0,
+          "avgTimeOnIce": "18:14",
+          "gameWinningGoals": 0,
+          "shots": 6,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0,
+          "powerPlayGoals": 0,
+          "blockedShots": 1,
+          "hits": 5
+        },
+        {
+          "playerId": 8474590,
+          "teamId": 14,
+          "sweaterNumber": 74,
+          "name": {
+            "default": "J. Carlson"
+          },
+          "position": "D",
+          "gamesPlayed": 2,
+          "goals": 0,
+          "assists": 1,
+          "points": 1,
+          "plusMinus": -1,
+          "pim": 0,
+          "avgPoints": 0.5,
+          "avgTimeOnIce": "22:08",
+          "gameWinningGoals": 0,
+          "shots": 4,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0,
+          "powerPlayGoals": 0,
+          "blockedShots": 3,
+          "hits": 1
+        },
+        {
+          "playerId": 8480015,
+          "teamId": 4,
+          "sweaterNumber": 74,
+          "name": {
+            "default": "O. Tippett"
+          },
+          "position": "R",
+          "gamesPlayed": 3,
+          "goals": 1,
+          "assists": 0,
+          "points": 1,
+          "plusMinus": 0,
+          "pim": 2,
+          "avgPoints": 0.33,
+          "avgTimeOnIce": "16:01",
+          "gameWinningGoals": 0,
+          "shots": 9,
+          "shootingPctg": 0.111111,
+          "faceoffWinningPctg": 0,
+          "powerPlayGoals": 0,
+          "blockedShots": 2,
+          "hits": 13
+        },
+        {
+          "playerId": 8475167,
+          "teamId": 14,
+          "sweaterNumber": 77,
+          "name": {
+            "default": "V. Hedman"
+          },
+          "position": "D",
+          "gamesPlayed": 2,
+          "goals": 0,
+          "assists": 0,
+          "points": 0,
+          "plusMinus": 1,
+          "pim": 0,
+          "avgPoints": 0,
+          "avgTimeOnIce": "15:40",
+          "gameWinningGoals": 0,
+          "shots": 3,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0,
+          "powerPlayGoals": 0,
+          "blockedShots": 8,
+          "hits": 2
+        },
+        {
+          "playerId": 8482929,
+          "teamId": 14,
+          "sweaterNumber": 78,
+          "name": {
+            "default": "E. Lilleberg"
+          },
+          "position": "D",
+          "gamesPlayed": 1,
+          "goals": 0,
+          "assists": 0,
+          "points": 0,
+          "plusMinus": 0,
+          "pim": 5,
+          "avgPoints": 0,
+          "avgTimeOnIce": "10:30",
+          "gameWinningGoals": 0,
+          "shots": 1,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0,
+          "powerPlayGoals": 0,
+          "blockedShots": 0,
+          "hits": 3
+        },
+        {
+          "playerId": 8478416,
+          "teamId": 14,
+          "sweaterNumber": 81,
+          "name": {
+            "default": "E. Cernak",
+            "cs": "E. Černák",
+            "sk": "E. Černák"
+          },
+          "position": "D",
+          "gamesPlayed": 2,
+          "goals": 0,
+          "assists": 0,
+          "points": 0,
+          "plusMinus": 0,
+          "pim": 0,
+          "avgPoints": 0,
+          "avgTimeOnIce": "18:17",
+          "gameWinningGoals": 0,
+          "shots": 5,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0,
+          "powerPlayGoals": 0,
+          "blockedShots": 3,
+          "hits": 8
+        },
+        {
+          "playerId": 8484142,
+          "teamId": 4,
+          "sweaterNumber": 86,
+          "name": {
+            "default": "D. Barkey"
+          },
+          "position": "C"
+        },
+        {
+          "playerId": 8476453,
+          "teamId": 14,
+          "sweaterNumber": 86,
+          "name": {
+            "default": "N. Kucherov",
+            "cs": "N. Kučerov",
+            "fi": "N. Kutsherov",
+            "sk": "N. Kučerov"
+          },
+          "position": "R",
+          "gamesPlayed": 2,
+          "goals": 1,
+          "assists": 1,
+          "points": 2,
+          "plusMinus": 0,
+          "pim": 0,
+          "avgPoints": 1,
+          "avgTimeOnIce": "23:27",
+          "gameWinningGoals": 0,
+          "shots": 4,
+          "shootingPctg": 0.25,
+          "faceoffWinningPctg": 1,
+          "powerPlayGoals": 0,
+          "blockedShots": 1,
+          "hits": 0
+        },
+        {
+          "playerId": 8482655,
+          "teamId": 14,
+          "sweaterNumber": 90,
+          "name": {
+            "default": "J. Moser"
+          },
+          "position": "D",
+          "gamesPlayed": 2,
+          "goals": 0,
+          "assists": 0,
+          "points": 0,
+          "plusMinus": 0,
+          "pim": 4,
+          "avgPoints": 0,
+          "avgTimeOnIce": "17:09",
+          "gameWinningGoals": 0,
+          "shots": 0,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0,
+          "powerPlayGoals": 0,
+          "blockedShots": 2,
+          "hits": 2
+        },
+        {
+          "playerId": 8479336,
+          "teamId": 4,
+          "sweaterNumber": 91,
+          "name": {
+            "default": "C. Grundstrom",
+            "cs": "C. Grundström",
+            "fi": "C. Grundström",
+            "sk": "C. Grundström",
+            "sv": "C. Grundström"
+          },
+          "position": "R",
+          "gamesPlayed": 3,
+          "goals": 0,
+          "assists": 0,
+          "points": 0,
+          "plusMinus": 0,
+          "pim": 0,
+          "avgPoints": 0,
+          "avgTimeOnIce": "11:25",
+          "gameWinningGoals": 0,
+          "shots": 3,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0,
+          "powerPlayGoals": 0,
+          "blockedShots": 3,
+          "hits": 11
+        },
+        {
+          "playerId": 8482201,
+          "teamId": 14,
+          "sweaterNumber": 93,
+          "name": {
+            "default": "G. Goncalves"
+          },
+          "position": "C",
+          "gamesPlayed": 2,
+          "goals": 0,
+          "assists": 0,
+          "points": 0,
+          "plusMinus": -2,
+          "pim": 0,
+          "avgPoints": 0,
+          "avgTimeOnIce": "13:58",
+          "gameWinningGoals": 0,
+          "shots": 0,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0,
+          "powerPlayGoals": 0,
+          "blockedShots": 0,
+          "hits": 2
+        },
+        {
+          "playerId": 8485406,
+          "teamId": 4,
+          "sweaterNumber": 94,
+          "name": {
+            "default": "P. Martone"
+          },
+          "position": "R",
+          "gamesPlayed": 3,
+          "goals": 0,
+          "assists": 0,
+          "points": 0,
+          "plusMinus": 0,
+          "pim": 2,
+          "avgPoints": 0,
+          "avgTimeOnIce": "12:31",
+          "gameWinningGoals": 0,
+          "shots": 2,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0,
+          "powerPlayGoals": 0,
+          "blockedShots": 0,
+          "hits": 2
+        },
+        {
+          "playerId": 8483447,
+          "teamId": 14,
+          "sweaterNumber": 94,
+          "name": {
+            "default": "C. Geekie"
+          },
+          "position": "C",
+          "gamesPlayed": 2,
+          "goals": 1,
+          "assists": 0,
+          "points": 1,
+          "plusMinus": 0,
+          "pim": 0,
+          "avgPoints": 0.5,
+          "avgTimeOnIce": "10:51",
+          "gameWinningGoals": 1,
+          "shots": 2,
+          "shootingPctg": 0.5,
+          "faceoffWinningPctg": 0.666667,
+          "powerPlayGoals": 0,
+          "blockedShots": 0,
+          "hits": 6
+        },
+        {
+          "playerId": 8481624,
+          "teamId": 14,
+          "sweaterNumber": 95,
+          "name": {
+            "default": "I. Mikheyev",
+            "cs": "I. Michejev",
+            "fi": "I. Mihejev",
+            "sk": "I. Michejev"
+          },
+          "position": "R",
+          "gamesPlayed": 2,
+          "goals": 0,
+          "assists": 1,
+          "points": 1,
+          "plusMinus": -1,
+          "pim": 0,
+          "avgPoints": 0.5,
+          "avgTimeOnIce": "12:27",
+          "gameWinningGoals": 0,
+          "shots": 2,
+          "shootingPctg": 0,
+          "faceoffWinningPctg": 0,
+          "powerPlayGoals": 0,
+          "blockedShots": 2,
+          "hits": 5
+        }
+      ]
+    },
+    "goalieSeasonStats": {
+      "contextLabel": "regular_season",
+      "contextSeason": 20262027,
+      "goalies": [
+        {
+          "playerId": 8483710,
+          "teamId": 14,
+          "sweaterNumber": 35,
+          "name": {
+            "default": "D. Hildeby"
+          }
+        },
+        {
+          "playerId": 8478435,
+          "teamId": 4,
+          "sweaterNumber": 80,
+          "name": {
+            "default": "D. Vladar",
+            "cs": "D. Vladař",
+            "sk": "D. Vladař"
+          },
+          "gamesPlayed": 1,
+          "wins": 0,
+          "losses": 1,
+          "otLosses": 0,
+          "shotsAgainst": 38,
+          "goalsAgainst": 7,
+          "goalsAgainstAvg": 7.03714,
+          "savePctg": 0.815789,
+          "shutouts": 0,
+          "saves": 31,
+          "toi": "59:41"
+        },
+        {
+          "playerId": 8476883,
+          "teamId": 14,
+          "sweaterNumber": 88,
+          "name": {
+            "default": "A. Vasilevskiy",
+            "cs": "A. Vasilevskij",
+            "fi": "A. Vasilevski",
+            "sk": "A. Vasilevskij"
+          },
+          "gamesPlayed": 2,
+          "wins": 1,
+          "losses": 1,
+          "otLosses": 0,
+          "shotsAgainst": 45,
+          "goalsAgainst": 5,
+          "goalsAgainstAvg": 2.589183,
+          "savePctg": 0.888889,
+          "shutouts": 0,
+          "saves": 40,
+          "toi": "115:52"
+        },
+        {
+          "playerId": 8479361,
+          "teamId": 4,
+          "sweaterNumber": 53,
+          "name": {
+            "default": "J. Woll"
+          },
+          "gamesPlayed": 2,
+          "wins": 0,
+          "losses": 0,
+          "otLosses": 2,
+          "shotsAgainst": 84,
+          "goalsAgainst": 6,
+          "goalsAgainstAvg": 2.865862,
+          "savePctg": 0.928571,
+          "shutouts": 0,
+          "saves": 78,
+          "toi": "125:37"
+        }
+      ]
+    }
+  }
+}

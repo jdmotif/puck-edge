@@ -91,7 +91,9 @@ function wrap(raw: DatabaseSync): Sqlite {
         // Nested calls join the outer transaction.
         if (depth > 0) return fn();
         depth++;
-        raw.exec("BEGIN");
+        // IMMEDIATE takes the write lock up front, so busy_timeout applies while `npm run sync`
+        // writes; a deferred BEGIN that reads then writes fails at once with "database is locked".
+        raw.exec("BEGIN IMMEDIATE");
         try {
           const out = fn();
           raw.exec("COMMIT");

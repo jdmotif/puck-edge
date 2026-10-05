@@ -1,8 +1,9 @@
-// Market odds: moneylines embedded in the NHL schedule, plus an optional The Odds API adapter
-// for totals and puck lines. Everything degrades to "no odds" without breaking the picks.
+// Market odds: moneylines embedded in the NHL schedule, totals and puck lines from the NHL's
+// partner-game feed (one book per country), plus an optional The Odds API adapter.
+// Everything degrades to "no odds" without breaking the picks.
 import { sqlite } from "@/db";
 import { overround, parseOdds, removeMargin } from "@/lib/model/math";
-import type { OddsPartner, ScheduleGame } from "@/lib/nhl/types";
+import type { OddsPartner, PartnerGameResponse, ScheduleGame } from "@/lib/nhl/types";
 
 export interface SidePrice {
   fair: number; // margin-free probability, averaged across books
@@ -20,7 +21,13 @@ export interface MarketOdds {
 
 const MAX_OVERROUND = 0.12; // anything above this is probably a 3-way (regulation) price
 
-function combine(pairs: { book: string; a: number; b: number }[]): [SidePrice, SidePrice] | null {
+type Pair = { book: string; a: number; b: number; local?: boolean };
+
+/**
+ * Margin-free consensus across every book; the best price only from books the user can bet at
+ * (`local`), when any of them prices the market.
+ */
+function combine(pairs: Pair[]): [SidePrice, SidePrice] | null {
   const valid = pairs.filter((p) => {
     const o = overround([p.a, p.b]);
     return o >= -0.01 && o <= MAX_OVERROUND;
@@ -35,8 +42,9 @@ function combine(pairs: { book: string; a: number; b: number }[]): [SidePrice, S
     valid.splice(0, valid.length, ...kept);
   }
   const fairA = valid.reduce((s, p) => s + removeMargin([p.a, p.b])[0], 0) / valid.length;
-  const bestA = valid.reduce((m, p) => (p.a > m.a ? p : m), valid[0]);
-  const bestB = valid.reduce((m, p) => (p.b > m.b ? p : m), valid[0]);
+  const bettable = valid.some((p) => p.local) ? valid.filter((p) => p.local) : valid;
+  const bestA = bettable.reduce((m, p) => (p.a > m.a ? p : m), bettable[0]);
+  const bestB = bettable.reduce((m, p) => (p.b > m.b ? p : m), bettable[0]);
   return [
     { fair: fairA, best: bestA.a, bestBook: bestA.book, books: valid.length },
     { fair: 1 - fairA, best: bestB.b, bestBook: bestB.book, books: valid.length },
@@ -44,20 +52,52 @@ function combine(pairs: { book: string; a: number; b: number }[]): [SidePrice, S
 }
 
 /** Moneyline from the `odds` arrays the NHL schedule attaches to each team. */
-export function scheduleMoneyline(game: ScheduleGame, partners: OddsPartner[] = []): MarketOdds["moneyline"] {
+export function scheduleMoneyline(game: ScheduleGame, partners: OddsPartner[] = [], country?: string): MarketOdds["moneyline"] {
   const away = game.awayTeam.odds ?? [];
   const home = game.homeTeam.odds ?? [];
-  const pairs: { book: string; a: number; b: number }[] = [];
+  const pairs: Pair[] = [];
   for (const h of home) {
     const a = away.find((o) => o.providerId === h.providerId);
     const hd = parseOdds(h.value);
     const ad = a ? parseOdds(a.value) : null;
     if (!hd || !ad) continue;
-    const name = partners.find((p) => p.partnerId === h.providerId)?.name ?? `Book ${h.providerId}`;
-    pairs.push({ book: name, a: hd, b: ad });
+    const partner = partners.find((p) => p.partnerId === h.providerId);
+    pairs.push({ book: partner?.name ?? `Book ${h.providerId}`, a: hd, b: ad, local: !!country && partner?.country === country });
   }
   const c = combine(pairs);
   return c ? { home: c[0], away: c[1] } : undefined;
+}
+
+// ---------- partner-game/{country}/now ----------
+
+export type PartnerGame = PartnerGameResponse["games"][number];
+
+/** Totals and puck line from the country's betting partner (e.g. FanDuel in CA, DraftKings in US). */
+export function partnerMarkets(pg: PartnerGame, book: string): Omit<MarketOdds, "sources" | "moneyline"> {
+  const out: Omit<MarketOdds, "sources" | "moneyline"> = {};
+  const find = (odds: PartnerGame["homeTeam"]["odds"], desc: string) => odds.find((o) => o.description === desc);
+  const ho = find(pg.homeTeam.odds, "OVER_UNDER");
+  const ao = find(pg.awayTeam.odds, "OVER_UNDER");
+  // The over sits on one team and the under on the other, e.g. "O5.5" / "U5.5".
+  const over = [ho, ao].find((o) => o?.qualifier.startsWith("O"));
+  const under = [ho, ao].find((o) => o?.qualifier.startsWith("U"));
+  const line = over ? Number(over.qualifier.slice(1)) : NaN;
+  if (over && under && Number.isFinite(line) && Number(under.qualifier.slice(1)) === line) {
+    const a = parseOdds(over.value);
+    const b = parseOdds(under.value);
+    const c = a && b ? combine([{ book, a, b, local: true }]) : null;
+    if (c) out.total = { line, over: c[0], under: c[1] };
+  }
+  const hp = find(pg.homeTeam.odds, "PUCK_LINE");
+  const ap = find(pg.awayTeam.odds, "PUCK_LINE");
+  const homeLine = hp ? Number(hp.qualifier) : NaN;
+  if (hp && ap && Math.abs(homeLine) === 1.5 && Number(ap.qualifier) === -homeLine) {
+    const a = parseOdds(hp.value);
+    const b = parseOdds(ap.value);
+    const c = a && b ? combine([{ book, a, b, local: true }]) : null;
+    if (c) out.puckline = { homeLine, home: c[0], away: c[1] };
+  }
+  return out;
 }
 
 // ---------- The Odds API (optional) ----------
@@ -113,9 +153,9 @@ export function findEvent(events: OddsApiEvent[], game: ScheduleGame) {
 
 export function oddsApiMarkets(ev: OddsApiEvent): Omit<MarketOdds, "sources"> {
   const out: Omit<MarketOdds, "sources"> = {};
-  const h2h: { book: string; a: number; b: number }[] = [];
-  const totals = new Map<number, { book: string; a: number; b: number }[]>();
-  const spreads = new Map<number, { book: string; a: number; b: number }[]>();
+  const h2h: Pair[] = [];
+  const totals = new Map<number, Pair[]>();
+  const spreads = new Map<number, Pair[]>();
   for (const bk of ev.bookmakers) {
     for (const m of bk.markets) {
       if (m.key === "h2h") {
@@ -158,14 +198,26 @@ export function oddsApiMarkets(ev: OddsApiEvent): Omit<MarketOdds, "sources"> {
   return out;
 }
 
-/** All market odds we can find for a scheduled game. */
-export function marketFor(game: ScheduleGame, partners: OddsPartner[], events: OddsApiEvent[]): MarketOdds {
+/** All market odds we can find for a scheduled game. `country` limits "best price" to books the user can bet at. */
+export function marketFor(
+  game: ScheduleGame,
+  partners: OddsPartner[],
+  events: OddsApiEvent[],
+  partnerGame?: { game: PartnerGame; book: string },
+  country?: string,
+): MarketOdds {
   const sources: string[] = [];
   const out: MarketOdds = { sources };
-  const ml = scheduleMoneyline(game, partners);
+  const ml = scheduleMoneyline(game, partners, country);
   if (ml) {
     out.moneyline = ml;
     sources.push("NHL schedule odds");
+  }
+  if (partnerGame) {
+    const m = partnerMarkets(partnerGame.game, partnerGame.book);
+    if (m.total) out.total = m.total;
+    if (m.puckline) out.puckline = m.puckline;
+    if (m.total || m.puckline) sources.push(`${partnerGame.book} (NHL partner feed)`);
   }
   const ev = findEvent(events, game);
   if (ev) {

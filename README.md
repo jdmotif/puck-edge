@@ -41,8 +41,12 @@ While the app is open it also pulls in games from the last two days in the backg
 
 ### Odds (optional)
 
-The NHL schedule feed already includes moneyline prices from several books, so moneyline edges work with no setup.
-For **totals and puck-line prices**, add a free key from [The Odds API](https://the-odds-api.com):
+The NHL schedule feed already includes moneyline prices from several books, and the NHL's `partner-game/{country}/now`
+feed adds **totals and puck-line prices** from that country's betting partner (FanDuel in Canada, DraftKings in the US),
+so all three game markets have edges with no setup. Pick your country under Settings → "Where you bet"; best prices are
+limited to that country's books, while the margin-free market probability still averages every book.
+
+For more books (and a fallback if the partner feed has no line for a game), add a free key from [The Odds API](https://the-odds-api.com):
 
 ```bash
 cp .env.example .env
@@ -52,7 +56,7 @@ ODDS_API_REGION=us     # us, us2, uk, eu or au
 ```
 
 Responses are cached for 15 minutes to save quota (one request covers every game).
-Without a key, totals and puck lines are shown as **model-only** picks (probability, no edge).
+When no feed prices a market, its pick is shown as **model-only** (probability, no edge).
 Player props are always model-only: neither free feed carries prop prices.
 
 ## Pages

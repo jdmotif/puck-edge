@@ -1,9 +1,9 @@
 import { sqlite } from "@/db";
 import { api } from "@/lib/nhl/client";
 import { GameLogChart, type LogPoint } from "@/components/GameLogChart";
-import { Card, Empty, PageTitle, StaleBanner, Tabs } from "@/components/ui";
+import { Card, Empty, PageTitle, StaleBanner, StatTile, TEAM_COLORS, Tabs } from "@/components/ui";
 import type { PlayerGameLogEntry } from "@/lib/nhl/types";
-import { svPct } from "@/lib/format";
+import { svPct, toiFmt } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -30,9 +30,12 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
 
   return (
     <>
-      <div className="mb-4 flex items-center gap-4">
+      <div
+        className="card mb-5 flex items-center gap-4 px-5 pt-5 [&>div]:mb-0 [&>div]:pb-5"
+        style={{ background: `linear-gradient(110deg, color-mix(in srgb, ${TEAM_COLORS[p.currentTeamAbbrev ?? ""] ?? "#3d6bff"} 28%, var(--surface)) 0%, var(--surface) 65%)` }}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={p.headshot} alt="" width={72} height={72} className="rounded-full bg-surface-2" />
+        <img src={p.headshot} alt="" width={88} height={88} className="self-end rounded-t-full bg-surface-2/60" />
         <PageTitle sub={`${p.position} · #${p.sweaterNumber ?? "–"} · ${p.fullTeamName?.default ?? "Free agent"} · born ${p.birthDate}`}>
           {p.firstName.default} {p.lastName.default}
         </PageTitle>
@@ -64,9 +67,9 @@ async function SkaterLog({ id, season, line }: { id: number; season: number; lin
   const opps = [...new Set(games.map((g) => g.opponentAbbrev))].sort();
   const vs = opps.map((o) => ({ o, ...split(games.filter((g) => g.opponentAbbrev === o)) })).sort((a, b) => b.gp - a.gp || b.p - a.p);
   const Row = ({ label, s }: { label: string; s: ReturnType<typeof split> }) => (
-    <tr className="border-t border-line [&>td]:px-2 [&>td]:py-1 [&>td]:text-right">
+    <tr className="border-t border-line [&>td]:px-2 [&>td]:py-2 [&>td]:text-right">
       <td className="!text-left">{label}</td><td>{s.gp}</td><td>{s.g}</td><td>{s.a}</td><td className="font-semibold">{s.p}</td>
-      <td>{s.gp ? (s.p / s.gp).toFixed(2) : "–"}</td><td>{s.sog}</td><td>{s.gp ? `${Math.floor(s.toi / 60)}:${String(Math.round(s.toi % 60)).padStart(2, "0")}` : "–"}</td>
+      <td>{s.gp ? (s.p / s.gp).toFixed(2) : "–"}</td><td>{s.sog}</td><td>{s.gp ? toiFmt(s.toi) : "–"}</td>
     </tr>
   );
   return (
@@ -74,17 +77,17 @@ async function SkaterLog({ id, season, line }: { id: number; season: number; lin
       <StaleBanner items={[log]} />
       <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
         {[["GP", line.gp], ["G", line.g], ["A", line.a], ["P", line.p], ["PPP", line.ppp], ["SOG", line.sog]].map(([k, v]) => (
-          <Card key={k} className="!p-3 text-center"><div className="text-xs text-muted">{k}</div><div className="tabular text-xl font-semibold">{v}</div></Card>
+          <StatTile key={k} label={k} value={v} />
         ))}
       </div>
       <Card>
-        <h2 className="mb-2 text-sm font-semibold">Game log</h2>
+        <h2 className="mb-2 font-display text-lg font-bold uppercase tracking-wide">Game log</h2>
         {points.length ? <GameLogChart points={points} labelA="Goals" labelB="Assists" /> : <p className="text-sm text-muted">No games this season yet.</p>}
       </Card>
       <Card className="overflow-x-auto !p-0">
-        <h2 className="px-3 pt-3 text-sm font-semibold">Splits</h2>
+        <h2 className="px-3 pt-3 font-display text-lg font-bold uppercase tracking-wide">Splits</h2>
         <table className="tabular mt-2 w-full min-w-[480px] text-sm">
-          <thead className="text-xs text-muted"><tr className="[&>th]:px-2 [&>th]:py-1 [&>th]:text-right [&>th:first-child]:text-left"><th>Split</th><th>GP</th><th>G</th><th>A</th><th>P</th><th>P/GP</th><th>SOG</th><th>TOI</th></tr></thead>
+          <thead className="text-xs text-muted"><tr className="[&>th]:px-2 [&>th]:py-2 [&>th]:text-right [&>th:first-child]:text-left"><th>Split</th><th>GP</th><th>G</th><th>A</th><th>P</th><th>P/GP</th><th>SOG</th><th>TOI</th></tr></thead>
           <tbody>
             <Row label="Home" s={home} />
             <Row label="Away" s={road} />
@@ -94,13 +97,13 @@ async function SkaterLog({ id, season, line }: { id: number; season: number; lin
         </table>
       </Card>
       <Card className="overflow-x-auto !p-0">
-        <h2 className="px-3 pt-3 text-sm font-semibold">Games</h2>
+        <h2 className="px-3 pt-3 font-display text-lg font-bold uppercase tracking-wide">Games</h2>
         <table className="tabular mt-2 w-full min-w-[520px] text-sm">
-          <thead className="text-xs text-muted"><tr className="[&>th]:px-2 [&>th]:py-1 [&>th]:text-right [&>th:first-child]:text-left [&>th:nth-child(2)]:text-left"><th>Date</th><th>Opp</th><th>G</th><th>A</th><th>P</th><th>PPP</th><th>SOG</th><th>TOI</th><th>+/-</th></tr></thead>
+          <thead className="text-xs text-muted"><tr className="[&>th]:px-2 [&>th]:py-2 [&>th]:text-right [&>th:first-child]:text-left [&>th:nth-child(2)]:text-left"><th>Date</th><th>Opp</th><th>G</th><th>A</th><th>P</th><th>PPP</th><th>SOG</th><th>TOI</th><th>+/-</th></tr></thead>
           <tbody>
             {[...games].reverse().map((g) => (
-              <tr key={g.gameId} className="border-t border-line [&>td]:px-2 [&>td]:py-1 [&>td]:text-right">
-                <td className="!text-left"><a className="hover:text-accent" href={`/game/${g.gameId}`}>{g.gameDate}</a></td>
+              <tr key={g.gameId} className="border-t border-line [&>td]:px-2 [&>td]:py-2 [&>td]:text-right">
+                <td className="!text-left"><a className="hover:text-accent-2" href={`/game/${g.gameId}`}>{g.gameDate}</a></td>
                 <td className="!text-left">{g.homeRoadFlag === "H" ? "vs" : "@"} {g.opponentAbbrev}</td>
                 <td>{g.goals}</td><td>{g.assists}</td><td className="font-semibold">{g.points}</td><td>{g.powerPlayPoints}</td><td>{g.shots}</td><td>{g.toi}</td><td>{g.plusMinus > 0 ? "+" : ""}{g.plusMinus}</td>
               </tr>
@@ -128,19 +131,19 @@ function GoalieLog({ id, season }: { id: number; season: number }) {
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-3">
         {[["GP", rows.length], ["SV%", svPct(sa ? 1 - ga / sa : 0)], ["GAA", split(rows).gaa.toFixed(2)]].map(([k, v]) => (
-          <Card key={k} className="!p-3 text-center"><div className="text-xs text-muted">{k}</div><div className="tabular text-xl font-semibold">{v}</div></Card>
+          <StatTile key={k} label={k} value={v} />
         ))}
       </div>
       <Card>
-        <h2 className="mb-2 text-sm font-semibold">Saves and goals against by game</h2>
+        <h2 className="mb-2 font-display text-lg font-bold uppercase tracking-wide">Saves and goals against by game</h2>
         <GameLogChart points={rows.map((r) => ({ date: r.date.slice(5), opp: r.opponent, home: !!r.home, a: r.ga, b: 0, extra: `${r.saves}/${r.sa} saves (${r.sa ? svPct(r.saves / r.sa) : "–"})` }))} labelA="Goals against" />
       </Card>
       <Card className="!p-0">
         <table className="tabular w-full text-sm">
-          <thead className="text-xs text-muted"><tr className="[&>th]:px-2 [&>th]:py-1 [&>th]:text-right [&>th:first-child]:text-left"><th>Split</th><th>GP</th><th>SV%</th><th>GAA</th></tr></thead>
+          <thead className="text-xs text-muted"><tr className="[&>th]:px-2 [&>th]:py-2 [&>th]:text-right [&>th:first-child]:text-left"><th>Split</th><th>GP</th><th>SV%</th><th>GAA</th></tr></thead>
           <tbody>
             {sets.map(([label, rs]) => { const s = split([...rs]); return (
-              <tr key={label} className="border-t border-line [&>td]:px-2 [&>td]:py-1 [&>td]:text-right"><td className="!text-left">{label}</td><td>{s.gp}</td><td>{svPct(s.sv)}</td><td>{s.gaa.toFixed(2)}</td></tr>
+              <tr key={label} className="border-t border-line [&>td]:px-2 [&>td]:py-2 [&>td]:text-right"><td className="!text-left">{label}</td><td>{s.gp}</td><td>{svPct(s.sv)}</td><td>{s.gaa.toFixed(2)}</td></tr>
             ); })}
           </tbody>
         </table>

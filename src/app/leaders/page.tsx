@@ -39,7 +39,7 @@ function TopCards({ data, cats }: { data: Record<string, LeaderEntry[]> | null; 
           <ol className="space-y-0.5 text-sm">
             {(data[c.key] ?? []).slice(0, 5).map((e) => (
               <li key={e.id} className="flex gap-2">
-                <a href={`/players/${e.id}`} className="flex-1 truncate hover:text-accent">{e.firstName.default} {e.lastName.default}</a>
+                <a href={`/players/${e.id}`} className="flex-1 truncate hover:text-accent-2">{e.firstName.default} {e.lastName.default}</a>
                 <span className="text-muted">{e.teamAbbrev}</span>
                 <span className="w-12 text-right tabular font-semibold">{c.fmt ? c.fmt(e.value) : e.value}</span>
               </li>
@@ -155,21 +155,30 @@ interface HotRow { player_id: number; name: string; team: string; gp: number; pt
 
 function HotCold() {
   const season = seasonFor(todayIso());
-  // Season vs last-5 points rate per skater, from stored box scores.
+  // Last-5 points rate vs the season rate, from stored box scores. Early in a season (under
+  // 20 GP) the baseline also includes last season, so the list isn't empty for the first month.
   const rows = sqlite
     .prepare(
       `WITH ranked AS (
-         SELECT player_id, name, team, points, goals, date,
+         SELECT player_id, name, team, points, goals, date, season,
                 ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY date DESC) AS rn
-         FROM player_games WHERE season = ? AND position != 'G')
-       SELECT player_id, MAX(CASE WHEN rn = 1 THEN name END) AS name, MAX(CASE WHEN rn = 1 THEN team END) AS team,
-              COUNT(*) AS gp, SUM(points) AS pts,
-              SUM(CASE WHEN rn <= 5 THEN 1 ELSE 0 END) AS l5gp,
-              SUM(CASE WHEN rn <= 5 THEN points ELSE 0 END) AS l5pts,
-              SUM(CASE WHEN rn <= 5 THEN goals ELSE 0 END) AS l5g
-       FROM ranked GROUP BY player_id HAVING gp >= 8 AND l5gp = 5`,
+         FROM player_games WHERE season IN (?, ?) AND position != 'G'),
+       agg AS (
+         SELECT player_id, MAX(CASE WHEN rn = 1 THEN name END) AS name, MAX(CASE WHEN rn = 1 THEN team END) AS team,
+                SUM(season = ?) AS cur_gp, SUM(CASE WHEN season = ? THEN points ELSE 0 END) AS cur_pts,
+                COUNT(*) AS all_gp, SUM(points) AS all_pts,
+                SUM(CASE WHEN rn <= 5 THEN 1 ELSE 0 END) AS l5gp,
+                SUM(CASE WHEN rn <= 5 THEN points ELSE 0 END) AS l5pts,
+                SUM(CASE WHEN rn <= 5 THEN goals ELSE 0 END) AS l5g,
+                MAX(CASE WHEN rn = 1 THEN season END) AS last_season
+         FROM ranked GROUP BY player_id)
+       SELECT player_id, name, team, l5gp, l5pts, l5g,
+              CASE WHEN cur_gp >= 20 THEN cur_gp ELSE all_gp END AS gp,
+              CASE WHEN cur_gp >= 20 THEN cur_pts ELSE all_pts END AS pts
+       FROM agg WHERE last_season = ? AND l5gp = 5 AND gp >= 8`,
     )
-    .all(season) as HotRow[];
+    .all(season - 10001, season, season, season, season) as HotRow[];
+  const earlySeason = (sqlite.prepare("SELECT COUNT(*) AS n FROM games WHERE season = ?").get(season) as { n: number }).n < 16 * 20;
   const scored = rows
     .filter((r) => r.pts / r.gp >= 0.3) // ignore depth players for "cold"
     .map((r) => {
@@ -181,16 +190,16 @@ function HotCold() {
     });
   const hot = [...scored].sort((a, b) => b.z - a.z).filter((r) => r.z > 1).slice(0, 12);
   const cold = [...scored].sort((a, b) => a.z - b.z).filter((r) => r.z < -1).slice(0, 12);
-  if (!rows.length) return <Empty>Hot &amp; cold needs stored box scores. Run <code className="text-ink">npm run sync</code>; players need 8+ games this season.</Empty>;
+  if (!rows.length) return <Empty>Hot &amp; cold needs stored box scores. Run <code className="text-ink">npm run sync</code>; players need 8+ games.</Empty>;
   const List = ({ title, list, tone }: { title: string; list: typeof hot; tone: string }) => (
     <Card className="!p-0">
-      <h2 className={`px-3 pt-3 text-sm font-semibold ${tone}`}>{title}</h2>
+      <h2 className={`px-4 pt-4 font-display text-lg font-bold uppercase tracking-wide ${tone}`}>{title}</h2>
       <table className="tabular mt-2 w-full text-sm">
-        <thead className="text-xs text-muted"><tr className="[&>th]:px-2 [&>th]:py-1 [&>th]:text-right [&>th:first-child]:text-left"><th>Player</th><th>Last 5</th><th>Season P/GP</th><th>Last 5 P/GP</th></tr></thead>
+        <thead className="text-xs text-muted"><tr className="[&>th]:px-2 [&>th]:py-2 [&>th]:text-right [&>th:first-child]:text-left"><th>Player</th><th>Last 5</th><th>Season P/GP</th><th>Last 5 P/GP</th></tr></thead>
         <tbody>
           {list.map((r) => (
-            <tr key={r.player_id} className="border-t border-line [&>td]:px-2 [&>td]:py-1 [&>td]:text-right">
-              <td className="!text-left"><a href={`/players/${r.player_id}`} className="hover:text-accent">{r.name}</a> <span className="text-xs text-muted">{r.team}</span></td>
+            <tr key={r.player_id} className="border-t border-line [&>td]:px-2 [&>td]:py-2 [&>td]:text-right">
+              <td className="!text-left"><a href={`/players/${r.player_id}`} className="hover:text-accent-2">{r.name}</a> <span className="text-xs text-muted">{r.team}</span></td>
               <td className="text-ink-2">{r.l5g}G {r.l5pts}P</td>
               <td>{r.seasonRate.toFixed(2)}</td>
               <td className="font-semibold">{r.l5.toFixed(2)}</td>
@@ -205,7 +214,10 @@ function HotCold() {
     <div className="grid gap-4 md:grid-cols-2">
       <List title="🔥 Hot: last 5 well above season pace" list={hot} tone="text-good" />
       <List title="🧊 Cold: last 5 well below season pace" list={cold} tone="text-s1" />
-      <p className="text-xs text-muted md:col-span-2">A player is listed when their last-5 points rate is more than one standard deviation (Poisson noise for 5 games) away from their season rate.</p>
+      <p className="text-xs text-muted md:col-span-2">
+        A player is listed when their last-5 points rate is more than one standard deviation (Poisson noise for 5 games) away from their season rate.
+        {earlySeason && " Until a player has 20 games this season, \"season\" means this season and last season together, and the last 5 can include last season's final games."}
+      </p>
     </div>
   );
 }

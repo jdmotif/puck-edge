@@ -26,9 +26,11 @@ Observations from the real data:
   American (`"-225"`) and decimal (`"1.37"`) formats. Provider ids map to `oddsPartners` in `score/{date}`.
   Some providers quote 3-way (regulation) prices, so the app keeps only providers whose two prices
   form a plausible 2-way market (overround 0–12%).
-- `partner-game/{country}/now` works but only returns `MONEY_LINE_2_WAY` / `MONEY_LINE_3_WAY`
-  for one partner, and its `currentOddsDate` can lag a day behind. No totals or puck line,
-  so The Odds API adapter is used for those when `ODDS_API_KEY` is set.
+- `partner-game/{country}/now` returns one partner per country (CA: FanDuel, US: DraftKings) with
+  `MONEY_LINE_2_WAY`, `MONEY_LINE_3_WAY`, `PUCK_LINE` (qualifier `-1.5`/`+1.5`) and `OVER_UNDER`
+  (qualifier `O5.5` on one team, `U5.5` on the other). Its `currentOddsDate` can lag a day behind,
+  so games are matched by `gameId`. The app uses it for totals and puck lines; The Odds API
+  (when `ODDS_API_KEY` is set) overrides it with a multi-book consensus.
 - Probable goalies are not in `schedule`; `gamecenter/{id}/landing` → `matchup.goalieComparison`
   lists each team's goalies (the first leader is treated as the probable starter).
 - Three stars live in `gamecenter/{id}/landing` → `summary.threeStars` once a game is final.
