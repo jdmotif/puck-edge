@@ -49,6 +49,19 @@ async function main() {
   if (done) {
     for (const kind of ["boxscore", "play-by-play", "landing"]) save(`gamecenter/${done.id}/${kind}`, await get(`gamecenter/${done.id}/${kind}`));
   }
+  // News feeds, saved raw (JSON or RSS XML) as news_<source>.<ext>.
+  const { SOURCES } = await import("../src/lib/news/sources");
+  for (const src of SOURCES) {
+    try {
+      const res = await fetch(src.url, { redirect: "follow", headers: { "user-agent": "Mozilla/5.0 (compatible; puck-edge/0.1)" } });
+      if (!res.ok) throw new Error(String(res.status));
+      const file = `news_${src.id}.${src.format === "rss" ? "xml" : "json"}`;
+      fs.writeFileSync(path.join("fixtures", file), await res.text());
+      console.log("saved", file);
+    } catch (e) {
+      console.warn("failed", src.url, (e as Error).message);
+    }
+  }
   const sched = await get(`schedule/${today}`);
   const next = sched.gameWeek?.[0]?.games?.[0];
   if (next) save(`gamecenter/${next.id}/landing`, await get(`gamecenter/${next.id}/landing`));

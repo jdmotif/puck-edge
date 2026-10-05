@@ -3,13 +3,21 @@ import { api } from "@/lib/nhl/client";
 import { Card, Empty, PageTitle, Pill, StaleBanner, TeamLogo } from "@/components/ui";
 import { LocalTime } from "@/components/LocalTime";
 import { svPct, toiFmt } from "@/lib/format";
+import { latestNews } from "@/lib/news";
+import { NewsList } from "@/components/NewsList";
 
 export const dynamic = "force-dynamic";
 
 export default async function TeamPage({ params, searchParams }: { params: Promise<{ abbrev: string }>; searchParams: Promise<{ vs?: string }> }) {
   const team = (await params).abbrev.toUpperCase();
   const { vs } = await searchParams;
-  const [standings, stats, roster, sched] = await Promise.all([api.standings("now"), api.clubStats(team), api.roster(team), api.clubSchedule(team)]);
+  const [standings, stats, roster, sched, news] = await Promise.all([
+    api.standings("now"),
+    api.clubStats(team),
+    api.roster(team),
+    api.clubSchedule(team),
+    latestNews({ team, limit: 5 }),
+  ]);
   const row = standings.data?.standings.find((s) => s.teamAbbrev.default === team);
   const games = sched.data?.games.filter((g) => g.gameType === 2 || g.gameType === 3) ?? [];
   const done = games.filter((g) => g.gameState === "OFF" || g.gameState === "FINAL");
@@ -122,6 +130,15 @@ export default async function TeamPage({ params, searchParams }: { params: Promi
         </div>
 
         <div className="space-y-4">
+          {news.items.length > 0 && (
+            <Card>
+              <div className="mb-2 flex items-baseline justify-between">
+                <h2 className="text-sm font-semibold">News</h2>
+                <a href={`/news?team=${team}`} className="text-xs text-muted hover:text-accent">All {team} news</a>
+              </div>
+              <NewsList items={news.items} compact />
+            </Card>
+          )}
           <Card>
             <h2 className="mb-2 text-sm font-semibold">Upcoming</h2>
             {upcoming.length ? (
