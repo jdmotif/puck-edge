@@ -15,6 +15,7 @@ const barlow = Barlow_Condensed({ subsets: ["latin"], weight: ["600", "700"], va
 
 const NAV = [
   { href: "/", label: "Tonight" },
+  { href: "/lineups", label: "Lineups" },
   { href: "/schedule", label: "Schedule" },
   { href: "/results", label: "Results" },
   { href: "/standings", label: "Standings" },

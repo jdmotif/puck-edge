@@ -8,6 +8,7 @@ import type {
   GameLandingResponse,
   LeadersResponse,
   PartnerGameResponse,
+  PlayByPlayResponse,
   PlayerGameLogResponse,
   PlayerLanding,
   RosterResponse,
@@ -155,6 +156,7 @@ export const api = {
     nhlSafe<PlayerGameLogResponse>(`player/${id}/game-log/${season}/${gameType}`),
   boxscore: (id: number) => nhlSafe<BoxscoreResponse>(`gamecenter/${id}/boxscore`),
   landing: (id: number) => nhlSafe<GameLandingResponse>(`gamecenter/${id}/landing`),
+  playByPlay: (id: number) => nhlSafe<PlayByPlayResponse>(`gamecenter/${id}/play-by-play`),
   partnerOdds: (country: string) => nhlSafe<PartnerGameResponse>(`partner-game/${country}/now`),
 };
 
