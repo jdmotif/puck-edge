@@ -9,7 +9,7 @@ export function NewsList({ items, compact = false }: { items: NewsItem[]; compac
   return (
     <ul className={compact ? "space-y-2" : "space-y-3"}>
       {items.map((n) => (
-        <li key={n.id} className={compact ? "" : "rounded-xl border border-line bg-surface p-3"}>
+        <li key={n.id} className={compact ? "" : "card p-3 sm:p-4"}>
           <div className="flex gap-3">
             <div className="min-w-0 flex-1">
               <a href={n.url} target="_blank" rel="noopener noreferrer" className={`font-medium hover:text-accent ${compact ? "text-sm" : ""}`}>

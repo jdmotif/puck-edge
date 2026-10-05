@@ -1,6 +1,6 @@
 import { sqlite } from "@/db";
 import { api } from "@/lib/nhl/client";
-import { Card, Empty, Pill, StaleBanner, StatTile, TEAM_COLORS, TeamLogo } from "@/components/ui";
+import { Card, Empty, Pill, SectionTitle, StaleBanner, StatTile, TEAM_COLORS, TeamLogo } from "@/components/ui";
 import { LocalTime } from "@/components/LocalTime";
 import { svPct, toiFmt } from "@/lib/format";
 import { latestNews } from "@/lib/news";
@@ -134,10 +134,7 @@ export default async function TeamPage({ params, searchParams }: { params: Promi
         <div className="space-y-4">
           {news.items.length > 0 && (
             <Card>
-              <div className="mb-2 flex items-baseline justify-between">
-                <h2 className="text-sm font-semibold">News</h2>
-                <a href={`/news?team=${team}`} className="text-xs text-muted hover:text-accent">All {team} news</a>
-              </div>
+              <SectionTitle action={<a href={`/news?team=${team}`} className="text-xs text-muted hover:text-accent">All {team} news</a>}>News</SectionTitle>
               <NewsList items={news.items} compact />
             </Card>
           )}
