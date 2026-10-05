@@ -70,6 +70,7 @@ Player props are always model-only: neither free feed carries prop prices.
 | **Results** | Every completed game of the season with final score, OT/SO marker, goal scorers and three stars. Filter by team, date range and result type. |
 | **Standings** | Wild card, division, conference and league views. Team pages have stats, roster, schedule, home/road splits and head-to-head history. |
 | **Leaders** | Sortable skater (points, goals, assists, PP goals, shots, TOI) and goalie tables, plus a **Hot & Cold** list. Player pages have a game-log chart and home/away/opponent splits. |
+| **News** | Latest headlines from NHL.com, ESPN and Sportsnet merged newest first (same story from two outlets shown once). Filter by outlet or team; each article links to the original. Team pages show their five latest headlines. |
 | **Model** | Hit rate, ROI at flat 1-unit stakes and calibration charts per market, the backtest, and the model's current weights. Markets where the model is losing are flagged in red. |
 | **Bets** | Log bets (prefilled from any pick), automatic settlement, P&L, ROI, bankroll chart and a fractional-Kelly stake suggestion. |
 | **Settings** | Value threshold (default 3%), Kelly fraction (default ¼), max stake cap, starting bankroll, daily/weekly loss limits and a session reminder. |
@@ -153,6 +154,11 @@ month on earlier games only).
 All API calls go through `src/lib/nhl/client.ts`, which follows redirects (the `/now` endpoints answer with a 307)
 and caches responses in SQLite: schedules, standings and stats for 15 minutes, live games for 30 seconds, finished
 games forever. If the API is down, pages show the last good copy with a "data stale since …" banner instead of failing.
+
+News comes from free public feeds that need no key (`src/lib/news/sources.ts`): NHL.com's content API, ESPN's
+news JSON and Sportsnet's RSS. Each is cached for 15 minutes; a feed that fails falls back to its last good copy
+with the same stale banner, and the page still shows whichever outlets did load. Articles are tagged with the teams
+they mention by name, which powers the team filter.
 
 `/fixtures` holds sample responses that the TypeScript types (`src/lib/nhl/types.ts`) were written from; see
 `fixtures/README.md` for how they were captured. Run `npm run fixtures` to replace them with full raw responses.

@@ -33,27 +33,27 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
     | { started_at: number; finished_at: number | null; games_added: number; message: string | null }
     | undefined;
   const games = (sqlite.prepare("SELECT COUNT(*) AS n FROM games").get() as { n: number }).n;
-  const input = "w-full rounded-md border border-line bg-surface-2 px-2 py-1.5";
+  const input = "mt-1 w-full border px-3 py-2";
   const Field = ({ name, label, value, hint }: { name: string; label: string; value: number; hint?: string }) => (
     <label className="block">
-      <span className="text-sm">{label}</span>
+      <span className="text-sm font-medium">{label}</span>
       <input name={name} defaultValue={value} inputMode="decimal" className={input} />
-      {hint && <span className="text-xs text-muted">{hint}</span>}
+      {hint && <span className="mt-1 block text-xs text-muted">{hint}</span>}
     </label>
   );
   return (
     <>
       <PageTitle>Settings</PageTitle>
-      {saved && <div className="mb-3 rounded-lg border border-good/40 bg-good/10 px-3 py-2 text-sm text-good">Saved.</div>}
+      {saved && <div className="mb-3 rounded-xl border border-good/40 bg-good/10 px-4 py-2.5 text-sm text-good">Saved.</div>}
       <form action={save} className="grid gap-4 lg:grid-cols-2">
         <Card className="space-y-3">
-          <h2 className="text-sm font-semibold">Picks and staking</h2>
+          <h2 className="font-display text-lg font-bold uppercase tracking-wide">Picks and staking</h2>
           <Field name="edgeThreshold" label="Value pick threshold (edge %)" value={+(s.edgeThreshold * 100).toFixed(2)} hint="A pick is labelled Value only when model − market is at least this. Default 3." />
           <Field name="kellyFraction" label="Kelly fraction" value={s.kellyFraction} hint="0.25 = quarter Kelly (default). Full Kelly is very aggressive." />
           <Field name="maxStakePct" label="Max stake per bet (% of bankroll)" value={+(s.maxStakePct * 100).toFixed(2)} />
           <Field name="startingBankroll" label="Starting bankroll ($)" value={s.startingBankroll} />
           <label className="block">
-            <span className="text-sm">Where you bet</span>
+            <span className="text-sm font-medium">Where you bet</span>
             <select name="oddsCountry" defaultValue={s.oddsCountry} className={input}>
               <option value="CA">Canada (FanDuel lines)</option>
               <option value="US">United States (DraftKings lines)</option>
@@ -62,16 +62,16 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           </label>
         </Card>
         <Card className="space-y-3">
-          <h2 className="text-sm font-semibold">Responsible gambling</h2>
+          <h2 className="font-display text-lg font-bold uppercase tracking-wide">Responsible gambling</h2>
           <Field name="dailyLossLimit" label="Daily loss limit ($, 0 = off)" value={s.dailyLossLimit} hint="You'll see a warning at 80% and when it's reached." />
           <Field name="weeklyLossLimit" label="Weekly loss limit ($, 0 = off)" value={s.weeklyLossLimit} />
           <Field name="sessionReminderMinutes" label="Session reminder (minutes, 0 = off)" value={s.sessionReminderMinutes} />
           <p className="text-xs text-muted">Picks are probabilities, not guarantees. If betting stops being fun, take a break. Help is available at ConnexOntario 1-866-531-2600 (Canada) or 1-800-GAMBLER (US).</p>
         </Card>
-        <button className="rounded-md bg-accent px-4 py-2 font-medium text-white lg:col-span-2">Save settings</button>
+        <button className="bg-accent px-4 py-2.5 font-semibold text-white lg:col-span-2">Save settings</button>
       </form>
       <Card className="mt-4 text-sm">
-        <h2 className="mb-1 font-semibold">Data</h2>
+        <h2 className="mb-1 font-display text-lg font-bold uppercase tracking-wide">Data</h2>
         <p className="text-ink-2">{games} games stored. {lastSync ? `Last sync ${new Date(lastSync.started_at).toLocaleString()}${lastSync.finished_at ? `, added ${lastSync.games_added} (${lastSync.message})` : " (didn't finish)"}.` : "The backfill hasn't run yet."}</p>
         <p className="mt-1 text-xs text-muted">Run <code className="text-ink">npm run sync</code> nightly (see README for a scheduler example). Odds: {process.env.ODDS_API_KEY ? "The Odds API key is set." : "no ODDS_API_KEY set; moneyline, totals and puck-line prices come from the free NHL feeds."}</p>
       </Card>

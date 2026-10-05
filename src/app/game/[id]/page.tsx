@@ -5,7 +5,7 @@ import { buildSlate } from "@/lib/picks";
 import type { BoxTeamStats } from "@/lib/nhl/types";
 import { GameCardView } from "@/components/GameCardView";
 import { LocalTime } from "@/components/LocalTime";
-import { Card, Empty, Pill, SkeletonCards, StaleBanner, TeamLogo } from "@/components/ui";
+import { Card, Empty, Pill, SkeletonCards, StaleBanner, TEAM_COLORS, TeamLogo } from "@/components/ui";
 import { MARKET_LABELS, type Market } from "@/lib/grading";
 import { pct, svPct } from "@/lib/format";
 
@@ -20,17 +20,42 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
   return (
     <>
       <StaleBanner items={[landing]} />
-      <header className="mb-4 flex items-center justify-center gap-4 text-center">
-        <a href={`/teams/${l.awayTeam.abbrev}`} className="flex flex-col items-center"><TeamLogo abbrev={l.awayTeam.abbrev} size={56} /><span className="font-semibold">{l.awayTeam.abbrev}</span></a>
-        <div>
-          {pre ? (
-            <div className="text-sm text-ink-2"><LocalTime iso={l.startTimeUTC} format="datetime" /></div>
-          ) : (
-            <div className="tabular text-3xl font-bold">{l.awayTeam.score ?? 0} – {l.homeTeam.score ?? 0}</div>
-          )}
-          <div className="text-xs text-muted">{l.venue.default}{l.gameState === "OFF" || l.gameState === "FINAL" ? ` · Final${l.gameOutcome && l.gameOutcome.lastPeriodType !== "REG" ? `/${l.gameOutcome.lastPeriodType}` : ""}` : l.gameState === "LIVE" || l.gameState === "CRIT" ? " · Live" : ""}</div>
+      <header
+        className="card relative mb-5 overflow-hidden px-4 py-6 sm:px-8"
+        style={{ background: `linear-gradient(100deg, color-mix(in srgb, ${TEAM_COLORS[l.awayTeam.abbrev] ?? "#3d6bff"} 26%, var(--surface)) 0%, var(--surface) 42%, var(--surface) 58%, color-mix(in srgb, ${TEAM_COLORS[l.homeTeam.abbrev] ?? "#3d6bff"} 26%, var(--surface)) 100%)` }}
+      >
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+          <a href={`/teams/${l.awayTeam.abbrev}`} className="flex flex-col items-center gap-2 sm:flex-row sm:justify-end sm:gap-4">
+            <span className="order-2 text-center sm:order-1 sm:text-right">
+              <span className="block font-display text-2xl font-bold uppercase leading-none tracking-wide sm:text-3xl">{l.awayTeam.abbrev}</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">Away</span>
+            </span>
+            <span className="order-1 sm:order-2"><TeamLogo abbrev={l.awayTeam.abbrev} size={64} /></span>
+          </a>
+          <div className="px-2 text-center">
+            {pre ? (
+              <div className="font-display text-lg font-bold uppercase tracking-wide text-ink-2 sm:text-xl"><LocalTime iso={l.startTimeUTC} format="datetime" /></div>
+            ) : (
+              <div className="font-display tabular text-5xl font-bold leading-none sm:text-6xl">{l.awayTeam.score ?? 0}<span className="px-2 text-muted">–</span>{l.homeTeam.score ?? 0}</div>
+            )}
+            <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5 text-xs text-muted">
+              {l.gameState === "OFF" || l.gameState === "FINAL" ? (
+                <Pill>Final{l.gameOutcome && l.gameOutcome.lastPeriodType !== "REG" ? `/${l.gameOutcome.lastPeriodType}` : ""}</Pill>
+              ) : l.gameState === "LIVE" || l.gameState === "CRIT" ? (
+                <Pill tone="bad"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-bad" />Live</Pill>
+              ) : <Pill tone="accent">Preview</Pill>}
+              <span className="hidden sm:inline">{l.venue.default}</span>
+            </div>
+          </div>
+          <a href={`/teams/${l.homeTeam.abbrev}`} className="flex flex-col items-center gap-2 sm:flex-row sm:gap-4">
+            <TeamLogo abbrev={l.homeTeam.abbrev} size={64} />
+            <span className="text-center sm:text-left">
+              <span className="block font-display text-2xl font-bold uppercase leading-none tracking-wide sm:text-3xl">{l.homeTeam.abbrev}</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">Home</span>
+            </span>
+          </a>
         </div>
-        <a href={`/teams/${l.homeTeam.abbrev}`} className="flex flex-col items-center"><TeamLogo abbrev={l.homeTeam.abbrev} size={56} /><span className="font-semibold">{l.homeTeam.abbrev}</span></a>
+        <p className="mt-3 text-center text-xs text-muted sm:hidden">{l.venue.default}</p>
       </header>
       <Suspense fallback={<SkeletonCards n={2} h={240} />}>
         {pre ? <Preview id={id} date={l.gameDate} /> : <BoxScore id={id} />}
@@ -47,15 +72,15 @@ async function Preview({ id, date }: { id: number; date: string }) {
     <div className="grid gap-4 lg:grid-cols-2">
       <GameCardView card={card} showAll />
       <Card className="overflow-x-auto !p-0">
-        <h2 className="px-3 pt-3 text-sm font-semibold">Player projections</h2>
+        <h2 className="px-3 pt-3 font-display text-lg font-bold uppercase tracking-wide">Player projections</h2>
         <table className="tabular mt-2 w-full min-w-[480px] text-sm">
           <thead className="text-xs text-muted">
-            <tr className="[&>th]:px-2 [&>th]:py-1 [&>th]:text-right [&>th:first-child]:text-left"><th>Player</th><th>Team</th><th>G/GP</th><th>Last 10</th><th>Goal</th><th>1+ pt</th><th>2+ pts</th></tr>
+            <tr className="[&>th]:px-2 [&>th]:py-2 [&>th]:text-right [&>th:first-child]:text-left"><th>Player</th><th>Team</th><th>G/GP</th><th>Last 10</th><th>Goal</th><th>1+ pt</th><th>2+ pts</th></tr>
           </thead>
           <tbody>
             {[...card.props].sort((a, b) => b.pPoint1 - a.pPoint1).map((p) => (
-              <tr key={p.playerId} className="border-t border-line [&>td]:px-2 [&>td]:py-1 [&>td]:text-right">
-                <td className="!text-left"><a className="hover:text-accent" href={`/players/${p.playerId}`}>{p.name}</a></td>
+              <tr key={p.playerId} className="border-t border-line [&>td]:px-2 [&>td]:py-2 [&>td]:text-right">
+                <td className="!text-left"><a className="hover:text-accent-2" href={`/players/${p.playerId}`}>{p.name}</a></td>
                 <td className="text-muted">{p.team}</td>
                 <td>{p.goalRate.toFixed(2)}</td>
                 <td className="text-ink-2">{p.last10.gp ? `${p.last10.goals}G ${p.last10.points}P` : "–"}</td>
@@ -88,18 +113,18 @@ async function BoxScore({ id }: { id: number }) {
         <StaleBanner items={[box, landing]} />
         {summary && (
           <Card>
-            <h2 className="mb-2 text-sm font-semibold">Scoring</h2>
+            <h2 className="mb-2 font-display text-lg font-bold uppercase tracking-wide">Scoring</h2>
             {summary.scoring.map((p) => (
               <div key={`${p.periodDescriptor.number}${p.periodDescriptor.periodType}`} className="mb-2">
-                <div className="text-xs uppercase text-muted">{p.periodDescriptor.periodType === "REG" ? `Period ${p.periodDescriptor.number}` : p.periodDescriptor.periodType}</div>
+                <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{p.periodDescriptor.periodType === "REG" ? `Period ${p.periodDescriptor.number}` : p.periodDescriptor.periodType}</div>
                 {p.goals.length === 0 ? <p className="text-sm text-muted">No goals</p> : (
                   <ul className="text-sm">
                     {p.goals.map((g) => (
                       <li key={g.eventId} className="flex gap-2 py-0.5">
                         <span className="w-12 tabular text-muted">{g.timeInPeriod}</span>
-                        <span className="w-10 font-medium">{g.teamAbbrev.default}</span>
+                        <span className="w-10 font-display font-bold">{g.teamAbbrev.default}</span>
                         <span className="flex-1">
-                          <a className="hover:text-accent" href={`/players/${g.playerId}`}>{g.name.default}</a> ({g.goalsToDate})
+                          <a className="hover:text-accent-2" href={`/players/${g.playerId}`}>{g.name.default}</a> ({g.goalsToDate})
                           {g.assists.length > 0 && <span className="text-ink-2"> · {g.assists.map((a) => a.name.default).join(", ")}</span>}
                           {g.strength !== "ev" && <span className="ml-1"><Pill>{g.strength.toUpperCase()}</Pill></span>}
                         </span>
@@ -119,12 +144,12 @@ async function BoxScore({ id }: { id: number }) {
       <div className="space-y-4">
         {summary?.threeStars?.length ? (
           <Card>
-            <h2 className="mb-2 text-sm font-semibold">Three stars</h2>
+            <h2 className="mb-2 font-display text-lg font-bold uppercase tracking-wide">Three stars</h2>
             <ol className="space-y-1 text-sm">
               {summary.threeStars.map((s) => (
                 <li key={s.star} className="flex gap-2">
                   <span className="text-warn">{"★".repeat(s.star)}</span>
-                  <a className="hover:text-accent" href={`/players/${s.playerId}`}>{s.name.default}</a>
+                  <a className="hover:text-accent-2" href={`/players/${s.playerId}`}>{s.name.default}</a>
                   <span className="text-muted">{s.teamAbbrev}</span>
                   <span className="ml-auto tabular text-ink-2">{s.position === "G" ? (s.savePctg ? `${svPct(s.savePctg)} SV%` : "") : `${s.goals ?? 0}G ${s.assists ?? 0}A`}</span>
                 </li>
@@ -133,7 +158,7 @@ async function BoxScore({ id }: { id: number }) {
           </Card>
         ) : null}
         <Card>
-          <h2 className="mb-2 text-sm font-semibold">Model picks for this game</h2>
+          <h2 className="mb-2 font-display text-lg font-bold uppercase tracking-wide">Model picks for this game</h2>
           {picks.length ? (
             <ul className="space-y-1 text-sm">
               {picks.map((p, i) => (
@@ -154,15 +179,15 @@ async function BoxScore({ id }: { id: number }) {
 function TeamBox({ abbrev, sog, stats }: { abbrev: string; sog: number; stats: BoxTeamStats }) {
   return (
     <Card className="overflow-x-auto !p-0">
-      <h2 className="flex items-center gap-2 px-3 pt-3 text-sm font-semibold"><TeamLogo abbrev={abbrev} size={20} />{abbrev} <span className="font-normal text-muted">{sog} shots</span></h2>
+      <h2 className="flex items-center gap-2 px-3 pt-3 font-display text-lg font-bold uppercase tracking-wide"><TeamLogo abbrev={abbrev} size={20} />{abbrev} <span className="font-normal text-muted">{sog} shots</span></h2>
       <table className="tabular mt-2 w-full min-w-[520px] text-sm">
         <thead className="text-xs text-muted">
-          <tr className="[&>th]:px-2 [&>th]:py-1 [&>th]:text-right [&>th:first-child]:text-left"><th>Skater</th><th>Pos</th><th>G</th><th>A</th><th>P</th><th>SOG</th><th>+/-</th><th>Hits</th><th>TOI</th></tr>
+          <tr className="[&>th]:px-2 [&>th]:py-2 [&>th]:text-right [&>th:first-child]:text-left"><th>Skater</th><th>Pos</th><th>G</th><th>A</th><th>P</th><th>SOG</th><th>+/-</th><th>Hits</th><th>TOI</th></tr>
         </thead>
         <tbody>
           {[...stats.forwards, ...stats.defense].sort((a, b) => b.points - a.points || b.sog - a.sog).map((s) => (
-            <tr key={s.playerId} className="border-t border-line [&>td]:px-2 [&>td]:py-1 [&>td]:text-right">
-              <td className="!text-left"><a className="hover:text-accent" href={`/players/${s.playerId}`}>{s.name.default}</a></td>
+            <tr key={s.playerId} className="border-t border-line [&>td]:px-2 [&>td]:py-2 [&>td]:text-right">
+              <td className="!text-left"><a className="hover:text-accent-2" href={`/players/${s.playerId}`}>{s.name.default}</a></td>
               <td className="text-muted">{s.position}</td><td>{s.goals}</td><td>{s.assists}</td><td className="font-semibold">{s.points}</td>
               <td>{s.sog}</td><td>{s.plusMinus > 0 ? "+" : ""}{s.plusMinus}</td><td>{s.hits}</td><td>{s.toi}</td>
             </tr>
@@ -171,12 +196,12 @@ function TeamBox({ abbrev, sog, stats }: { abbrev: string; sog: number; stats: B
       </table>
       <table className="tabular mb-2 mt-2 w-full text-sm">
         <thead className="text-xs text-muted">
-          <tr className="[&>th]:px-2 [&>th]:py-1 [&>th]:text-right [&>th:first-child]:text-left"><th>Goalie</th><th>SA</th><th>SV</th><th>SV%</th><th>TOI</th><th>Dec</th></tr>
+          <tr className="[&>th]:px-2 [&>th]:py-2 [&>th]:text-right [&>th:first-child]:text-left"><th>Goalie</th><th>SA</th><th>SV</th><th>SV%</th><th>TOI</th><th>Dec</th></tr>
         </thead>
         <tbody>
           {stats.goalies.filter((g) => g.toi !== "00:00").map((g) => (
-            <tr key={g.playerId} className="border-t border-line [&>td]:px-2 [&>td]:py-1 [&>td]:text-right">
-              <td className="!text-left"><a className="hover:text-accent" href={`/players/${g.playerId}`}>{g.name.default}</a>{g.starter && <span className="ml-1 text-xs text-muted">starter</span>}</td>
+            <tr key={g.playerId} className="border-t border-line [&>td]:px-2 [&>td]:py-2 [&>td]:text-right">
+              <td className="!text-left"><a className="hover:text-accent-2" href={`/players/${g.playerId}`}>{g.name.default}</a>{g.starter && <span className="ml-1 text-xs text-muted">starter</span>}</td>
               <td>{g.shotsAgainst}</td><td>{g.saves}</td><td>{g.savePctg !== undefined ? svPct(g.savePctg) : "–"}</td><td>{g.toi}</td><td>{g.decision ?? ""}</td>
             </tr>
           ))}

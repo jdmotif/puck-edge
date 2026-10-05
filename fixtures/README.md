@@ -34,3 +34,7 @@ Observations from the real data:
 - Probable goalies are not in `schedule`; `gamecenter/{id}/landing` → `matchup.goalieComparison`
   lists each team's goalies (the first leader is treated as the probable starter).
 - Three stars live in `gamecenter/{id}/landing` → `summary.threeStars` once a game is final.
+
+**News fixtures** (`news_nhl.json`, `news_espn.json`, `news_sportsnet.xml`) are hand-written samples in each
+feed's format (every headline starts with "Sample:"), because the cloud machine could not reach the news hosts.
+`npm run fixtures` replaces them with real responses.
