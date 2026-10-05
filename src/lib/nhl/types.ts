@@ -600,6 +600,7 @@ export interface GameLandingResponse {
     penalties?: unknown[];
   };
   clock?: { timeRemaining: string; secondsRemaining: number; running: boolean; inIntermission: boolean };
+  gameOutcome?: { lastPeriodType: PeriodType };
 }
 
 // ---------- partner-game/{country}/now ----------

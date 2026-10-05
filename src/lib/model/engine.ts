@@ -62,6 +62,9 @@ export interface GameInput {
   date: string; // YYYY-MM-DD
   homeGoalieId?: number | null;
   awayGoalieId?: number | null;
+  /** Back-to-back flags from the live schedule (stored games may lag a day). */
+  homeB2B?: boolean;
+  awayB2B?: boolean;
 }
 
 export interface Contribution {
@@ -89,6 +92,8 @@ export interface GamePrediction {
 export function predictGame(input: GameInput, league: League, params = loadMoneylineParams()): GamePrediction {
   const home = league.teamProfile(input.home, input.date);
   const away = league.teamProfile(input.away, input.date);
+  if (input.homeB2B) Object.assign(home, { backToBack: true, restDays: 0 });
+  if (input.awayB2B) Object.assign(away, { backToBack: true, restDays: 0 });
   const homeGoalie = league.goalieProfile(input.homeGoalieId ?? league.projectedStarter(input.home, input.date));
   const awayGoalie = league.goalieProfile(input.awayGoalieId ?? league.projectedStarter(input.away, input.date));
 

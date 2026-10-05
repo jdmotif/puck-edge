@@ -26,6 +26,14 @@ function combine(pairs: { book: string; a: number; b: number }[]): [SidePrice, S
     return o >= -0.01 && o <= MAX_OVERROUND;
   });
   if (!valid.length) return null;
+  // Drop books whose fair price is far from the median: usually a stale line or a mislabelled market.
+  const fair = (p: { a: number; b: number }) => removeMargin([p.a, p.b])[0];
+  const sorted = valid.map(fair).sort((x, y) => x - y);
+  const median = sorted[Math.floor(sorted.length / 2)];
+  if (valid.length >= 3) {
+    const kept = valid.filter((p) => Math.abs(fair(p) - median) <= 0.06);
+    valid.splice(0, valid.length, ...kept);
+  }
   const fairA = valid.reduce((s, p) => s + removeMargin([p.a, p.b])[0], 0) / valid.length;
   const bestA = valid.reduce((m, p) => (p.a > m.a ? p : m), valid[0]);
   const bestB = valid.reduce((m, p) => (p.b > m.b ? p : m), valid[0]);

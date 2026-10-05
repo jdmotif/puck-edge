@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+/* Dark-first palette. Chart colors follow the validated reference palette (dark steps). */
+:root {
+  color-scheme: dark;
+  --bg: #0e0f11;
+  --surface: #17181b;
+  --surface-2: #1f2024;
+  --border: #2b2d32;
+  --text: #f4f4f2;
+  --text-2: #c3c2b7;
+  --muted: #8a8a84;
+  --accent: #3987e5;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --good: #0ca30c;
+  --warning: #fab219;
+  --critical: #d03b3b;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--border);
+  --color-ink: var(--text);
+  --color-ink-2: var(--text-2);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-good: var(--good);
+  --color-warn: var(--warning);
+  --color-bad: var(--critical);
+  --color-s1: var(--series-1);
+  --color-s2: var(--series-2);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+html, body { background: var(--bg); color: var(--text); }
+body { font-feature-settings: "tnum" 1; -webkit-font-smoothing: antialiased; }
+.tabular { font-variant-numeric: tabular-nums; }
+
+@keyframes shimmer { 0% { opacity: .45 } 50% { opacity: .8 } 100% { opacity: .45 } }
+.skeleton { background: var(--surface-2); border-radius: 8px; animation: shimmer 1.4s ease-in-out infinite; }
