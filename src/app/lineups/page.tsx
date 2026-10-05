@@ -1,7 +1,7 @@
 import { todayIso } from "@/lib/nhl/client";
 import { loadLineups, type LineupPlayer, type TeamLineup } from "@/lib/lineups";
 import { LocalTime } from "@/components/LocalTime";
-import { Card, Empty, PageTitle, Pill, StaleBanner, Tabs, TeamLogo } from "@/components/ui";
+import { ButtonLink, Card, Empty, PageTitle, Pill, StaleBanner, Tabs, TeamLogo } from "@/components/ui";
 import { toiFmt } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -28,9 +28,9 @@ export default async function LineupsPage({ searchParams }: { searchParams: Prom
       <PageTitle sub={`${label} · ${games.length} games · ${nOfficial} official, ${games.length - nOfficial} projected`}>Lineups</PageTitle>
       <StaleBanner items={fetched} />
       <div className="mb-3 flex items-center gap-2 text-sm">
-        <a className="rounded-md bg-surface px-2.5 py-1.5 hover:text-accent" href={link({ date: addDays(date, -1) })}>← Prev</a>
-        {date !== todayIso() && <a className="rounded-md bg-surface px-2.5 py-1.5 hover:text-accent" href={link({ date: todayIso() })}>Today</a>}
-        <a className="rounded-md bg-surface px-2.5 py-1.5 hover:text-accent" href={link({ date: addDays(date, 1) })}>Next →</a>
+        <ButtonLink href={link({ date: addDays(date, -1) })}>← Prev</ButtonLink>
+        {date !== todayIso() && <ButtonLink href={link({ date: todayIso() })}>Today</ButtonLink>}
+        <ButtonLink href={link({ date: addDays(date, 1) })}>Next →</ButtonLink>
       </div>
       <Tabs
         active={show}
