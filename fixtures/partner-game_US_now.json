@@ -1,13 +1,13 @@
 {
   "currentOddsDate": "2026-10-05",
-  "lastUpdatedUTC": "2026-10-05T20:30:01Z",
+  "lastUpdatedUTC": "2026-10-05T20:30:38Z",
   "bettingPartner": {
-    "partnerId": 7,
-    "country": "CAN",
-    "name": "FanDuel",
-    "imageUrl": "https://assets.nhle.com/betting_partner/fanduel.svg",
-    "siteUrl": "https://fanduel.com",
-    "bgColor": "#0078ff",
+    "partnerId": 9,
+    "country": "USA",
+    "name": "DraftKings",
+    "imageUrl": "https://assets.nhle.com/betting_partner/draftkings.svg",
+    "siteUrl": "https://dksb.sng.link/As9kz/3i4d?_dl=https%3A%2F%2Fsportsbook.draftkings.com%2Fgateway%3Fs%3D333653091&pcid=427326&psn=1320&pcn=NHL&pscn=OddsWidget&pcrn=NoOffer&pscid=SP&wpcid=427326&wpsrc=1320&wpcn=NHL&wpscn=OddsWidget&wpcrn=NoOffer&wpscid=SP&_forward_params=1",
+    "bgColor": "#000000",
     "textColor": "#FFFFFF",
     "accentColor": "#FFFFFF"
   },
@@ -31,23 +31,23 @@
           },
           {
             "description": "MONEY_LINE_3_WAY",
-            "value": 320,
+            "value": 330,
             "qualifier": "Draw"
           },
           {
-            "description": "OVER_UNDER",
-            "value": -124,
-            "qualifier": "O5.5"
+            "description": "MONEY_LINE_2_WAY",
+            "value": -218,
+            "qualifier": ""
           },
           {
             "description": "MONEY_LINE_3_WAY",
-            "value": -140,
+            "value": -130,
             "qualifier": ""
           },
           {
-            "description": "MONEY_LINE_2_WAY",
-            "value": -220,
-            "qualifier": ""
+            "description": "OVER_UNDER",
+            "value": -122,
+            "qualifier": "O5.5"
           }
         ]
       },
@@ -61,28 +61,28 @@
         "odds": [
           {
             "description": "PUCK_LINE",
-            "value": -140,
+            "value": -135,
             "qualifier": "+1.5"
           },
           {
             "description": "MONEY_LINE_3_WAY",
-            "value": 320,
+            "value": 330,
             "qualifier": "Draw"
-          },
-          {
-            "description": "OVER_UNDER",
-            "value": 102,
-            "qualifier": "U5.5"
-          },
-          {
-            "description": "MONEY_LINE_3_WAY",
-            "value": 270,
-            "qualifier": ""
           },
           {
             "description": "MONEY_LINE_2_WAY",
             "value": 180,
             "qualifier": ""
+          },
+          {
+            "description": "MONEY_LINE_3_WAY",
+            "value": 260,
+            "qualifier": ""
+          },
+          {
+            "description": "OVER_UNDER",
+            "value": 102,
+            "qualifier": "U5.5"
           }
         ]
       }
@@ -100,13 +100,18 @@
         "logo": "https://assets.nhle.com/logos/nhl/svg/BOS_light.svg",
         "odds": [
           {
-            "description": "MONEY_LINE_2_WAY",
-            "value": -104,
-            "qualifier": ""
+            "description": "MONEY_LINE_3_WAY",
+            "value": 300,
+            "qualifier": "Draw"
+          },
+          {
+            "description": "OVER_UNDER",
+            "value": -120,
+            "qualifier": "O5.5"
           },
           {
             "description": "MONEY_LINE_3_WAY",
-            "value": 145,
+            "value": 140,
             "qualifier": ""
           },
           {
@@ -115,14 +120,9 @@
             "qualifier": "+1.5"
           },
           {
-            "description": "OVER_UNDER",
-            "value": -115,
-            "qualifier": "O5.5"
-          },
-          {
-            "description": "MONEY_LINE_3_WAY",
-            "value": 310,
-            "qualifier": "Draw"
+            "description": "MONEY_LINE_2_WAY",
+            "value": -102,
+            "qualifier": ""
           }
         ]
       },
@@ -136,29 +136,29 @@
         "logo": "https://assets.nhle.com/logos/nhl/svg/OTT_light.svg",
         "odds": [
           {
-            "description": "MONEY_LINE_2_WAY",
-            "value": -115,
-            "qualifier": ""
-          },
-          {
             "description": "MONEY_LINE_3_WAY",
-            "value": 130,
-            "qualifier": ""
-          },
-          {
-            "description": "PUCK_LINE",
-            "value": 210,
-            "qualifier": "-1.5"
+            "value": 300,
+            "qualifier": "Draw"
           },
           {
             "description": "OVER_UNDER",
-            "value": -105,
+            "value": 100,
             "qualifier": "U5.5"
           },
           {
             "description": "MONEY_LINE_3_WAY",
-            "value": 310,
-            "qualifier": "Draw"
+            "value": 140,
+            "qualifier": ""
+          },
+          {
+            "description": "PUCK_LINE",
+            "value": 215,
+            "qualifier": "-1.5"
+          },
+          {
+            "description": "MONEY_LINE_2_WAY",
+            "value": -118,
+            "qualifier": ""
           }
         ]
       }
@@ -176,29 +176,29 @@
         "logo": "https://assets.nhle.com/logos/nhl/svg/PIT_light.svg",
         "odds": [
           {
-            "description": "OVER_UNDER",
-            "value": -105,
-            "qualifier": "O6.5"
-          },
-          {
             "description": "PUCK_LINE",
-            "value": 138,
+            "value": 145,
             "qualifier": "-1.5"
           },
           {
             "description": "MONEY_LINE_3_WAY",
-            "value": 320,
-            "qualifier": "Draw"
+            "value": -105,
+            "qualifier": ""
           },
           {
             "description": "MONEY_LINE_2_WAY",
-            "value": -178,
+            "value": -180,
             "qualifier": ""
           },
           {
             "description": "MONEY_LINE_3_WAY",
-            "value": -120,
-            "qualifier": ""
+            "value": 330,
+            "qualifier": "Draw"
+          },
+          {
+            "description": "OVER_UNDER",
+            "value": -105,
+            "qualifier": "O6.5"
           }
         ]
       },
@@ -211,29 +211,29 @@
         "logo": "https://assets.nhle.com/logos/nhl/svg/WPG_light.svg",
         "odds": [
           {
-            "description": "OVER_UNDER",
-            "value": -115,
-            "qualifier": "U6.5"
-          },
-          {
             "description": "PUCK_LINE",
-            "value": -172,
+            "value": -175,
             "qualifier": "+1.5"
           },
           {
             "description": "MONEY_LINE_3_WAY",
-            "value": 320,
-            "qualifier": "Draw"
+            "value": 195,
+            "qualifier": ""
           },
           {
             "description": "MONEY_LINE_2_WAY",
-            "value": 146,
+            "value": 150,
             "qualifier": ""
           },
           {
             "description": "MONEY_LINE_3_WAY",
-            "value": 220,
-            "qualifier": ""
+            "value": 330,
+            "qualifier": "Draw"
+          },
+          {
+            "description": "OVER_UNDER",
+            "value": -115,
+            "qualifier": "U6.5"
           }
         ]
       }
@@ -251,29 +251,29 @@
         "logo": "https://assets.nhle.com/logos/nhl/svg/DAL_light.svg",
         "odds": [
           {
-            "description": "MONEY_LINE_3_WAY",
-            "value": 350,
-            "qualifier": "Draw"
-          },
-          {
-            "description": "OVER_UNDER",
-            "value": -105,
-            "qualifier": "O6.5"
-          },
-          {
-            "description": "MONEY_LINE_3_WAY",
-            "value": -145,
-            "qualifier": ""
-          },
-          {
             "description": "MONEY_LINE_2_WAY",
-            "value": -210,
+            "value": -205,
             "qualifier": ""
           },
           {
             "description": "PUCK_LINE",
-            "value": 120,
+            "value": 130,
             "qualifier": "-1.5"
+          },
+          {
+            "description": "MONEY_LINE_3_WAY",
+            "value": 330,
+            "qualifier": "Draw"
+          },
+          {
+            "description": "MONEY_LINE_3_WAY",
+            "value": -120,
+            "qualifier": ""
+          },
+          {
+            "description": "OVER_UNDER",
+            "value": 100,
+            "qualifier": "O6.5"
           }
         ]
       },
@@ -286,29 +286,29 @@
         "logo": "https://assets.nhle.com/logos/nhl/svg/SJS_light.svg",
         "odds": [
           {
-            "description": "MONEY_LINE_3_WAY",
-            "value": 350,
-            "qualifier": "Draw"
-          },
-          {
-            "description": "OVER_UNDER",
-            "value": -115,
-            "qualifier": "U6.5"
-          },
-          {
-            "description": "MONEY_LINE_3_WAY",
-            "value": 250,
-            "qualifier": ""
-          },
-          {
             "description": "MONEY_LINE_2_WAY",
-            "value": 172,
+            "value": 170,
             "qualifier": ""
           },
           {
             "description": "PUCK_LINE",
-            "value": -148,
+            "value": -155,
             "qualifier": "+1.5"
+          },
+          {
+            "description": "MONEY_LINE_3_WAY",
+            "value": 330,
+            "qualifier": "Draw"
+          },
+          {
+            "description": "MONEY_LINE_3_WAY",
+            "value": 225,
+            "qualifier": ""
+          },
+          {
+            "description": "OVER_UNDER",
+            "value": -120,
+            "qualifier": "U6.5"
           }
         ]
       }

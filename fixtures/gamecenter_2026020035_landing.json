@@ -1,8 +1,837 @@
-{"id":2026020035,"season":20262027,"gameType":2,"limitedScoring":false,"gameDate":"2026-10-04","venue":{"default":"Little Caesars Arena"},"venueLocation":{"default":"Detroit"},"startTimeUTC":"2026-10-04T17:00:00Z","easternUTCOffset":"-04:00","venueUTCOffset":"-04:00","venueTimezone":"America/Detroit","periodDescriptor":{"number":3,"periodType":"REG","maxRegulationPeriods":3},"tvBroadcasts":[],"gameState":"OFF","gameScheduleState":"OK",
-"awayTeam":{"id":52,"commonName":{"default":"Jets"},"abbrev":"WPG","score":3,"sog":27,"logo":"https://assets.nhle.com/logos/nhl/svg/WPG_light.svg","darkLogo":"https://assets.nhle.com/logos/nhl/svg/WPG_dark.svg","placeName":{"default":"Winnipeg"}},
-"homeTeam":{"id":17,"commonName":{"default":"Red Wings"},"abbrev":"DET","score":2,"sog":35,"logo":"https://assets.nhle.com/logos/nhl/svg/DET_light.svg","darkLogo":"https://assets.nhle.com/logos/nhl/svg/DET_dark.svg","placeName":{"default":"Detroit"}},
-"shootoutInUse":true,"maxPeriods":5,"regPeriods":3,"otInUse":true,"tiesInUse":false,
-"summary":{"scoring":[{"periodDescriptor":{"number":1,"periodType":"REG","maxRegulationPeriods":3},"goals":[{"situationCode":"1541","eventId":289,"strength":"pp","playerId":8482149,"firstName":{"default":"Cole"},"lastName":{"default":"Perfetti"},"name":{"default":"C. Perfetti"},"teamAbbrev":{"default":"WPG"},"headshot":"https://assets.nhle.com/mugs/nhl/20262027/WPG/8482149.png","goalsToDate":1,"awayScore":1,"homeScore":0,"leadingTeamAbbrev":{"default":"WPG"},"timeInPeriod":"13:04","shotType":"deflected","goalModifier":"none","assists":[{"playerId":8478398,"firstName":{"default":"Kyle"},"lastName":{"default":"Connor"},"name":{"default":"K. Connor"},"assistsToDate":2,"sweaterNumber":81},{"playerId":8477504,"firstName":{"default":"Josh"},"lastName":{"default":"Morrissey"},"name":{"default":"J. Morrissey"},"assistsToDate":1,"sweaterNumber":44}],"homeTeamDefendingSide":"right","isHome":false}]}],
-"threeStars":[{"star":1,"playerId":8478398,"teamAbbrev":"WPG","headshot":"https://assets.nhle.com/mugs/nhl/20262027/WPG/8478398.png","name":{"default":"K. Connor"},"sweaterNo":81,"position":"L","goals":2,"assists":1,"points":3},{"star":2,"playerId":8482149,"teamAbbrev":"WPG","headshot":"https://assets.nhle.com/mugs/nhl/20262027/WPG/8482149.png","name":{"default":"C. Perfetti"},"sweaterNo":91,"position":"C","goals":1,"assists":2,"points":3},{"star":3,"playerId":8478042,"teamAbbrev":"DET","headshot":"https://assets.nhle.com/mugs/nhl/20262027/DET/8478042.png","name":{"default":"V. Arvidsson"},"sweaterNo":33,"position":"L","goals":1,"assists":0,"points":1}],
-"penalties":[{"periodDescriptor":{"number":1,"periodType":"REG","maxRegulationPeriods":3},"penalties":[{"timeInPeriod":"09:26","type":"MIN","duration":2,"committedByPlayer":{"firstName":{"default":"Gabriel"},"lastName":{"default":"Vilardi"},"sweaterNumber":13},"teamAbbrev":{"default":"WPG"},"drawnBy":{"firstName":{"default":"Andreas"},"lastName":{"default":"Englund"},"sweaterNumber":24},"descKey":"tripping"}]}]},
-"clock":{"timeRemaining":"00:00","secondsRemaining":0,"running":false,"inIntermission":false}}
+{
+  "id": 2026020035,
+  "season": 20262027,
+  "gameType": 2,
+  "limitedScoring": false,
+  "gameDate": "2026-10-04",
+  "venue": {
+    "default": "Little Caesars Arena"
+  },
+  "venueLocation": {
+    "default": "Detroit"
+  },
+  "startTimeUTC": "2026-10-04T17:00:00Z",
+  "easternUTCOffset": "-04:00",
+  "venueUTCOffset": "-04:00",
+  "venueTimezone": "America/Detroit",
+  "periodDescriptor": {
+    "number": 3,
+    "periodType": "REG",
+    "maxRegulationPeriods": 3
+  },
+  "tvBroadcasts": [
+    {
+      "id": 645,
+      "market": "H",
+      "countryCode": "US",
+      "network": "DSN",
+      "sequenceNumber": 1
+    },
+    {
+      "id": 324,
+      "market": "N",
+      "countryCode": "US",
+      "network": "NHLN",
+      "sequenceNumber": 35
+    },
+    {
+      "id": 292,
+      "market": "A",
+      "countryCode": "CA",
+      "network": "TSN3",
+      "sequenceNumber": 134
+    }
+  ],
+  "gameState": "OFF",
+  "gameScheduleState": "OK",
+  "awayTeam": {
+    "id": 52,
+    "commonName": {
+      "default": "Jets"
+    },
+    "abbrev": "WPG",
+    "placeName": {
+      "default": "Winnipeg"
+    },
+    "placeNameWithPreposition": {
+      "default": "Winnipeg",
+      "fr": "de Winnipeg"
+    },
+    "score": 3,
+    "sog": 27,
+    "logo": "https://assets.nhle.com/logos/nhl/svg/WPG_light.svg",
+    "darkLogo": "https://assets.nhle.com/logos/nhl/svg/WPG_dark.svg"
+  },
+  "homeTeam": {
+    "id": 17,
+    "commonName": {
+      "default": "Red Wings"
+    },
+    "abbrev": "DET",
+    "placeName": {
+      "default": "Detroit"
+    },
+    "placeNameWithPreposition": {
+      "default": "Detroit",
+      "fr": "de Detroit"
+    },
+    "score": 2,
+    "sog": 36,
+    "logo": "https://assets.nhle.com/logos/nhl/svg/DET_light.svg",
+    "darkLogo": "https://assets.nhle.com/logos/nhl/svg/DET_dark.svg"
+  },
+  "shootoutInUse": true,
+  "maxPeriods": 5,
+  "regPeriods": 3,
+  "otInUse": true,
+  "tiesInUse": false,
+  "summary": {
+    "scoring": [
+      {
+        "periodDescriptor": {
+          "number": 1,
+          "periodType": "REG",
+          "maxRegulationPeriods": 3
+        },
+        "goals": [
+          {
+            "situationCode": "1541",
+            "eventId": 289,
+            "strength": "pp",
+            "playerId": 8482149,
+            "firstName": {
+              "default": "Cole"
+            },
+            "lastName": {
+              "default": "Perfetti"
+            },
+            "name": {
+              "default": "C. Perfetti"
+            },
+            "teamAbbrev": {
+              "default": "WPG"
+            },
+            "headshot": "https://assets.nhle.com/mugs/nhl/20262027/WPG/8482149.png",
+            "highlightClipSharingUrl": "https://nhl.com/video/wpg-det-perfetti-scores-ppg-against-john-gibson-6406217245112",
+            "highlightClipSharingUrlFr": "https://nhl.com/fr/video/wpg-det-perfetti-marque-un-but-en-a-n-contre-john-gibson-6406217054112",
+            "highlightClip": 6406217245112,
+            "highlightClipFr": 6406217054112,
+            "discreteClip": 6406216963112,
+            "discreteClipFr": 6406217330112,
+            "goalsToDate": 1,
+            "awayScore": 1,
+            "homeScore": 0,
+            "leadingTeamAbbrev": {
+              "default": "WPG"
+            },
+            "timeInPeriod": "13:04",
+            "shotType": "deflected",
+            "goalModifier": "none",
+            "assists": [
+              {
+                "playerId": 8478398,
+                "firstName": {
+                  "default": "Kyle"
+                },
+                "lastName": {
+                  "default": "Connor"
+                },
+                "name": {
+                  "default": "K. Connor"
+                },
+                "assistsToDate": 2,
+                "sweaterNumber": 81
+              },
+              {
+                "playerId": 8477504,
+                "firstName": {
+                  "default": "Josh"
+                },
+                "lastName": {
+                  "default": "Morrissey"
+                },
+                "name": {
+                  "default": "J. Morrissey"
+                },
+                "assistsToDate": 1,
+                "sweaterNumber": 44
+              }
+            ],
+            "pptReplayUrl": "https://wsr.nhle.com/sprites/20262027/2026020035/ev289.json",
+            "homeTeamDefendingSide": "right",
+            "isHome": false
+          },
+          {
+            "situationCode": "1541",
+            "eventId": 410,
+            "strength": "pp",
+            "playerId": 8478398,
+            "firstName": {
+              "default": "Kyle"
+            },
+            "lastName": {
+              "default": "Connor"
+            },
+            "name": {
+              "default": "K. Connor"
+            },
+            "teamAbbrev": {
+              "default": "WPG"
+            },
+            "headshot": "https://assets.nhle.com/mugs/nhl/20262027/WPG/8478398.png",
+            "highlightClipSharingUrl": "https://nhl.com/video/wpg-det-connor-scores-ppg-against-john-gibson-6406215762112",
+            "highlightClipSharingUrlFr": "https://nhl.com/fr/video/wpg-det-connor-marque-un-but-en-a-n-contre-john-gibson-6406216471112",
+            "highlightClip": 6406215762112,
+            "highlightClipFr": 6406216471112,
+            "discreteClip": 6406216582112,
+            "discreteClipFr": 6406218224112,
+            "goalsToDate": 2,
+            "awayScore": 2,
+            "homeScore": 0,
+            "leadingTeamAbbrev": {
+              "default": "WPG"
+            },
+            "timeInPeriod": "14:36",
+            "shotType": "backhand",
+            "goalModifier": "none",
+            "assists": [
+              {
+                "playerId": 8480014,
+                "firstName": {
+                  "default": "Gabriel"
+                },
+                "lastName": {
+                  "default": "Vilardi"
+                },
+                "name": {
+                  "default": "G. Vilardi"
+                },
+                "assistsToDate": 2,
+                "sweaterNumber": 13
+              },
+              {
+                "playerId": 8482149,
+                "firstName": {
+                  "default": "Cole"
+                },
+                "lastName": {
+                  "default": "Perfetti"
+                },
+                "name": {
+                  "default": "C. Perfetti"
+                },
+                "assistsToDate": 2,
+                "sweaterNumber": 91
+              }
+            ],
+            "pptReplayUrl": "https://wsr.nhle.com/sprites/20262027/2026020035/ev410.json",
+            "homeTeamDefendingSide": "right",
+            "isHome": false
+          }
+        ]
+      },
+      {
+        "periodDescriptor": {
+          "number": 2,
+          "periodType": "REG",
+          "maxRegulationPeriods": 3
+        },
+        "goals": [
+          {
+            "situationCode": "1541",
+            "eventId": 613,
+            "strength": "pp",
+            "playerId": 8478398,
+            "firstName": {
+              "default": "Kyle"
+            },
+            "lastName": {
+              "default": "Connor"
+            },
+            "name": {
+              "default": "K. Connor"
+            },
+            "teamAbbrev": {
+              "default": "WPG"
+            },
+            "headshot": "https://assets.nhle.com/mugs/nhl/20262027/WPG/8478398.png",
+            "highlightClipSharingUrl": "https://nhl.com/video/wpg-det-connor-scores-ppg-against-john-gibson-6406218856112",
+            "highlightClipSharingUrlFr": "https://nhl.com/fr/video/wpg-det-connor-marque-un-but-en-a-n-contre-john-gibson-6406219240112",
+            "highlightClip": 6406218856112,
+            "highlightClipFr": 6406219240112,
+            "discreteClip": 6406219635112,
+            "discreteClipFr": 6406219634112,
+            "goalsToDate": 3,
+            "goalInGame": 2,
+            "awayScore": 3,
+            "homeScore": 0,
+            "leadingTeamAbbrev": {
+              "default": "WPG"
+            },
+            "timeInPeriod": "05:41",
+            "shotType": "snap",
+            "goalModifier": "none",
+            "assists": [
+              {
+                "playerId": 8477504,
+                "firstName": {
+                  "default": "Josh"
+                },
+                "lastName": {
+                  "default": "Morrissey"
+                },
+                "name": {
+                  "default": "J. Morrissey"
+                },
+                "assistsToDate": 2,
+                "sweaterNumber": 44
+              },
+              {
+                "playerId": 8482149,
+                "firstName": {
+                  "default": "Cole"
+                },
+                "lastName": {
+                  "default": "Perfetti"
+                },
+                "name": {
+                  "default": "C. Perfetti"
+                },
+                "assistsToDate": 3,
+                "sweaterNumber": 91
+              }
+            ],
+            "pptReplayUrl": "https://wsr.nhle.com/sprites/20262027/2026020035/ev613.json",
+            "homeTeamDefendingSide": "left",
+            "isHome": false
+          },
+          {
+            "situationCode": "1451",
+            "eventId": 750,
+            "strength": "pp",
+            "playerId": 8478042,
+            "firstName": {
+              "default": "Viktor"
+            },
+            "lastName": {
+              "default": "Arvidsson"
+            },
+            "name": {
+              "default": "V. Arvidsson"
+            },
+            "teamAbbrev": {
+              "default": "DET"
+            },
+            "headshot": "https://assets.nhle.com/mugs/nhl/20262027/DET/8478042.png",
+            "highlightClipSharingUrl": "https://nhl.com/video/wpg-det-arvidsson-scores-ppg-against-stuart-skinner-6406218972112",
+            "highlightClipSharingUrlFr": "https://nhl.com/fr/video/wpg-det-arvidsson-marque-un-but-en-a-n-contre-stuart-skinner-6406220737112",
+            "highlightClip": 6406218972112,
+            "highlightClipFr": 6406220737112,
+            "discreteClip": 6406219571112,
+            "discreteClipFr": 6406219965112,
+            "goalsToDate": 1,
+            "awayScore": 3,
+            "homeScore": 1,
+            "leadingTeamAbbrev": {
+              "default": "WPG"
+            },
+            "timeInPeriod": "16:52",
+            "shotType": "deflected",
+            "goalModifier": "none",
+            "assists": [
+              {
+                "playerId": 8477429,
+                "firstName": {
+                  "default": "Andrew"
+                },
+                "lastName": {
+                  "default": "Copp"
+                },
+                "name": {
+                  "default": "A. Copp"
+                },
+                "assistsToDate": 1,
+                "sweaterNumber": 18
+              },
+              {
+                "playerId": 8481542,
+                "firstName": {
+                  "default": "Moritz"
+                },
+                "lastName": {
+                  "default": "Seider"
+                },
+                "name": {
+                  "default": "M. Seider"
+                },
+                "assistsToDate": 1,
+                "sweaterNumber": 53
+              }
+            ],
+            "pptReplayUrl": "https://wsr.nhle.com/sprites/20262027/2026020035/ev750.json",
+            "homeTeamDefendingSide": "left",
+            "isHome": true
+          }
+        ]
+      },
+      {
+        "periodDescriptor": {
+          "number": 3,
+          "periodType": "REG",
+          "maxRegulationPeriods": 3
+        },
+        "goals": [
+          {
+            "situationCode": "1551",
+            "eventId": 861,
+            "strength": "ev",
+            "playerId": 8484471,
+            "firstName": {
+              "default": "Emmitt"
+            },
+            "lastName": {
+              "default": "Finnie"
+            },
+            "name": {
+              "default": "E. Finnie"
+            },
+            "teamAbbrev": {
+              "default": "DET"
+            },
+            "headshot": "https://assets.nhle.com/mugs/nhl/20262027/DET/8484471.png",
+            "highlightClipSharingUrl": "https://nhl.com/video/wpg-det-finnie-scores-goal-against-stuart-skinner-6406220275112",
+            "highlightClipSharingUrlFr": "https://nhl.com/fr/video/wpg-det-finnie-marque-un-but-contre-stuart-skinner-6406221642112",
+            "highlightClip": 6406220275112,
+            "highlightClipFr": 6406221642112,
+            "discreteClip": 6406221551112,
+            "discreteClipFr": 6406219693112,
+            "goalsToDate": 1,
+            "awayScore": 3,
+            "homeScore": 2,
+            "leadingTeamAbbrev": {
+              "default": "WPG"
+            },
+            "timeInPeriod": "04:56",
+            "shotType": "wrist",
+            "goalModifier": "none",
+            "assists": [
+              {
+                "playerId": 8484794,
+                "firstName": {
+                  "default": "Michael"
+                },
+                "lastName": {
+                  "default": "Brandsegg-Nygård"
+                },
+                "name": {
+                  "default": "M. Brandsegg-Nygård"
+                },
+                "assistsToDate": 1,
+                "sweaterNumber": 28
+              },
+              {
+                "playerId": 8479337,
+                "firstName": {
+                  "default": "Alex"
+                },
+                "lastName": {
+                  "default": "DeBrincat"
+                },
+                "name": {
+                  "default": "A. DeBrincat"
+                },
+                "assistsToDate": 1,
+                "sweaterNumber": 93
+              }
+            ],
+            "pptReplayUrl": "https://wsr.nhle.com/sprites/20262027/2026020035/ev861.json",
+            "homeTeamDefendingSide": "right",
+            "isHome": true
+          }
+        ]
+      }
+    ],
+    "threeStars": [
+      {
+        "star": 1,
+        "playerId": 8478398,
+        "teamAbbrev": "WPG",
+        "headshot": "https://assets.nhle.com/mugs/nhl/20262027/WPG/8478398.png",
+        "name": {
+          "default": "K. Connor"
+        },
+        "sweaterNo": 81,
+        "position": "L",
+        "goals": 2,
+        "assists": 1,
+        "points": 3
+      },
+      {
+        "star": 2,
+        "playerId": 8482149,
+        "teamAbbrev": "WPG",
+        "headshot": "https://assets.nhle.com/mugs/nhl/20262027/WPG/8482149.png",
+        "name": {
+          "default": "C. Perfetti"
+        },
+        "sweaterNo": 91,
+        "position": "C",
+        "goals": 1,
+        "assists": 2,
+        "points": 3
+      },
+      {
+        "star": 3,
+        "playerId": 8478042,
+        "teamAbbrev": "DET",
+        "headshot": "https://assets.nhle.com/mugs/nhl/20262027/DET/8478042.png",
+        "name": {
+          "default": "V. Arvidsson"
+        },
+        "sweaterNo": 33,
+        "position": "L",
+        "goals": 1,
+        "assists": 0,
+        "points": 1
+      }
+    ],
+    "penalties": [
+      {
+        "periodDescriptor": {
+          "number": 1,
+          "periodType": "REG",
+          "maxRegulationPeriods": 3
+        },
+        "penalties": [
+          {
+            "timeInPeriod": "09:26",
+            "type": "MIN",
+            "duration": 2,
+            "committedByPlayer": {
+              "firstName": {
+                "default": "Gabriel"
+              },
+              "lastName": {
+                "default": "Vilardi"
+              },
+              "sweaterNumber": 13
+            },
+            "teamAbbrev": {
+              "default": "WPG"
+            },
+            "drawnBy": {
+              "firstName": {
+                "default": "Andreas"
+              },
+              "lastName": {
+                "default": "Englund"
+              },
+              "sweaterNumber": 24
+            },
+            "descKey": "tripping"
+          },
+          {
+            "timeInPeriod": "12:10",
+            "type": "MIN",
+            "duration": 2,
+            "committedByPlayer": {
+              "firstName": {
+                "default": "Keegan"
+              },
+              "lastName": {
+                "default": "Kolesar"
+              },
+              "sweaterNumber": 55
+            },
+            "teamAbbrev": {
+              "default": "DET"
+            },
+            "drawnBy": {
+              "firstName": {
+                "default": "Tyrel"
+              },
+              "lastName": {
+                "default": "Bauer"
+              },
+              "sweaterNumber": 77
+            },
+            "descKey": "unsportsmanlike-conduct",
+            "servedBy": {
+              "default": "Michael Brandsegg-Nygård"
+            }
+          },
+          {
+            "timeInPeriod": "12:10",
+            "type": "MAJ",
+            "duration": 5,
+            "committedByPlayer": {
+              "firstName": {
+                "default": "Tyrel"
+              },
+              "lastName": {
+                "default": "Bauer"
+              },
+              "sweaterNumber": 77
+            },
+            "teamAbbrev": {
+              "default": "WPG"
+            },
+            "drawnBy": {
+              "firstName": {
+                "default": "Keegan"
+              },
+              "lastName": {
+                "default": "Kolesar"
+              },
+              "sweaterNumber": 55
+            },
+            "descKey": "fighting"
+          },
+          {
+            "timeInPeriod": "12:10",
+            "type": "MAJ",
+            "duration": 5,
+            "committedByPlayer": {
+              "firstName": {
+                "default": "Keegan"
+              },
+              "lastName": {
+                "default": "Kolesar"
+              },
+              "sweaterNumber": 55
+            },
+            "teamAbbrev": {
+              "default": "DET"
+            },
+            "drawnBy": {
+              "firstName": {
+                "default": "Tyrel"
+              },
+              "lastName": {
+                "default": "Bauer"
+              },
+              "sweaterNumber": 77
+            },
+            "descKey": "fighting"
+          },
+          {
+            "timeInPeriod": "13:04",
+            "type": "MIN",
+            "duration": 2,
+            "committedByPlayer": {
+              "firstName": {
+                "default": "J.T."
+              },
+              "lastName": {
+                "default": "Compher"
+              },
+              "sweaterNumber": 37
+            },
+            "teamAbbrev": {
+              "default": "DET"
+            },
+            "descKey": "abuse-of-officials"
+          },
+          {
+            "timeInPeriod": "19:25",
+            "type": "MIN",
+            "duration": 2,
+            "committedByPlayer": {
+              "firstName": {
+                "default": "Vladislav"
+              },
+              "lastName": {
+                "default": "Namestnikov",
+                "cs": "Naměstnikov"
+              },
+              "sweaterNumber": 7
+            },
+            "teamAbbrev": {
+              "default": "WPG"
+            },
+            "drawnBy": {
+              "firstName": {
+                "default": "Albert"
+              },
+              "lastName": {
+                "default": "Johansson"
+              },
+              "sweaterNumber": 20
+            },
+            "descKey": "cross-checking"
+          }
+        ]
+      },
+      {
+        "periodDescriptor": {
+          "number": 2,
+          "periodType": "REG",
+          "maxRegulationPeriods": 3
+        },
+        "penalties": [
+          {
+            "timeInPeriod": "05:02",
+            "type": "MIN",
+            "duration": 2,
+            "committedByPlayer": {
+              "firstName": {
+                "default": "Lucas"
+              },
+              "lastName": {
+                "default": "Raymond"
+              },
+              "sweaterNumber": 23
+            },
+            "teamAbbrev": {
+              "default": "DET"
+            },
+            "drawnBy": {
+              "firstName": {
+                "default": "Brad"
+              },
+              "lastName": {
+                "default": "Lambert"
+              },
+              "sweaterNumber": 93
+            },
+            "descKey": "holding-the-stick"
+          },
+          {
+            "timeInPeriod": "15:48",
+            "type": "MIN",
+            "duration": 2,
+            "committedByPlayer": {
+              "firstName": {
+                "default": "Dylan"
+              },
+              "lastName": {
+                "default": "DeMelo",
+                "cs": "Demelo",
+                "de": "Demelo",
+                "fi": "Demelo",
+                "sk": "Demelo",
+                "sv": "Demelo"
+              },
+              "sweaterNumber": 2
+            },
+            "teamAbbrev": {
+              "default": "WPG"
+            },
+            "drawnBy": {
+              "firstName": {
+                "default": "Keegan"
+              },
+              "lastName": {
+                "default": "Kolesar"
+              },
+              "sweaterNumber": 55
+            },
+            "descKey": "tripping"
+          },
+          {
+            "timeInPeriod": "17:56",
+            "type": "MIN",
+            "duration": 2,
+            "committedByPlayer": {
+              "firstName": {
+                "default": "Vladislav"
+              },
+              "lastName": {
+                "default": "Namestnikov",
+                "cs": "Naměstnikov"
+              },
+              "sweaterNumber": 7
+            },
+            "teamAbbrev": {
+              "default": "WPG"
+            },
+            "drawnBy": {
+              "firstName": {
+                "default": "Axel"
+              },
+              "lastName": {
+                "default": "Sandin-Pellikka"
+              },
+              "sweaterNumber": 44
+            },
+            "descKey": "tripping"
+          }
+        ]
+      },
+      {
+        "periodDescriptor": {
+          "number": 3,
+          "periodType": "REG",
+          "maxRegulationPeriods": 3
+        },
+        "penalties": [
+          {
+            "timeInPeriod": "01:18",
+            "type": "MIN",
+            "duration": 2,
+            "committedByPlayer": {
+              "firstName": {
+                "default": "Viktor"
+              },
+              "lastName": {
+                "default": "Arvidsson"
+              },
+              "sweaterNumber": 33
+            },
+            "teamAbbrev": {
+              "default": "DET"
+            },
+            "drawnBy": {
+              "firstName": {
+                "default": "Neal"
+              },
+              "lastName": {
+                "default": "Pionk"
+              },
+              "sweaterNumber": 4
+            },
+            "descKey": "interference"
+          },
+          {
+            "timeInPeriod": "15:53",
+            "type": "MIN",
+            "duration": 2,
+            "committedByPlayer": {
+              "firstName": {
+                "default": "Dylan"
+              },
+              "lastName": {
+                "default": "DeMelo",
+                "cs": "Demelo",
+                "de": "Demelo",
+                "fi": "Demelo",
+                "sk": "Demelo",
+                "sv": "Demelo"
+              },
+              "sweaterNumber": 2
+            },
+            "teamAbbrev": {
+              "default": "WPG"
+            },
+            "drawnBy": {
+              "firstName": {
+                "default": "Alex"
+              },
+              "lastName": {
+                "default": "DeBrincat"
+              },
+              "sweaterNumber": 93
+            },
+            "descKey": "hooking"
+          }
+        ]
+      }
+    ]
+  },
+  "clock": {
+    "timeRemaining": "00:00",
+    "secondsRemaining": 0,
+    "running": false,
+    "inIntermission": false
+  }
+}
