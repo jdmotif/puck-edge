@@ -66,8 +66,8 @@ export function makeFormat(locale: Locale) {
     int: (n: number) => num(n, 0),
     /** Calendar date from YYYY-MM-DD, read at local noon so it never slips a day. */
     day: (iso: string, opts: Intl.DateTimeFormatOptions) => new Date(iso + "T12:00:00").toLocaleDateString(tag, opts),
-    dateTime: (ms: number) => new Date(ms).toLocaleString(tag),
-    time: (ms: number) => new Date(ms).toLocaleTimeString(tag),
+    dateTime: (ms: number) => new Date(ms).toLocaleString(tag, { dateStyle: "long", timeStyle: "short" }),
+    time: (ms: number) => new Date(ms).toLocaleTimeString(tag, { timeStyle: "short" }),
     /** Season id 20252026 → 2025–26 (en) or 2025-2026 (fr). */
     season: (s: number) => (fr ? `${String(s).slice(0, 4)}-${String(s).slice(4)}` : `${String(s).slice(0, 4)}–${String(s).slice(6)}`),
     ago: (ms: number) => {

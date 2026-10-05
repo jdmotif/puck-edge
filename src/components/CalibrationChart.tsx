@@ -24,7 +24,7 @@ export function CalibrationChart({ series }: { series: { label: string; color: s
           <g key={v}>
             <line x1={x(0)} x2={x(1)} y1={y(v)} y2={y(v)} stroke="var(--border)" strokeWidth={0.5} />
             <text x={x(0) - 4} y={y(v) + 3} fontSize="8" textAnchor="end" fill="var(--muted)">{f.pct(v)}</text>
-            <text x={x(v)} y={S - pad + 12} fontSize="8" textAnchor="middle" fill="var(--muted)">{f.pct(v)}</text>
+            <text x={x(v)} y={S - pad + 12} fontSize="8" textAnchor={v === 1 ? "end" : "middle"} fill="var(--muted)">{f.pct(v)}</text>
           </g>
         ))}
         <line x1={x(0)} y1={y(0)} x2={x(1)} y2={y(1)} stroke="var(--muted)" strokeDasharray="3 3" strokeWidth={1} />

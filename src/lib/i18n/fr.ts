@@ -8,7 +8,7 @@ import type { Messages } from "./en";
 type Team = string;
 
 const PERIOD_TYPE: Record<string, string> = { OT: "PROL", SO: "TB" };
-const STREAK: Record<string, string> = { W: "V", L: "D", OT: "P" };
+const STREAK: Record<string, string> = { W: "V", L: "D", OT: "DP" };
 const STRENGTH: Record<string, string> = { pp: "AN", sh: "DN", en: "FD", ev: "FÉ" };
 const POSITION: Record<string, string> = { L: "AG", R: "AD", C: "C", D: "D", G: "G" };
 const CONFERENCE: Record<string, string> = { Eastern: "Association de l'Est", Western: "Association de l'Ouest" };
@@ -200,7 +200,7 @@ export const fr = (f: Format): Messages => ({
       "Aucun historique de matchs en mémoire : le modèle considère donc chaque équipe comme moyenne et n'indiquera aucun choix de valeur. Lancez `npm run sync` une fois pour importer cette saison et la précédente (quelques minutes).",
     noGames: "Aucun match de la LNH à cette date.",
     games: "Matchs",
-    someLive: "Certains sont déjà commencés",
+    someLive: "Certains en cours",
     onSlate: "Au programme",
     valuePicks: "Choix de valeur",
     edgeAtLeast: (t: number) => `Avantage ≥ ${f.pct(t, 1)}`,
