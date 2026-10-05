@@ -3,19 +3,22 @@ import { api, seasonFor, todayIso } from "@/lib/nhl/client";
 import { SortableTable } from "@/components/SortableTable";
 import { Card, Empty, PageTitle, StaleBanner, Tabs } from "@/components/ui";
 import type { LeaderEntry } from "@/lib/nhl/types";
+import { getI18n } from "@/lib/i18n/server";
+import { Rich } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function LeadersPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const { tab = "skaters" } = await searchParams;
+  const { t } = await getI18n();
   const tabs = [
-    { key: "skaters", label: "Skaters", href: "/leaders?tab=skaters" },
-    { key: "goalies", label: "Goalies", href: "/leaders?tab=goalies" },
-    { key: "hot", label: "Hot & cold", href: "/leaders?tab=hot" },
+    { key: "skaters", label: t.leaders.skaters, href: "/leaders?tab=skaters" },
+    { key: "goalies", label: t.leaders.goalies, href: "/leaders?tab=goalies" },
+    { key: "hot", label: t.leaders.hot, href: "/leaders?tab=hot" },
   ];
   return (
     <>
-      <PageTitle>Leaders</PageTitle>
+      <PageTitle>{t.leaders.title}</PageTitle>
       <Tabs tabs={tabs} active={tab} />
       {tab === "goalies" ? <Goalies /> : tab === "hot" ? <HotCold /> : <Skaters />}
     </>
@@ -52,13 +55,14 @@ function TopCards({ data, cats }: { data: Record<string, LeaderEntry[]> | null; 
 }
 
 async function Skaters() {
-  const [{ teams, stats, sources }, leaders] = await Promise.all([allClubStats(), api.skaterLeaders()]);
+  const [{ teams, stats, sources }, leaders, { t }] = await Promise.all([allClubStats(), api.skaterLeaders(), getI18n()]);
+  const L = t.leaders, st = t.stats;
   const rows = stats.flatMap((s, i) =>
     (s.data?.skaters ?? []).map((p) => ({
       name: `${p.firstName.default} ${p.lastName.default}`,
       href: `/players/${p.playerId}`,
       team: teams[i],
-      pos: p.positionCode,
+      pos: st.position(p.positionCode),
       gp: p.gamesPlayed,
       g: p.goals,
       a: p.assists,
@@ -73,33 +77,34 @@ async function Skaters() {
   return (
     <>
       <StaleBanner items={[...sources, leaders]} />
-      <TopCards data={leaders.data} cats={[{ key: "points", label: "Points" }, { key: "goals", label: "Goals" }, { key: "assists", label: "Assists" }]} />
+      <TopCards data={leaders.data} cats={[{ key: "points", label: L.points }, { key: "goals", label: L.goals }, { key: "assists", label: L.assists }]} />
       {rows.length ? (
         <SortableTable
           initialSort="p"
           columns={[
-            { key: "name", label: "Player", left: true },
-            { key: "team", label: "Team", left: true },
-            { key: "pos", label: "Pos", left: true },
-            { key: "gp", label: "GP" },
-            { key: "g", label: "G" },
-            { key: "a", label: "A" },
-            { key: "p", label: "P" },
-            { key: "ptsPerGp", label: "P/GP", decimals: 2 },
-            { key: "ppg", label: "PPG" },
-            { key: "sog", label: "SOG" },
-            { key: "toi", label: "TOI/GP", format: "toi" },
-            { key: "pm", label: "+/-" },
+            { key: "name", label: t.common.player, left: true },
+            { key: "team", label: t.common.team, left: true },
+            { key: "pos", label: st.pos, left: true },
+            { key: "gp", label: st.gp },
+            { key: "g", label: st.g },
+            { key: "a", label: st.a },
+            { key: "p", label: st.p },
+            { key: "ptsPerGp", label: st.ptsPerGp, decimals: 2 },
+            { key: "ppg", label: st.ppg },
+            { key: "sog", label: st.sog },
+            { key: "toi", label: st.toiPerGp, format: "toi" },
+            { key: "pm", label: st.pm },
           ]}
           rows={rows}
         />
-      ) : <Empty>Skater stats aren&apos;t available right now.</Empty>}
+      ) : <Empty>{L.noSkaters}</Empty>}
     </>
   );
 }
 
 async function Goalies() {
-  const [{ teams, stats, sources }, leaders] = await Promise.all([allClubStats(), api.goalieLeaders()]);
+  const [{ teams, stats, sources }, leaders, { t, f }] = await Promise.all([allClubStats(), api.goalieLeaders(), getI18n()]);
+  const L = t.leaders, st = t.stats;
   const rows = stats.flatMap((s, i) =>
     (s.data?.goalies ?? []).map((g) => ({
       name: `${g.firstName.default} ${g.lastName.default}`,
@@ -122,9 +127,9 @@ async function Goalies() {
       <TopCards
         data={leaders.data}
         cats={[
-          { key: "wins", label: "Wins" },
-          { key: "savePctg", label: "Save %", fmt: (v) => v.toFixed(3).replace(/^0/, "") },
-          { key: "goalsAgainstAverage", label: "GAA", fmt: (v) => v.toFixed(2) },
+          { key: "wins", label: L.wins },
+          { key: "savePctg", label: L.savePct, fmt: (v) => f.svPct(v) },
+          { key: "goalsAgainstAverage", label: L.gaa, fmt: (v) => f.num(v, 2) },
         ]}
       />
       {rows.length ? (
@@ -132,28 +137,30 @@ async function Goalies() {
           initialSort="w"
           ascendingKeys={["gaa", "l", "otl"]}
           columns={[
-            { key: "name", label: "Goalie", left: true },
-            { key: "team", label: "Team", left: true },
-            { key: "gp", label: "GP" },
-            { key: "gs", label: "GS" },
-            { key: "w", label: "W" },
-            { key: "l", label: "L" },
-            { key: "otl", label: "OTL" },
-            { key: "sv", label: "SV%", format: "sv" },
-            { key: "gaa", label: "GAA", decimals: 2 },
-            { key: "sa", label: "SA" },
-            { key: "so", label: "SO" },
+            { key: "name", label: t.common.goalie, left: true },
+            { key: "team", label: t.common.team, left: true },
+            { key: "gp", label: st.gp },
+            { key: "gs", label: st.gs },
+            { key: "w", label: st.w },
+            { key: "l", label: st.l },
+            { key: "otl", label: st.otl },
+            { key: "sv", label: st.sv, format: "sv" },
+            { key: "gaa", label: st.gaa, decimals: 2 },
+            { key: "sa", label: st.sa },
+            { key: "so", label: st.so },
           ]}
           rows={rows}
         />
-      ) : <Empty>Goalie stats aren&apos;t available right now.</Empty>}
+      ) : <Empty>{L.noGoalies}</Empty>}
     </>
   );
 }
 
 interface HotRow { player_id: number; name: string; team: string; gp: number; pts: number; l5gp: number; l5pts: number; l5g: number }
 
-function HotCold() {
+async function HotCold() {
+  const { t, f } = await getI18n();
+  const L = t.leaders;
   const season = seasonFor(todayIso());
   // Last-5 points rate vs the season rate, from stored box scores. Early in a season (under
   // 20 GP) the baseline also includes last season, so the list isn't empty for the first month.
@@ -190,33 +197,33 @@ function HotCold() {
     });
   const hot = [...scored].sort((a, b) => b.z - a.z).filter((r) => r.z > 1).slice(0, 12);
   const cold = [...scored].sort((a, b) => a.z - b.z).filter((r) => r.z < -1).slice(0, 12);
-  if (!rows.length) return <Empty>Hot &amp; cold needs stored box scores. Run <code className="text-ink">npm run sync</code>; players need 8+ games.</Empty>;
+  if (!rows.length) return <Empty><Rich text={L.hotEmpty} /></Empty>;
   const List = ({ title, list, tone }: { title: string; list: typeof hot; tone: string }) => (
     <Card className="!p-0">
       <h2 className={`px-4 pt-4 font-display text-lg font-bold uppercase tracking-wide ${tone}`}>{title}</h2>
       <table className="tabular mt-2 w-full text-sm">
-        <thead className="text-xs text-muted"><tr className="[&>th]:px-2 [&>th]:py-2 [&>th]:text-right [&>th:first-child]:text-left"><th>Player</th><th>Last 5</th><th>Season P/GP</th><th>Last 5 P/GP</th></tr></thead>
+        <thead className="text-xs text-muted"><tr className="[&>th]:px-2 [&>th]:py-2 [&>th]:text-right [&>th:first-child]:text-left"><th>{t.common.player}</th><th>{L.last5}</th><th>{L.seasonRate}</th><th>{L.last5Rate}</th></tr></thead>
         <tbody>
           {list.map((r) => (
             <tr key={r.player_id} className="border-t border-line [&>td]:px-2 [&>td]:py-2 [&>td]:text-right">
               <td className="!text-left"><a href={`/players/${r.player_id}`} className="hover:text-accent-2">{r.name}</a> <span className="text-xs text-muted">{r.team}</span></td>
-              <td className="text-ink-2">{r.l5g}G {r.l5pts}P</td>
-              <td>{r.seasonRate.toFixed(2)}</td>
-              <td className="font-semibold">{r.l5.toFixed(2)}</td>
+              <td className="text-ink-2">{t.stats.goalsPoints(r.l5g, r.l5pts)}</td>
+              <td>{f.num(r.seasonRate, 2)}</td>
+              <td className="font-semibold">{f.num(r.l5, 2)}</td>
             </tr>
           ))}
-          {!list.length && <tr><td className="p-3 text-muted">Nobody far off their season pace.</td></tr>}
+          {!list.length && <tr><td className="p-3 text-muted">{L.nobody}</td></tr>}
         </tbody>
       </table>
     </Card>
   );
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      <List title="🔥 Hot: last 5 well above season pace" list={hot} tone="text-good" />
-      <List title="🧊 Cold: last 5 well below season pace" list={cold} tone="text-s1" />
+      <List title={L.hotTitle} list={hot} tone="text-good" />
+      <List title={L.coldTitle} list={cold} tone="text-s1" />
       <p className="text-xs text-muted md:col-span-2">
-        A player is listed when their last-5 points rate is more than one standard deviation (Poisson noise for 5 games) away from their season rate.
-        {earlySeason && " Until a player has 20 games this season, \"season\" means this season and last season together, and the last 5 can include last season's final games."}
+        {L.explain}
+        {earlySeason && L.early}
       </p>
     </div>
   );

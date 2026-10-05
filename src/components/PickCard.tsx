@@ -1,11 +1,11 @@
 import type { Pick } from "@/lib/picks";
-import { MARKET_LABELS } from "@/lib/grading";
-import { american, pct, signedPct } from "@/lib/format";
+import { getI18n } from "@/lib/i18n/server";
 import { Pill } from "./ui";
 
 const confTone = { High: "good", Medium: "accent", Low: "neutral" } as const;
 
-export function PickCard({ pick, best = false, betHref }: { pick: Pick; best?: boolean; betHref?: string }) {
+export async function PickCard({ pick, best = false, betHref }: { pick: Pick; best?: boolean; betHref?: string }) {
+  const { t, f } = await getI18n();
   return (
     <div
       className={`relative overflow-hidden rounded-xl border p-3.5 ${
@@ -14,12 +14,12 @@ export function PickCard({ pick, best = false, betHref }: { pick: Pick; best?: b
     >
       {best && <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-accent/20 blur-2xl" />}
       <div className="relative flex flex-wrap items-center gap-2">
-        {best && <span className="rounded-md bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white">Best pick</span>}
-        <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">{MARKET_LABELS[pick.market]}</span>
+        {best && <span className="rounded-md bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white">{t.pick.best}</span>}
+        <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">{t.markets[pick.market]}</span>
         <span className="ml-auto flex gap-1">
-          {pick.isValue && <Pill tone="edge">Value</Pill>}
-          {pick.odds === null && <Pill>Model only</Pill>}
-          <Pill tone={confTone[pick.confidence]}>{pick.confidence}</Pill>
+          {pick.isValue && <Pill tone="edge">{t.pick.value}</Pill>}
+          {pick.odds === null && <Pill>{t.pick.modelOnly}</Pill>}
+          <Pill tone={confTone[pick.confidence]}>{t.confidence[pick.confidence]}</Pill>
         </span>
       </div>
 
@@ -28,25 +28,25 @@ export function PickCard({ pick, best = false, betHref }: { pick: Pick; best?: b
           <div className="font-display text-xl font-bold uppercase leading-tight tracking-wide">{pick.label}</div>
           {pick.odds && (
             <div className="tabular text-xs text-ink-2">
-              <span className="font-semibold text-ink">{american(pick.odds)}</span> ({pick.odds.toFixed(2)}){pick.book ? ` at ${pick.book}` : ""}
+              <span className="font-semibold text-ink">{f.american(pick.odds)}</span> ({f.decimal(pick.odds)}){pick.book ? t.pick.atBook(pick.book) : ""}
             </div>
           )}
         </div>
         <div className="flex shrink-0 gap-3 text-right tabular">
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">Model</div>
-            <div className="font-display text-lg font-bold leading-none">{pct(pick.modelProb, 1)}</div>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">{t.pick.model}</div>
+            <div className="font-display text-lg font-bold leading-none">{f.pct(pick.modelProb, 1)}</div>
           </div>
           {pick.marketProb !== null && (
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">Market</div>
-              <div className="font-display text-lg font-bold leading-none text-ink-2">{pct(pick.marketProb, 1)}</div>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">{t.pick.market}</div>
+              <div className="font-display text-lg font-bold leading-none text-ink-2">{f.pct(pick.marketProb, 1)}</div>
             </div>
           )}
           {pick.edge !== null && (
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">Edge</div>
-              <div className={`font-display text-lg font-bold leading-none ${pick.edge >= 0 ? "text-edge" : "text-bad"}`}>{signedPct(pick.edge)}</div>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">{t.pick.edge}</div>
+              <div className={`font-display text-lg font-bold leading-none ${pick.edge >= 0 ? "text-edge" : "text-bad"}`}>{f.signedPct(pick.edge)}</div>
             </div>
           )}
         </div>
@@ -61,10 +61,10 @@ export function PickCard({ pick, best = false, betHref }: { pick: Pick; best?: b
       )}
       {(betHref || (pick.stake !== null && pick.stake > 0)) && (
         <div className="relative mt-3 flex items-center justify-between gap-2">
-          {pick.stake !== null && pick.stake > 0 ? <span className="tabular text-xs text-muted">Kelly stake <span className="font-semibold text-ink-2">${pick.stake.toFixed(2)}</span></span> : <span />}
+          {pick.stake !== null && pick.stake > 0 ? <span className="tabular text-xs text-muted">{t.pick.kellyStake} <span className="font-semibold text-ink-2">{f.money(pick.stake)}</span></span> : <span />}
           {betHref && (
             <a href={betHref} className="rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent-2 hover:bg-accent/20">
-              Log bet →
+              {t.pick.logBet}
             </a>
           )}
         </div>

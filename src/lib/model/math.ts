@@ -14,7 +14,8 @@ export function decimalToAmerican(decimal: number): number {
 
 /** Parse "+184", "-225", "184" (American) or "3.10" (decimal). Returns decimal odds, or null. */
 export function parseOdds(raw: string | number): number | null {
-  const s = String(raw).trim();
+  // Accept a decimal comma (1,91) and the typographic minus (−110) as typed in French.
+  const s = String(raw).trim().replace(",", ".").replace("−", "-");
   if (!s) return null;
   if (/^[+-]\d+(\.0+)?$/.test(s)) return americanToDecimal(Number(s));
   const n = Number(s);

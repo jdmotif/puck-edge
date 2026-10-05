@@ -7,11 +7,12 @@ import { settleBets } from "@/lib/grading";
 
 export async function addBet(form: FormData) {
   const odds = parseOdds(String(form.get("odds") ?? ""));
-  const stake = Number(form.get("stake"));
+  const num = (v: FormDataEntryValue | null) => Number(String(v ?? "").trim().replace(",", ".").replace("−", "-"));
+  const stake = num(form.get("stake"));
   const gameId = Number(form.get("gameId"));
   const market = String(form.get("market"));
   const selection = String(form.get("selection") ?? "").trim();
-  if (!odds || !(stake > 0) || !gameId || !market || !selection) redirect("/bets?error=Please+fill+in+game,+selection,+odds+and+stake");
+  if (!odds || !(stake > 0) || !gameId || !market || !selection) redirect("/bets?error=missing");
   const lineRaw = String(form.get("line") ?? "").trim();
   sqlite
     .prepare(
@@ -26,7 +27,7 @@ export async function addBet(form: FormData) {
       market,
       selection,
       String(form.get("selectionLabel") || selection),
-      lineRaw === "" ? null : Number(lineRaw),
+      lineRaw === "" ? null : num(lineRaw),
       odds,
       stake,
       String(form.get("notes") ?? "") || null,

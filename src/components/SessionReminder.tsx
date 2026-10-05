@@ -1,8 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useI18n } from "@/lib/i18n/client";
 
 /** Gentle nudge after N minutes in the app. Session start is kept per browser tab. */
 export function SessionReminder({ minutes }: { minutes: number }) {
+  const { t } = useI18n();
   const [show, setShow] = useState(false);
   useEffect(() => {
     if (!minutes) return;
@@ -19,7 +21,7 @@ export function SessionReminder({ minutes }: { minutes: number }) {
   if (!show) return null;
   return (
     <div className="fixed inset-x-3 bottom-20 z-50 mx-auto max-w-md rounded-xl border border-line bg-surface-2 p-4 text-sm shadow-xl md:bottom-6">
-      <p>You&apos;ve been here {minutes} minutes. A good moment for a break.</p>
+      <p>{t.common.sessionReminder(minutes)}</p>
       <button
         className="mt-2 rounded-md bg-accent px-3 py-1 text-white"
         onClick={() => {
@@ -29,7 +31,7 @@ export function SessionReminder({ minutes }: { minutes: number }) {
           setShow(false);
         }}
       >
-        Got it
+        {t.common.gotIt}
       </button>
     </div>
   );
