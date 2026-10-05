@@ -1,0 +1,20 @@
+{
+  "items": [
+    {
+      "_entityId": "sample-1",
+      "slug": "sample-bruins-senators-preview-october-5-2026",
+      "headline": "Sample: Senators at Bruins game preview",
+      "title": "Senators at Bruins",
+      "summary": "SAMPLE ARTICLE for offline mode. Ottawa visits Boston on opening night.",
+      "contentDate": "2026-10-05T18:30:00Z",
+      "thumbnail": { "templateUrl": "https://media.d3.nhle.com/image/private/{formatInstructions}/sample" }
+    },
+    {
+      "_entityId": "sample-2",
+      "slug": "sample-wild-card-race-early-look",
+      "headline": "Sample: An early look at the wild card race",
+      "summary": "SAMPLE ARTICLE for offline mode. Which teams are positioned for a wild card spot.",
+      "contentDate": "2026-10-04T23:00:00Z"
+    }
+  ]
+}

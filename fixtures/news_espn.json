@@ -1,0 +1,23 @@
+{
+  "header": "NHL News",
+  "articles": [
+    {
+      "type": "HeadlineNews",
+      "headline": "Sample: Oilers sign defenseman to two-year extension",
+      "description": "SAMPLE ARTICLE for offline mode. The Edmonton Oilers announced a contract extension on Monday.",
+      "published": "2026-10-05T19:42:00Z",
+      "lastModified": "2026-10-05T19:50:00Z",
+      "images": [{ "type": "header", "url": "https://a.espncdn.com/photo/2026/1005/sample.jpg", "width": 1296, "height": 729 }],
+      "links": { "web": { "href": "https://www.espn.com/nhl/story/_/id/00000001/sample-oilers-extension" } },
+      "categories": [{ "type": "team", "description": "Edmonton Oilers", "teamId": 22 }]
+    },
+    {
+      "type": "HeadlineNews",
+      "headline": "Sample: Maple Leafs set opening-night lineup",
+      "description": "SAMPLE ARTICLE for offline mode. Toronto finalized its roster ahead of the season opener.",
+      "published": "2026-10-05T16:05:00Z",
+      "images": [],
+      "links": { "web": { "href": "https://www.espn.com/nhl/story/_/id/00000002/sample-leafs-lineup" } }
+    }
+  ]
+}
