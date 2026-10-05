@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS bets (
   game_label TEXT NOT NULL, market TEXT NOT NULL, selection TEXT NOT NULL, selection_label TEXT NOT NULL, line REAL,
   odds_decimal REAL NOT NULL, stake REAL NOT NULL, status TEXT NOT NULL DEFAULT 'open', profit REAL,
   settled_at INTEGER, notes TEXT);
+CREATE TABLE IF NOT EXISTS game_details (game_id INTEGER PRIMARY KEY, goals TEXT NOT NULL, stars TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS model_params (key TEXT PRIMARY KEY, value TEXT NOT NULL, fitted_at INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS sync_log (

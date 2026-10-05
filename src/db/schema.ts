@@ -104,6 +104,13 @@ export const backtest = sqliteTable("backtest", {
   homeCover15Prob: real("home_cover15_prob").notNull(),
 });
 
+// Goal scorers and three stars for the results page (from gamecenter landing).
+export const gameDetails = sqliteTable("game_details", {
+  gameId: integer("game_id").primaryKey(),
+  goals: text("goals").notNull(), // JSON GoalSummary[]
+  stars: text("stars").notNull(), // JSON StarSummary[]
+});
+
 export const bets = sqliteTable("bets", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   createdAt: integer("created_at").notNull(),
