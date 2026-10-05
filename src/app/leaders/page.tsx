@@ -39,7 +39,7 @@ function TopCards({ data, cats }: { data: Record<string, LeaderEntry[]> | null; 
           <ol className="space-y-0.5 text-sm">
             {(data[c.key] ?? []).slice(0, 5).map((e) => (
               <li key={e.id} className="flex gap-2">
-                <a href={`/players/${e.id}`} className="flex-1 truncate hover:text-accent">{e.firstName.default} {e.lastName.default}</a>
+                <a href={`/players/${e.id}`} className="flex-1 truncate hover:text-accent-2">{e.firstName.default} {e.lastName.default}</a>
                 <span className="text-muted">{e.teamAbbrev}</span>
                 <span className="w-12 text-right tabular font-semibold">{c.fmt ? c.fmt(e.value) : e.value}</span>
               </li>
@@ -193,13 +193,13 @@ function HotCold() {
   if (!rows.length) return <Empty>Hot &amp; cold needs stored box scores. Run <code className="text-ink">npm run sync</code>; players need 8+ games.</Empty>;
   const List = ({ title, list, tone }: { title: string; list: typeof hot; tone: string }) => (
     <Card className="!p-0">
-      <h2 className={`px-3 pt-3 text-sm font-semibold ${tone}`}>{title}</h2>
+      <h2 className={`px-4 pt-4 font-display text-lg font-bold uppercase tracking-wide ${tone}`}>{title}</h2>
       <table className="tabular mt-2 w-full text-sm">
-        <thead className="text-xs text-muted"><tr className="[&>th]:px-2 [&>th]:py-1 [&>th]:text-right [&>th:first-child]:text-left"><th>Player</th><th>Last 5</th><th>Season P/GP</th><th>Last 5 P/GP</th></tr></thead>
+        <thead className="text-xs text-muted"><tr className="[&>th]:px-2 [&>th]:py-2 [&>th]:text-right [&>th:first-child]:text-left"><th>Player</th><th>Last 5</th><th>Season P/GP</th><th>Last 5 P/GP</th></tr></thead>
         <tbody>
           {list.map((r) => (
-            <tr key={r.player_id} className="border-t border-line [&>td]:px-2 [&>td]:py-1 [&>td]:text-right">
-              <td className="!text-left"><a href={`/players/${r.player_id}`} className="hover:text-accent">{r.name}</a> <span className="text-xs text-muted">{r.team}</span></td>
+            <tr key={r.player_id} className="border-t border-line [&>td]:px-2 [&>td]:py-2 [&>td]:text-right">
+              <td className="!text-left"><a href={`/players/${r.player_id}`} className="hover:text-accent-2">{r.name}</a> <span className="text-xs text-muted">{r.team}</span></td>
               <td className="text-ink-2">{r.l5g}G {r.l5pts}P</td>
               <td>{r.seasonRate.toFixed(2)}</td>
               <td className="font-semibold">{r.l5.toFixed(2)}</td>

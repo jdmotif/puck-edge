@@ -49,7 +49,7 @@ export default async function StandingsPage({ searchParams }: { searchParams: Pr
             const wild = inConf.filter((r) => r.divisionSequence > 3).sort((a, b) => a.wildcardSequence - b.wildcardSequence || a.conferenceSequence - b.conferenceSequence);
             return (
               <div key={c} className="space-y-3">
-                <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">{c} Conference</h2>
+                <h2 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-accent-2">{c} Conference</h2>
                 {top3.map((t, i) => (
                   <StandingsTable key={i} title={t[0]?.divisionName} rows={t} />
                 ))}
