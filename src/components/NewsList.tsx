@@ -1,11 +1,12 @@
 import type { NewsItem } from "@/lib/news";
 import { SOURCES } from "@/lib/news/sources";
-import { ago } from "@/lib/format";
+import { getI18n } from "@/lib/i18n/server";
 import { Pill } from "@/components/ui";
 
 const sourceName = (id: string) => SOURCES.find((s) => s.id === id)?.name ?? id;
 
-export function NewsList({ items, compact = false }: { items: NewsItem[]; compact?: boolean }) {
+export async function NewsList({ items, compact = false }: { items: NewsItem[]; compact?: boolean }) {
+  const { f } = await getI18n();
   return (
     <ul className={compact ? "space-y-2" : "space-y-3"}>
       {items.map((n) => (
@@ -17,7 +18,7 @@ export function NewsList({ items, compact = false }: { items: NewsItem[]; compac
               </a>
               <div className="mt-0.5 text-xs text-muted">
                 {sourceName(n.source)}
-                {n.publishedAt > 0 && <> · <time dateTime={new Date(n.publishedAt).toISOString()}>{ago(n.publishedAt)}</time></>}
+                {n.publishedAt > 0 && <> · <time dateTime={new Date(n.publishedAt).toISOString()}>{f.ago(n.publishedAt)}</time></>}
               </div>
               {!compact && n.summary && <p className="mt-1 line-clamp-2 text-sm text-ink-2">{n.summary}</p>}
               {!compact && n.teams.length > 0 && (

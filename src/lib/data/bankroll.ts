@@ -48,10 +48,9 @@ export function lossLimitStatus() {
   const weekStart = dayStart - ((now.getDay() + 6) % 7) * 86_400_000; // Monday
   const day = pnlSince(dayStart);
   const week = pnlSince(weekStart);
-  const warnings: string[] = [];
-  if (s.dailyLossLimit > 0 && -day >= s.dailyLossLimit * 0.8)
-    warnings.push(-day >= s.dailyLossLimit ? `You've hit your daily loss limit ($${s.dailyLossLimit}). Consider stopping for today.` : `You're within 20% of your daily loss limit ($${s.dailyLossLimit}).`);
-  if (s.weeklyLossLimit > 0 && -week >= s.weeklyLossLimit * 0.8)
-    warnings.push(-week >= s.weeklyLossLimit ? `You've hit your weekly loss limit ($${s.weeklyLossLimit}).` : `You're within 20% of your weekly loss limit ($${s.weeklyLossLimit}).`);
+  // Message keys (see `limits` in the i18n dictionaries) with the limit they refer to.
+  const warnings: { key: "dayHit" | "dayNear" | "weekHit" | "weekNear"; limit: number }[] = [];
+  if (s.dailyLossLimit > 0 && -day >= s.dailyLossLimit * 0.8) warnings.push({ key: -day >= s.dailyLossLimit ? "dayHit" : "dayNear", limit: s.dailyLossLimit });
+  if (s.weeklyLossLimit > 0 && -week >= s.weeklyLossLimit * 0.8) warnings.push({ key: -week >= s.weeklyLossLimit ? "weekHit" : "weekNear", limit: s.weeklyLossLimit });
   return { day, week, warnings };
 }

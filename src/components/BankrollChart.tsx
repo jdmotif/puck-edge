@@ -1,10 +1,12 @@
 "use client";
 import { useState } from "react";
+import { useI18n } from "@/lib/i18n/client";
 
 /** Bankroll after each settled bet. Single series, crosshair tooltip. */
 export function BankrollChart({ points, start }: { points: { t: number; v: number; label: string }[]; start: number }) {
+  const { t: tr, f } = useI18n();
   const [hover, setHover] = useState<number | null>(null);
-  const data = [{ t: points[0]?.t ?? Date.now(), v: start, label: "Start" }, ...points];
+  const data = [{ t: points[0]?.t ?? Date.now(), v: start, label: tr.bets.start }, ...points];
   const W = 640, H = 200, padL = 48, padB = 18, padT = 10;
   const vals = data.map((d) => d.v);
   const lo = Math.min(...vals), hi = Math.max(...vals);
@@ -20,7 +22,7 @@ export function BankrollChart({ points, start }: { points: { t: number; v: numbe
         viewBox={`0 0 ${W} ${H}`}
         className="w-full"
         role="img"
-        aria-label="Bankroll over time"
+        aria-label={tr.bets.chartAria}
         onMouseMove={(e) => {
           const r = (e.currentTarget as SVGSVGElement).getBoundingClientRect();
           const px = ((e.clientX - r.left) / r.width) * W;
@@ -32,7 +34,7 @@ export function BankrollChart({ points, start }: { points: { t: number; v: numbe
         {ticks.map((t) => (
           <g key={t}>
             <line x1={padL} x2={W} y1={y(t)} y2={y(t)} stroke="var(--border)" strokeWidth={0.5} />
-            <text x={padL - 6} y={y(t) + 3} fontSize="9" textAnchor="end" fill="var(--muted)">${Math.round(t)}</text>
+            <text x={padL - 6} y={y(t) + 3} fontSize="9" textAnchor="end" fill="var(--muted)">{f.money(Math.round(t), 0)}</text>
           </g>
         ))}
         <line x1={padL} x2={W} y1={y(start)} y2={y(start)} stroke="var(--muted)" strokeDasharray="3 3" strokeWidth={1} />
@@ -46,7 +48,7 @@ export function BankrollChart({ points, start }: { points: { t: number; v: numbe
       </svg>
       {h && (
         <div className="pointer-events-none absolute left-14 top-2 rounded-md border border-line bg-surface-2 px-2 py-1 text-xs shadow">
-          <div className="font-medium tabular">${h.v.toFixed(2)}</div>
+          <div className="font-medium tabular">{f.money(h.v)}</div>
           <div className="text-ink-2">{h.label}</div>
         </div>
       )}

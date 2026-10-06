@@ -2,7 +2,8 @@ import { sqlite } from "@/db";
 import { seasonFor, todayIso } from "@/lib/nhl/client";
 import { refreshRecentInBackground } from "@/lib/data/refresh";
 import type { GoalSummary, StarSummary } from "@/lib/data/ingest";
-import { ButtonLink, Card, Empty, PageTitle, Pill, TeamLogo } from "@/components/ui";
+import { ButtonLink, Card, Empty, PageTitle, Pill, Rich, TeamLogo } from "@/components/ui";
+import { getI18n } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,8 @@ const PAGE = 40;
 export default async function ResultsPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   refreshRecentInBackground();
   const sp = await searchParams;
+  const { t, f } = await getI18n();
+  const R = t.results;
   const season = Number(sp.season) || seasonFor(todayIso());
   const team = sp.team?.toUpperCase();
   const type = sp.type; // REG | OT | SO
@@ -59,32 +62,32 @@ export default async function ResultsPage({ searchParams }: { searchParams: Prom
 
   return (
     <>
-      <PageTitle sub={`${total} completed games${team ? ` for ${team}` : ""} in ${String(season).slice(0, 4)}–${String(season).slice(6)}`}>Results</PageTitle>
+      <PageTitle sub={R.sub(total, team, f.season(season))}>{R.title}</PageTitle>
       <form className="card mb-5 grid grid-cols-2 gap-2 p-3 text-sm sm:grid-cols-5" action="/results">
         <select name="team" defaultValue={team ?? ""} className="border px-3 py-2">
-          <option value="">All teams</option>
+          <option value="">{t.common.allTeams}</option>
           {teams.map((t) => <option key={t}>{t}</option>)}
         </select>
         <select name="type" defaultValue={type ?? ""} className="border px-3 py-2">
-          <option value="">All results</option>
-          <option value="REG">Regulation</option>
-          <option value="OT">Overtime</option>
-          <option value="SO">Shootout</option>
+          <option value="">{R.allResults}</option>
+          <option value="REG">{R.reg}</option>
+          <option value="OT">{R.ot}</option>
+          <option value="SO">{R.so}</option>
         </select>
-        <input type="date" name="from" defaultValue={from} aria-label="From" className="border px-3 py-2" />
-        <input type="date" name="to" defaultValue={to} aria-label="To" className="border px-3 py-2" />
-        <button className="bg-accent px-3 py-2 font-semibold text-white">Filter</button>
+        <input type="date" name="from" defaultValue={from} aria-label={R.from} className="border px-3 py-2" />
+        <input type="date" name="to" defaultValue={to} aria-label={R.to} className="border px-3 py-2" />
+        <button className="bg-accent px-3 py-2 font-semibold text-white">{t.common.filter}</button>
       </form>
 
       {!rows.length ? (
         <Empty>
-          No completed games stored yet. Run <code className="text-ink">npm run sync</code> to backfill the season (games from the last two days are pulled in automatically).
+          <Rich text={R.empty} />
         </Empty>
       ) : (
         <div className="space-y-5">
           {[...byDate.entries()].map(([date, games]) => (
             <div key={date}>
-              <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{new Date(date + "T12:00:00").toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}</h2>
+              <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{f.day(date, { weekday: "long", month: "long", day: "numeric" })}</h2>
               <div className="grid gap-3 md:grid-cols-2">
                 {games.map((g) => {
                   const goals: GoalSummary[] = g.goals ? JSON.parse(g.goals) : [];
@@ -102,20 +105,20 @@ export default async function ResultsPage({ searchParams }: { searchParams: Prom
                         ))}
                       </a>
                       <div className="mt-2 flex gap-2">
-                        <Pill tone={g.lastPeriodType === "REG" ? "neutral" : "accent"}>{g.lastPeriodType === "REG" ? "Final" : `Final/${g.lastPeriodType}`}</Pill>
-                        {g.gameType === 3 && <Pill tone="warn">Playoffs</Pill>}
+                        <Pill tone={g.lastPeriodType === "REG" ? "neutral" : "accent"}>{t.status.final(g.lastPeriodType)}</Pill>
+                        {g.gameType === 3 && <Pill tone="warn">{t.common.playoffs}</Pill>}
                       </div>
                       {goals.length > 0 && (
                         <p className="mt-2 text-xs leading-relaxed text-ink-2">
-                          <span className="text-muted">Goals: </span>
+                          <span className="text-muted">{R.goals}</span>
                           {goals.filter((x) => x.periodType !== "SO").map((x, i) => (
-                            <span key={i}>{i > 0 && ", "}{x.scorer} ({x.team}{x.strength !== "ev" ? ` ${x.strength.toUpperCase()}` : ""})</span>
+                            <span key={i}>{i > 0 && ", "}{x.scorer} ({x.team}{x.strength !== "ev" ? ` ${t.stats.strength(x.strength)}` : ""})</span>
                           ))}
                         </p>
                       )}
                       {stars.length > 0 && (
                         <p className="mt-1 text-xs text-ink-2">
-                          <span className="text-muted">Stars: </span>
+                          <span className="text-muted">{R.stars}</span>
                           {stars.map((s) => `${"★".repeat(s.star)} ${s.name} (${s.line})`).join(" · ")}
                         </p>
                       )}
@@ -126,8 +129,8 @@ export default async function ResultsPage({ searchParams }: { searchParams: Prom
             </div>
           ))}
           <div className="flex justify-between text-sm">
-            {page > 1 ? <ButtonLink href={qs({ page: page - 1 })}>← Newer</ButtonLink> : <span />}
-            {page * PAGE < total ? <ButtonLink href={qs({ page: page + 1 })}>Older →</ButtonLink> : <span />}
+            {page > 1 ? <ButtonLink href={qs({ page: page - 1 })}>{R.newer}</ButtonLink> : <span />}
+            {page * PAGE < total ? <ButtonLink href={qs({ page: page + 1 })}>{R.older}</ButtonLink> : <span />}
           </div>
         </div>
       )}

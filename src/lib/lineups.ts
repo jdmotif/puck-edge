@@ -49,11 +49,17 @@ export interface TeamLineup {
   defense: LineupPlayer[][]; // 3 pairs
   goalie: GoaliePick | null;
   backup: GoaliePick | null;
-  goalieNote: string;
+  goalieNote: string; // English summary; `goalieWhy` carries the same facts for translation
+  goalieWhy: GoalieWhy;
   extras: LineupPlayer[]; // on the active roster but not projected to dress
   gamesUsed: number;
   rosterSource: "game-day" | "team-roster" | "dressed";
 }
+
+export type GoalieWhy =
+  | { kind: "none" | "noGames" | "confirmed" }
+  | { kind: "b2b"; starter: string; backup: string }
+  | { kind: "starts"; starts: number; window: number };
 
 const isFwd = (pos: string) => pos === "C" || pos === "L" || pos === "R";
 
@@ -154,12 +160,21 @@ export function projectLineup(input: {
   let [goalie, backup] = [goalies[0] ?? null, goalies[1] ?? null];
   const window = Math.min(GOALIE_WINDOW, gl.games.length);
   let goalieNote: string;
-  if (!goalie) goalieNote = "No goalie data";
-  else if (backup && goalie.lastStart && daysBetween(goalie.lastStart, gameDate) === 1) {
+  let goalieWhy: GoalieWhy;
+  if (!goalie) {
+    goalieNote = "No goalie data";
+    goalieWhy = { kind: "none" };
+  } else if (backup && goalie.lastStart && daysBetween(goalie.lastStart, gameDate) === 1) {
     goalieNote = `Back-to-back: ${goalie.name} started yesterday, so ${backup.name} is likelier`;
+    goalieWhy = { kind: "b2b", starter: goalie.name, backup: backup.name };
     [goalie, backup] = [backup, goalie];
-  } else if (!window) goalieNote = "No games played yet";
-  else goalieNote = `${goalie.starts} of the last ${window} starts`;
+  } else if (!window) {
+    goalieNote = "No games played yet";
+    goalieWhy = { kind: "noGames" };
+  } else {
+    goalieNote = `${goalie.starts} of the last ${window} starts`;
+    goalieWhy = { kind: "starts", starts: goalie.starts, window };
+  }
 
   return {
     team,
@@ -169,6 +184,7 @@ export function projectLineup(input: {
     goalie,
     backup,
     goalieNote,
+    goalieWhy,
     extras: extras.sort((a, b) => dressScore(b.id) - dressScore(a.id)),
     gamesUsed: sk.games.length,
     rosterSource,
@@ -205,6 +221,7 @@ export function officialLineup(input: { team: string; stats: BoxTeamStats; histo
     goalie,
     backup: goalies.find((g) => g !== goalie) ?? null,
     goalieNote: "Confirmed starter",
+    goalieWhy: { kind: "confirmed" },
     extras: [],
     gamesUsed: sk.games.length,
     rosterSource: "dressed",

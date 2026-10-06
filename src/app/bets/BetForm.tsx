@@ -2,6 +2,7 @@
 import { useMemo, useState } from "react";
 import { addBet } from "./actions";
 import { kellyFraction, parseOdds } from "@/lib/model/math";
+import { useI18n } from "@/lib/i18n/client";
 
 export interface GameOption { id: number; date: string; label: string; home: string; away: string }
 
@@ -12,6 +13,8 @@ export function BetForm({ games, prefill, bankroll, kelly, cap }: {
   kelly: number;
   cap: number;
 }) {
+  const { t, f } = useI18n();
+  const B = t.bets;
   const [gameId, setGameId] = useState(prefill.game ?? String(games[0]?.id ?? ""));
   const [market, setMarket] = useState(prefill.market ?? "moneyline");
   const [selection, setSelection] = useState(prefill.selection ?? "");
@@ -22,7 +25,7 @@ export function BetForm({ games, prefill, bankroll, kelly, cap }: {
   const isProp = market.startsWith("prop_");
   const dec = parseOdds(odds);
   const suggestion = useMemo(() => {
-    const p = Number(prob) / 100;
+    const p = Number(prob.replace(",", ".")) / 100;
     if (!dec || !(p > 0 && p < 1)) return null;
     const f = kellyFraction(p, dec, kelly, cap);
     return { f, amount: Math.round(f * bankroll * 100) / 100, implied: 1 / dec };
@@ -32,7 +35,7 @@ export function BetForm({ games, prefill, bankroll, kelly, cap }: {
   return (
     <form action={addBet} className="grid gap-3 text-sm sm:grid-cols-2">
       <label className="sm:col-span-2">
-        <span className="text-xs text-muted">Game</span>
+        <span className="text-xs text-muted">{B.game}</span>
         {prefill.game && !game ? (
           <input className={input} value={prefill.gameLabel ?? prefill.game} readOnly />
         ) : (
@@ -45,25 +48,25 @@ export function BetForm({ games, prefill, bankroll, kelly, cap }: {
       <input type="hidden" name="gameDate" value={game?.date ?? prefill.date ?? ""} />
       <input type="hidden" name="gameLabel" value={game?.label ?? prefill.gameLabel ?? ""} />
       <label>
-        <span className="text-xs text-muted">Market</span>
+        <span className="text-xs text-muted">{B.market}</span>
         <select name="market" className={input} value={market} onChange={(e) => { setMarket(e.target.value); setSelection(""); }}>
-          <option value="moneyline">Moneyline</option>
-          <option value="total">Total goals</option>
-          <option value="puckline">Puck line</option>
-          {isProp && <option value={market}>{prefill.label ?? "Player prop"}</option>}
+          <option value="moneyline">{t.markets.moneyline}</option>
+          <option value="total">{t.markets.total}</option>
+          <option value="puckline">{t.markets.puckline}</option>
+          {isProp && <option value={market}>{t.markets[market as "prop_goal"] ?? B.playerProp}</option>}
         </select>
       </label>
       <label>
-        <span className="text-xs text-muted">Selection</span>
+        <span className="text-xs text-muted">{B.selection}</span>
         {isProp ? (
-          <input className={input} value={prefill.label ?? selection} readOnly />
+          <input className={input} value={prefill.labelText ?? prefill.label ?? selection} readOnly />
         ) : market === "total" ? (
           <select className={input} value={selection} onChange={(e) => setSelection(e.target.value)}>
-            <option value="">Choose…</option><option value="over">Over</option><option value="under">Under</option>
+            <option value="">{B.choose}</option><option value="over">{t.label.over}</option><option value="under">{t.label.under}</option>
           </select>
         ) : (
           <select className={input} value={selection} onChange={(e) => setSelection(e.target.value)}>
-            <option value="">Choose…</option>
+            <option value="">{B.choose}</option>
             {game && <><option value={game.away}>{game.away}</option><option value={game.home}>{game.home}</option></>}
             {!game && prefill.selection && <option value={prefill.selection}>{prefill.selection}</option>}
           </select>
@@ -73,42 +76,42 @@ export function BetForm({ games, prefill, bankroll, kelly, cap }: {
       <input type="hidden" name="selectionLabel" value={isProp ? prefill.label ?? selection : market === "moneyline" ? `${selection} ML` : market === "total" ? `${selection === "over" ? "Over" : "Under"}` : selection} />
       {(market === "total" || market === "puckline") && (
         <label>
-          <span className="text-xs text-muted">{market === "total" ? "Line (e.g. 6.5)" : "Spread for your team (−1.5 or +1.5)"}</span>
+          <span className="text-xs text-muted">{market === "total" ? B.lineTotal : B.lineSpread}</span>
           <input name="line" className={input} defaultValue={prefill.line ?? (market === "total" ? "6.5" : "-1.5")} inputMode="decimal" />
         </label>
       )}
       <label>
-        <span className="text-xs text-muted">Odds (American like −110 / +150, or decimal like 1.91)</span>
+        <span className="text-xs text-muted">{B.oddsLabel}</span>
         <input name="odds" className={input} value={odds} onChange={(e) => setOdds(e.target.value)} inputMode="decimal" />
       </label>
       <label>
-        <span className="text-xs text-muted">Your win probability % (prefilled from the model)</span>
+        <span className="text-xs text-muted">{B.probLabel}</span>
         <input className={input} value={prob} onChange={(e) => setProb(e.target.value)} inputMode="decimal" />
       </label>
       <label>
-        <span className="text-xs text-muted">Stake ($)</span>
+        <span className="text-xs text-muted">{B.stakeLabel}</span>
         <input name="stake" className={input} value={stake} onChange={(e) => setStake(e.target.value)} inputMode="decimal" />
       </label>
       <div className="rounded-md bg-surface-2 p-2 text-xs text-ink-2 sm:col-span-2">
         {suggestion ? (
           suggestion.f > 0 ? (
             <>
-              Suggested stake ({kelly === 1 ? "full" : `${kelly}×`} Kelly, capped at {(cap * 100).toFixed(1)}% of ${bankroll.toFixed(0)}):{" "}
-              <button type="button" className="font-semibold text-accent-2" onClick={() => setStake(suggestion.amount.toFixed(2))}>${suggestion.amount.toFixed(2)}</button>
-              {" "}· price implies {(suggestion.implied * 100).toFixed(1)}%
+              {B.suggested(kelly === 1 ? B.fullKelly : B.kellyX(kelly), f.pct(cap, 1), f.money(bankroll, 0))}
+              <button type="button" className="font-semibold text-accent-2" onClick={() => setStake(suggestion.amount.toFixed(2))}>{f.money(suggestion.amount)}</button>
+              {B.implies(f.pct(suggestion.implied, 1))}
             </>
           ) : (
-            <>No edge at this price (it implies {(suggestion.implied * 100).toFixed(1)}%): Kelly says don&apos;t bet.</>
+            <>{B.noEdge(f.pct(suggestion.implied, 1))}</>
           )
         ) : (
-          "Enter odds and a probability to see a Kelly stake suggestion."
+          B.enterOdds
         )}
       </div>
       <label className="sm:col-span-2">
-        <span className="text-xs text-muted">Notes</span>
+        <span className="text-xs text-muted">{B.notes}</span>
         <input name="notes" className={input} />
       </label>
-      <button className="bg-accent px-4 py-2.5 font-semibold text-white sm:col-span-2">Log bet</button>
+      <button className="bg-accent px-4 py-2.5 font-semibold text-white sm:col-span-2">{B.submit}</button>
     </form>
   );
 }
