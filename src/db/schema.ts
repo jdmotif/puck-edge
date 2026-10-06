@@ -87,8 +87,30 @@ export const picks = sqliteTable(
     updatedAt: integer("updated_at").notNull(),
     result: text("result"), // win | loss | push | void
     gradedAt: integer("graded_at"),
+    context: text("context"), // JSON PickContext: goalies, lineup source and odds the pick was built from
   },
   (t) => [index("picks_game_idx").on(t.gameId)],
+);
+
+// A logged pick that switched before puck drop (market = "best" when the Best Pick moved), and why.
+export const pickChanges = sqliteTable(
+  "pick_changes",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    gameId: integer("game_id").notNull(),
+    market: text("market").notNull(),
+    at: integer("at").notNull(),
+    fromMarket: text("from_market").notNull(),
+    fromSelection: text("from_selection").notNull(),
+    fromLine: real("from_line"),
+    fromLabel: text("from_label").notNull(),
+    toMarket: text("to_market").notNull(),
+    toSelection: text("to_selection").notNull(),
+    toLine: real("to_line"),
+    toLabel: text("to_label").notNull(),
+    reasons: text("reasons").notNull(), // JSON ChangeReason[]
+  },
+  (t) => [index("pick_changes_game_idx").on(t.gameId)],
 );
 
 // Walk-forward predictions on past games (no odds) so calibration exists from day one.

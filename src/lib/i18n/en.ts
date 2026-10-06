@@ -110,6 +110,13 @@ export const en = (f: Format) => ({
     atBook: (book: string) => ` at ${book}`,
     kellyStake: "Kelly stake",
     logBet: "Log bet →",
+    changed: "Changed",
+    was: (from: string) => `was ${from}`,
+    why: {
+      goalie: (team: Team, name: string) => `${name} now expected in ${team} net`,
+      odds: "odds moved",
+      model: "model updated",
+    },
   },
   card: {
     win: (t: Team) => `${t} win`,
@@ -309,7 +316,7 @@ export const en = (f: Format) => ({
   },
   model: {
     title: "Model tracking",
-    sub: "Every pick is logged before puck drop and graded automatically after the final.",
+    sub: "Every pick is logged before puck drop and updated as goalies, lineups and odds change; the last version before the game starts is graded automatically after the final.",
     losing: "Losing money",
     profitable: "Profitable",
     noGraded: "No graded picks yet.",

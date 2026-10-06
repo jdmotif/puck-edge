@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { buildSlate, logPicks } from "@/lib/picks";
+import { attachChanges, buildSlate, logPicks } from "@/lib/picks";
 import { todayIso } from "@/lib/nhl/client";
 import { refreshRecentInBackground } from "@/lib/data/refresh";
 import { GameCardView } from "@/components/GameCardView";
@@ -41,6 +41,7 @@ async function SlateView({ date }: { date: string }) {
   const { t, f, locale } = await getI18n();
   const slate = await buildSlate(date, locale);
   if (date >= todayIso()) logPicks(slate);
+  else attachChanges(slate);
   const settings = getSettings();
   const valueCount = slate.cards.filter((c) => c.picks.some((p) => p.isValue)).length;
   const topPick = slate.cards.flatMap((c) => c.picks).filter((p) => p.edge !== null).sort((a, b) => b.edge! - a.edge!)[0];

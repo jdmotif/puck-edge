@@ -284,34 +284,44 @@ export interface GameLineups {
   home: TeamLineup;
 }
 
+/** One game's lineups: official once it has started, projected (limited to the game-day roster when posted) before that. */
+export async function lineupsForGame(g: ScheduleGame, date: string): Promise<GameLineups & { fetched: Fetched<unknown>[] }> {
+  // The game feed's state is fresher than the schedule's.
+  const pbp = await api.playByPlay(g.id);
+  const fetched: Fetched<unknown>[] = [pbp];
+  const state = pbp.data?.gameState ?? g.gameState;
+  const box = STARTED.has(state) ? await api.boxscore(g.id) : null;
+  const stats = (box?.data as BoxscoreResponse | null)?.playerByGameStats;
+  const side = async (key: "awayTeam" | "homeTeam"): Promise<TeamLineup> => {
+    const t = g[key];
+    const history = teamHistory(t.abbrev, g.gameDate ?? date);
+    if (stats) return officialLineup({ team: t.abbrev, stats: stats[key], history, final: DONE.has(state) });
+    let roster = rosterFromSpots(pbp.data, t.id);
+    let rosterSource: TeamLineup["rosterSource"] = isDressedList(roster) ? "dressed-pregame" : "game-day";
+    if (!roster.length) {
+      roster = rosterFromClub((await api.roster(t.abbrev)).data);
+      rosterSource = "team-roster";
+    }
+    return projectLineup({ team: t.abbrev, gameDate: g.gameDate ?? date, roster, history, rosterSource });
+  };
+  const [away, home] = await Promise.all([side("awayTeam"), side("homeTeam")]);
+  return { game: g, away, home, fetched };
+}
+
+/** Skaters a lineup has on the game-day roster (dressed or active), or null when only the club roster was available. */
+export function lineupSkaterIds(l: TeamLineup): Set<number> | null {
+  if (l.rosterSource === "team-roster") return null;
+  const dressed = [...l.forwards.flat(), ...l.defense.flat()];
+  // Before the dressed list is posted, anyone on the active roster may still play.
+  const pool = l.rosterSource === "game-day" ? [...dressed, ...l.extras] : dressed;
+  return new Set(pool.map((p) => p.id));
+}
+
 export async function loadLineups(date = todayIso()) {
   const schedule = await api.schedule(date);
   const games = (schedule.data?.gameWeek.find((d) => d.date === date)?.games ?? []).filter((g) => [1, 2, 3].includes(g.gameType));
-  const fetched: Fetched<unknown>[] = [schedule];
-
-  const result: GameLineups[] = await Promise.all(
-    games.map(async (g) => {
-      // The game feed's state is fresher than the schedule's.
-      const pbp = await api.playByPlay(g.id);
-      fetched.push(pbp);
-      const state = pbp.data?.gameState ?? g.gameState;
-      const box = STARTED.has(state) ? await api.boxscore(g.id) : null;
-      const stats = (box?.data as BoxscoreResponse | null)?.playerByGameStats;
-      const side = async (key: "awayTeam" | "homeTeam"): Promise<TeamLineup> => {
-        const t = g[key];
-        const history = teamHistory(t.abbrev, g.gameDate ?? date);
-        if (stats) return officialLineup({ team: t.abbrev, stats: stats[key], history, final: DONE.has(state) });
-        let roster = rosterFromSpots(pbp.data, t.id);
-        let rosterSource: TeamLineup["rosterSource"] = isDressedList(roster) ? "dressed-pregame" : "game-day";
-        if (!roster.length) {
-          roster = rosterFromClub((await api.roster(t.abbrev)).data);
-          rosterSource = "team-roster";
-        }
-        return projectLineup({ team: t.abbrev, gameDate: g.gameDate ?? date, roster, history, rosterSource });
-      };
-      const [away, home] = await Promise.all([side("awayTeam"), side("homeTeam")]);
-      return { game: g, away, home };
-    }),
-  );
+  const all = await Promise.all(games.map((g) => lineupsForGame(g, date)));
+  const fetched: Fetched<unknown>[] = [schedule, ...all.flatMap((r) => r.fetched)];
+  const result: GameLineups[] = all.map(({ game, away, home }) => ({ game, away, home }));
   return { date, games: result, fetched };
 }

@@ -1,10 +1,18 @@
 import type { Pick } from "@/lib/picks";
 import { getI18n } from "@/lib/i18n/server";
 import { Pill } from "./ui";
+import { LocalTime } from "./LocalTime";
+
+/** A pick that switched before puck drop: when, what it was, and why. */
+export interface PickChangeNote {
+  at: string; // ISO
+  from: string;
+  why: string[];
+}
 
 const confTone = { High: "good", Medium: "accent", Low: "neutral" } as const;
 
-export async function PickCard({ pick, best = false, betHref }: { pick: Pick; best?: boolean; betHref?: string }) {
+export async function PickCard({ pick, best = false, betHref, change }: { pick: Pick; best?: boolean; betHref?: string; change?: PickChangeNote }) {
   const { t, f } = await getI18n();
   return (
     <div
@@ -22,6 +30,12 @@ export async function PickCard({ pick, best = false, betHref }: { pick: Pick; be
           <Pill tone={confTone[pick.confidence]}>{t.confidence[pick.confidence]}</Pill>
         </span>
       </div>
+
+      {change && (
+        <p className="relative mt-1.5 text-xs text-warn">
+          ↻ {t.pick.changed} <LocalTime iso={change.at} /> · {[t.pick.was(change.from), ...change.why].join(" · ")}
+        </p>
+      )}
 
       <div className="relative mt-2 flex flex-wrap items-end justify-between gap-x-3 gap-y-2">
         <div className="min-w-0">

@@ -28,8 +28,13 @@ CREATE TABLE IF NOT EXISTS picks (
   market TEXT NOT NULL, selection TEXT NOT NULL, selection_label TEXT NOT NULL, line REAL,
   model_prob REAL NOT NULL, market_prob REAL, odds_decimal REAL, edge REAL, confidence TEXT NOT NULL,
   is_value INTEGER NOT NULL DEFAULT 0, is_best INTEGER NOT NULL DEFAULT 0, reasons TEXT NOT NULL,
-  created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL, result TEXT, graded_at INTEGER);
+  created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL, result TEXT, graded_at INTEGER, context TEXT);
 CREATE INDEX IF NOT EXISTS picks_game_idx ON picks(game_id);
+CREATE TABLE IF NOT EXISTS pick_changes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT, game_id INTEGER NOT NULL, market TEXT NOT NULL, at INTEGER NOT NULL,
+  from_market TEXT NOT NULL, from_selection TEXT NOT NULL, from_line REAL, from_label TEXT NOT NULL,
+  to_market TEXT NOT NULL, to_selection TEXT NOT NULL, to_line REAL, to_label TEXT NOT NULL, reasons TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS pick_changes_game_idx ON pick_changes(game_id);
 CREATE UNIQUE INDEX IF NOT EXISTS picks_unique ON picks(game_id, market, selection, IFNULL(line, -1));
 CREATE TABLE IF NOT EXISTS backtest (
   game_id INTEGER PRIMARY KEY, season INTEGER NOT NULL, date TEXT NOT NULL, home_win_prob REAL NOT NULL,
@@ -115,6 +120,9 @@ function open(): Sqlite {
   const raw = new DatabaseSync(file);
   raw.exec("PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;");
   raw.exec(DDL);
+  // Columns added after the first release; CREATE TABLE IF NOT EXISTS doesn't touch existing tables.
+  const has = (table: string, col: string) => (raw.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[]).some((c) => c.name === col);
+  if (!has("picks", "context")) raw.exec("ALTER TABLE picks ADD COLUMN context TEXT");
   return wrap(raw);
 }
 

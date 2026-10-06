@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildLines, isDressedList, officialLineup, projectLineup, type HistoryGame, type LineupPlayer, type RosterEntry } from "./lineups";
+import { buildLines, isDressedList, lineupSkaterIds, officialLineup, projectLineup, type HistoryGame, type LineupPlayer, type RosterEntry } from "./lineups";
 import boxFixture from "../../fixtures/gamecenter_2026020035_boxscore.json";
 import type { BoxscoreResponse } from "./nhl/types";
 
@@ -115,5 +115,23 @@ describe("officialLineup while live", () => {
     const live = { ...stats, goalies: [...stats.goalies].reverse().map((g) => ({ ...g, starter: null as unknown as boolean })) };
     const t = officialLineup({ team: box.homeTeam.abbrev, stats: live, history: [], final: false });
     expect(t.goalie?.id).toBe(played.playerId);
+  });
+});
+
+describe("lineupSkaterIds", () => {
+  const h = history(5, { goalieStarts: [1], first: "2026-10-08" });
+  it("lets anyone on the active roster play until the dressed list is posted", () => {
+    const t = projectLineup({ team: "X", gameDate: "2026-10-10", roster: roster.filter((r) => r.id !== 100), history: h, rosterSource: "game-day" });
+    const ids = lineupSkaterIds(t)!;
+    expect(ids.has(100)).toBe(false); // off the active roster (injured)
+    expect(ids.has(113)).toBe(true); // a likely scratch, but not confirmed yet
+  });
+
+  it("keeps only the dressed skaters once posted, and doesn't filter on the club roster", () => {
+    const dressed = roster.filter((r) => r.id !== 111 && r.id !== 113);
+    const ids = lineupSkaterIds(projectLineup({ team: "X", gameDate: "2026-10-10", roster: dressed, history: h, rosterSource: "dressed-pregame" }))!;
+    expect(ids.has(111)).toBe(false);
+    expect(ids.has(113)).toBe(false);
+    expect(lineupSkaterIds(projectLineup({ team: "X", gameDate: "2026-10-10", roster, history: h, rosterSource: "team-roster" }))).toBeNull();
   });
 });

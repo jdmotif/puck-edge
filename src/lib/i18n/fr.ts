@@ -117,6 +117,13 @@ export const fr = (f: Format): Messages => ({
     atBook: (book: string) => ` chez ${book}`,
     kellyStake: "Mise Kelly",
     logBet: "Inscrire le pari →",
+    changed: "Modifié",
+    was: (from: string) => `avant : ${from}`,
+    why: {
+      goalie: (team: Team, name: string) => `${name} maintenant attendu devant le filet de ${team}`,
+      odds: "les cotes ont bougé",
+      model: "modèle mis à jour",
+    },
   },
   card: {
     win: (t: Team) => `Victoire ${t}`,
@@ -320,7 +327,7 @@ export const fr = (f: Format): Messages => ({
   },
   model: {
     title: "Suivi du modèle",
-    sub: "Chaque choix est enregistré avant la mise en jeu initiale et évalué automatiquement après le match.",
+    sub: "Chaque choix est enregistré avant la mise au jeu et mis à jour au fil des changements de gardiens, d'alignements et de cotes; la dernière version avant le début du match est évaluée automatiquement après la rencontre.",
     losing: "Perd de l'argent",
     profitable: "Rentable",
     noGraded: "Aucun choix évalué pour l'instant.",
