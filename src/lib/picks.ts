@@ -180,6 +180,11 @@ export function priced(modelProb: number, side: SidePrice, w: number, settings: 
   };
 }
 
+/** When there's no Best Pick: the priced pick the model likes most, shown as a lean (not a bet). */
+export function leanOf(picks: Pick[]): Pick | null {
+  return picks.filter((p) => p.edge !== null).sort((a, b) => b.edge! - a.edge!)[0] ?? null;
+}
+
 /** Best Pick: the biggest value edge, otherwise the best positive-EV price, otherwise no pick at all. */
 export function bestOf(picks: Pick[]): Pick | null {
   const values = picks.filter((p) => p.isValue).sort((a, b) => (b.edge ?? 0) - (a.edge ?? 0));

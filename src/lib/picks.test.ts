@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { sqlite } from "@/db";
-import { bestOf, changeReasons, logPicks, priced, type GameCard, type Pick, type PickContext, type Slate } from "./picks";
+import { bestOf, changeReasons, leanOf, logPicks, priced, type GameCard, type Pick, type PickContext, type Slate } from "./picks";
 import type { Market } from "./grading";
 
 const ctx = (homeGoalie: number, prices = "[0.55]"): PickContext => ({
@@ -104,6 +104,9 @@ describe("market-anchored pricing", () => {
     const pl = { ...pick("puckline", "NSH", 0.005, 1.5), ev: -0.03 };
     expect(bestOf([noValue, pl])).toBeNull();
     expect(bestOf([])).toBeNull();
+    // Still shown as a lean: the priced pick with the biggest edge.
+    expect(leanOf([pl, noValue])).toBe(noValue);
+    expect(leanOf([])).toBeNull();
     const plus = { ...pl, ev: 0.01 };
     expect(bestOf([noValue, plus])).toBe(plus);
     const value = pick("moneyline", "TOR", 0.04);

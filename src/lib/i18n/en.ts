@@ -111,6 +111,7 @@ export const en = (f: Format) => ({
   result: { win: "win", loss: "loss", push: "push", void: "void", pending: "pending" } as Record<string, string>,
   pick: {
     best: "Best pick",
+    lean: "Lean, not a bet",
     value: "Value",
     modelOnly: "Projection only",
     model: "Model",
@@ -147,7 +148,7 @@ export const en = (f: Format) => ({
     hide: "Hide details",
     props: "Player projections (no prices, not tracked)",
     noPrice: "No odds posted yet, so no pick. The win bar and projected total are the model on its own.",
-    noEdge: "No pick: once the bookmaker's margin is taken out, no side has a positive expected value.",
+    noEdge: "No bet: the model's edge is smaller than the bookmaker's margin on every side, so nothing has a positive expected value.",
     totalsPaused: "Over/Under picks are paused until the totals model beats a simple average.",
     fullPreview: "Full preview →",
   },
