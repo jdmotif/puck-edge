@@ -1,7 +1,8 @@
 import { sqlite } from "@/db";
-import { api } from "@/lib/nhl/client";
+import { api, seasonFor, todayIso } from "@/lib/nhl/client";
 import { GameLogChart, type LogPoint } from "@/components/GameLogChart";
-import { Card, Empty, PageTitle, Rich, StaleBanner, StatTile, TEAM_COLORS, Tabs } from "@/components/ui";
+import { Card, Empty, PageTitle, Rich, StatTile, TEAM_COLORS, Tabs } from "@/components/ui";
+import { StaleBanner } from "@/components/StaleBanner";
 import type { PlayerGameLogEntry } from "@/lib/nhl/types";
 import { getI18n } from "@/lib/i18n/server";
 import type { I18n } from "@/lib/i18n";
@@ -24,7 +25,8 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
   const isGoalie = p.position === "G";
   const nhlSeasons = (p.seasonTotals ?? []).filter((s) => s.leagueAbbrev === "NHL" && s.gameTypeId === 2).map((s) => s.season);
   const seasons = [...new Set(nhlSeasons)].sort().reverse().slice(0, 5);
-  const season = Number(sp.season) || p.featuredStats?.season || seasons[0];
+  // A call-up with no NHL games yet has no seasons listed; show the current one.
+  const season = Number(sp.season) || p.featuredStats?.season || seasons[0] || seasonFor(todayIso());
   const totals = (p.seasonTotals ?? []).filter((s) => s.season === season && s.gameTypeId === 2 && s.leagueAbbrev === "NHL");
   const line = totals.reduce(
     (a, s) => ({ gp: a.gp + (s.gamesPlayed ?? 0), g: a.g + (s.goals ?? 0), a: a.a + (s.assists ?? 0), p: a.p + (s.points ?? 0), ppp: a.ppp + (s.powerPlayPoints ?? 0), sog: a.sog + (s.shots ?? 0) }),

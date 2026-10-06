@@ -1,5 +1,7 @@
 "use client";
 import { usePathname } from "next/navigation";
+import { STATIC_SITE } from "@/lib/static/mode";
+import { appPathOf } from "@/lib/static/paths";
 import type { ReactNode } from "react";
 import { useI18n } from "@/lib/i18n/client";
 import { LanguageSwitch } from "./LanguageSwitch";
@@ -30,6 +32,11 @@ export function NavIcon({ href, className = "h-5 w-5" }: { href: string; classNa
   );
 }
 
+// On the static site the URL carries the language and query folders (/fr/standings/_q/view=league/).
+const useAppPath = () => {
+  const p = usePathname();
+  return STATIC_SITE ? appPathOf(p, "").path : p;
+};
 const isActive = (path: string, href: string) => (href === "/" ? path === "/" || path.startsWith("/game") : path.startsWith(href));
 
 export function Logo({ compact = false }: { compact?: boolean }) {
@@ -52,7 +59,7 @@ export function Logo({ compact = false }: { compact?: boolean }) {
 
 /** Desktop: fixed left sidebar. */
 export function Sidebar({ items }: { items: NavItem[] }) {
-  const path = usePathname();
+  const path = useAppPath();
   const { t } = useI18n();
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-[var(--sidebar)] flex-col border-r border-line bg-bg/80 px-4 py-5 backdrop-blur-xl lg:flex">
@@ -88,7 +95,7 @@ const PRIMARY = ["/", "/schedule", "/results", "/bets"];
 
 /** Phone/tablet: slim top bar plus a bottom tab bar; everything else lives under "More". */
 export function MobileNav({ items }: { items: NavItem[] }) {
-  const path = usePathname();
+  const path = useAppPath();
   const primary = PRIMARY.map((h) => items.find((i) => i.href === h)).filter((i): i is NavItem => !!i);
   const more = items.filter((i) => !PRIMARY.includes(i.href));
   const moreActive = more.some((i) => isActive(path, i.href));

@@ -1,0 +1,71 @@
+# Publishes the static copy of Puck Edge to GitHub Pages (https://<owner>.github.io/<repo>/).
+# Each run pulls new games, lineups and odds from the NHL, logs and grades picks, refits the model,
+# renders every page and deploys. The SQLite database is carried between runs in the Actions cache,
+# so the Model page keeps its pick history.
+name: Deploy site
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Every 30 minutes from 10 am to 2 am Eastern (cron is UTC), plus one run overnight.
+    - cron: "*/30 14-23 * * *"
+    - cron: "*/30 0-6 * * *"
+    - cron: "0 10 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      TZ: America/Toronto
+      NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Restore database
+        uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: puck-db-${{ github.run_id }}
+          restore-keys: puck-db-
+      - name: Sync NHL data
+        id: sync
+        run: npm run sync
+      - name: Build static site
+        # Rendering Tonight logs the current picks, so the database is saved after this.
+        run: npm run build:static
+      - name: Save database
+        if: always() && steps.sync.outcome == 'success'
+        uses: actions/cache/save@v4
+        with:
+          path: data
+          key: puck-db-${{ github.run_id }}-${{ github.run_attempt }}
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

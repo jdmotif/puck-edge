@@ -1,6 +1,7 @@
 import { latestNews, SOURCES } from "@/lib/news";
 import { TEAM_ABBREVS, teamName } from "@/lib/news/teams";
-import { Empty, PageTitle, StaleBanner, Tabs } from "@/components/ui";
+import { Empty, PageTitle, Tabs } from "@/components/ui";
+import { StaleBanner } from "@/components/StaleBanner";
 import { NewsList } from "@/components/NewsList";
 import { TeamFilter } from "./TeamFilter";
 import { getI18n } from "@/lib/i18n/server";

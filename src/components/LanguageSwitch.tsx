@@ -4,6 +4,8 @@ import { useTransition } from "react";
 import { setLocale } from "@/lib/i18n/actions";
 import { LOCALES } from "@/lib/i18n";
 import { useI18n } from "@/lib/i18n/client";
+import { BASE_PATH, STATIC_SITE } from "@/lib/static/mode";
+import { LANG_KEY, otherLanguageHref } from "@/lib/static/paths";
 
 /** EN | FR segmented toggle. The choice is saved in a cookie and the page re-renders in place. */
 export function LanguageSwitch({ className = "" }: { className?: string }) {
@@ -24,6 +26,14 @@ export function LanguageSwitch({ className = "" }: { className?: string }) {
             disabled={pending}
             onClick={() => {
               if (active) return;
+              if (STATIC_SITE) {
+                // Static site: each language is its own set of pages.
+                try {
+                  localStorage.setItem(LANG_KEY, l);
+                } catch {}
+                window.location.href = otherLanguageHref(BASE_PATH, l === "fr");
+                return;
+              }
               start(async () => {
                 await setLocale(l);
                 document.documentElement.lang = l;

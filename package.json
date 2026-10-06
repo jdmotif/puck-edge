@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:static": "tsx scripts/static-site.ts",
     "start": "next start",
     "sync": "tsx scripts/sync.ts",
     "fixtures": "tsx scripts/capture-fixtures.ts",

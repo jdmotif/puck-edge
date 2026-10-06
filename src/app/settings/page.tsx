@@ -4,6 +4,8 @@ import { getSettings, saveSettings } from "@/lib/settings";
 import { Card, PageTitle, Rich } from "@/components/ui";
 import { getI18n } from "@/lib/i18n/server";
 import { sqlite } from "@/db";
+import { STATIC_SITE } from "@/lib/static/mode";
+import { StaticSettings } from "./StaticSettings";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +51,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   return (
     <>
       <PageTitle>{S.title}</PageTitle>
+      {STATIC_SITE ? <StaticSettings /> : <>
       {saved && <div className="mb-3 rounded-xl border border-good/40 bg-good/10 px-4 py-2.5 text-sm text-good">{S.saved}</div>}
       <form action={save} className="grid gap-4 lg:grid-cols-2">
         <Card className="space-y-3">
@@ -75,10 +78,11 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         </Card>
         <button className="bg-accent px-4 py-2.5 font-semibold text-white lg:col-span-2">{S.save}</button>
       </form>
+      </>}
       <Card className="mt-4 text-sm">
         <h2 className="mb-1 font-display text-lg font-bold uppercase tracking-wide">{S.data}</h2>
         <p className="text-ink-2">{S.stored(games)}{lastSync ? S.lastSync(f.dateTime(lastSync.started_at), lastSync.finished_at ? S.added(lastSync.games_added, lastSync.message) : null) : S.noSync}</p>
-        <p className="mt-1 text-xs text-muted"><Rich text={S.syncHint(!!process.env.ODDS_API_KEY)} /></p>
+        <p className="mt-1 text-xs text-muted"><Rich text={STATIC_SITE ? S.staticSyncHint : S.syncHint(!!process.env.ODDS_API_KEY)} /></p>
       </Card>
     </>
   );

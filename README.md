@@ -75,6 +75,32 @@ Player props are always model-only: neither free feed carries prop prices.
 | **Bets** | Log bets (prefilled from any pick), automatic settlement, P&L, ROI, bankroll chart and a fractional-Kelly stake suggestion. |
 | **Settings** | Value threshold (default 3%), Kelly fraction (default ¼), max stake cap, starting bankroll, daily/weekly loss limits and a session reminder. |
 
+## Online version (GitHub Pages)
+
+A copy of the app is published at **https://jdmotif.github.io/puck-edge/** by `.github/workflows/pages.yml`.
+GitHub Pages only serves files, so the workflow runs the real app on GitHub's servers and saves every page:
+`npm run sync`, then `npm run build:static`, which builds with the `/puck-edge` base path, starts the app,
+follows its links from every menu page in English and French and writes the result to `out/`. It runs on every
+push to `main`, every 30 minutes from 10 am to 2 am Eastern and once overnight; the database is kept between runs
+in the Actions cache, so the Model page keeps its pick history. Run it by hand from the repo's **Actions** tab
+(Deploy site → Run workflow).
+
+One-time setup: in the repo's **Settings → Pages**, set **Source** to **GitHub Actions**.
+
+How it differs from running it locally:
+
+- Data is as fresh as the last run (about 30 minutes; GitHub can delay scheduled runs). Live scores don't tick.
+- Bets, settings and the language choice are saved in your browser (localStorage), separately from your local
+  database. Bets still settle on their own from the published final scores of the last 60 days.
+- Value picks use the default 3% threshold and Canadian lines; the threshold and "Where you bet" settings only
+  apply locally.
+- Pages cover this season's games, the coming week's previews, dates within a week or so of today and the standard
+  filters (team filters on News and Results included). Older games, head-to-head history and date or
+  result-type filters show a "not in the online version" page.
+- The site and its picks are public.
+
+Build it locally with `npm run sync && npm run build:static` (output in `out/`, served under `/puck-edge/`).
+
 ## How the model works
 
 Everything is built from stored box scores and is explainable: each pick lists the 3–5 factors that pushed it.

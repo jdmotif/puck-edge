@@ -1,5 +1,6 @@
 import { api } from "@/lib/nhl/client";
-import { Empty, PageTitle, StaleBanner, Tabs } from "@/components/ui";
+import { Empty, PageTitle, Tabs } from "@/components/ui";
+import { StaleBanner } from "@/components/StaleBanner";
 import { StandingsTable } from "@/components/StandingsTable";
 import type { StandingRow } from "@/lib/nhl/types";
 import { getI18n } from "@/lib/i18n/server";

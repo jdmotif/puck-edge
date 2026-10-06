@@ -6,3 +6,5 @@ data/*.db-*
 .env.local
 next-env.d.ts
 *.tsbuildinfo
+.next-static
+out

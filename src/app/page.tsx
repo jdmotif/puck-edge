@@ -3,7 +3,8 @@ import { attachChanges, buildSlate, logPicks } from "@/lib/picks";
 import { todayIso } from "@/lib/nhl/client";
 import { refreshRecentInBackground } from "@/lib/data/refresh";
 import { GameCardView } from "@/components/GameCardView";
-import { ButtonLink, Empty, PageTitle, Rich, SkeletonCards, StaleBanner, StatTile } from "@/components/ui";
+import { ButtonLink, Empty, PageTitle, Rich, SkeletonCards, StatTile } from "@/components/ui";
+import { StaleBanner } from "@/components/StaleBanner";
 import { getSettings } from "@/lib/settings";
 import { getI18n } from "@/lib/i18n/server";
 
