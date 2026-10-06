@@ -77,7 +77,13 @@ export default async function LineupsPage({ searchParams }: { searchParams: Prom
                 </a>
                 <span className="flex items-center gap-2 text-xs text-muted">
                   <LocalTime iso={game.startTimeUTC} />
-                  {statusOf({ game, away, home }) === "official" ? <Pill tone="good">{L.officialPill}</Pill> : <Pill tone="warn">{L.projectedPill}</Pill>}
+                  {statusOf({ game, away, home }) === "official" ? (
+                    <Pill tone="good">{L.officialPill}</Pill>
+                  ) : away.rosterSource === "dressed-pregame" && home.rosterSource === "dressed-pregame" ? (
+                    <Pill tone="accent">{L.skatersConfirmedPill}</Pill>
+                  ) : (
+                    <Pill tone="warn">{L.projectedPill}</Pill>
+                  )}
                 </span>
               </div>
               <div className="grid gap-4 md:grid-cols-2">
@@ -113,9 +119,11 @@ function TeamColumn({ t, i: { t: m, f } }: { t: TeamLineup; i: I18n }) {
         <span className="text-xs text-muted">
           {official
             ? L.dressed
-            : t.rosterSource === "game-day"
-              ? L.gameDay(t.gamesUsed)
-              : L.teamRoster(t.gamesUsed)}
+            : t.rosterSource === "dressed-pregame"
+              ? L.dressedPregame
+              : t.rosterSource === "game-day"
+                ? L.gameDay(t.gamesUsed)
+                : L.teamRoster(t.gamesUsed)}
         </span>
       </div>
 

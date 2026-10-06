@@ -42,8 +42,11 @@ function ttlFor(apiPath: string, body: unknown): number | null {
   const b = body as Record<string, unknown>;
   if (apiPath.startsWith("gamecenter/")) {
     const state = String(b?.gameState ?? "");
-    if (LIVE_STATES.has(state)) return TTL.live;
+    // PRE covers the last half hour before puck drop, when the dressed roster appears.
+    if (LIVE_STATES.has(state) || state === "PRE") return TTL.live;
     if (DONE_STATES.has(state)) return TTL.forever;
+    const start = Date.parse(String(b?.startTimeUTC ?? ""));
+    if (start - Date.now() < 60 * MIN) return 2 * MIN; // close to puck drop
     return TTL.standard;
   }
   if (apiPath.startsWith("score/")) {
