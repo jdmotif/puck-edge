@@ -211,17 +211,19 @@ async function notFoundPages() {
   }
 }
 
-/** Final scores (and each player's goals/points) for recent games, so the browser can settle bets. */
+/** Final scores (each player's goals/points, and the closing odds) for recent games, so the browser can settle bets and show CLV. */
 function writeFinals(today: string) {
   const games = sqlite
     .prepare("SELECT id, home, away, home_score AS homeScore, away_score AS awayScore FROM games WHERE date >= ?")
     .all(addDays(today, -60)) as { id: number; home: string; away: string; homeScore: number; awayScore: number }[];
   const players = sqlite.prepare("SELECT player_id AS id, goals, points FROM player_games WHERE game_id = ?");
+  const closing = sqlite.prepare("SELECT odds FROM game_odds WHERE game_id = ?");
   const dir = path.join(OUT, "data", "game");
   fs.mkdirSync(dir, { recursive: true });
   for (const g of games) {
     const rows = players.all(g.id) as { id: number; goals: number; points: number }[];
-    const body = { ...g, players: Object.fromEntries(rows.map((p) => [p.id, [p.goals, p.points]])) };
+    const odds = closing.get(g.id) as { odds: string } | undefined;
+    const body = { ...g, players: Object.fromEntries(rows.map((p) => [p.id, [p.goals, p.points]])), closing: odds ? JSON.parse(odds.odds) : null };
     fs.writeFileSync(path.join(dir, `${g.id}.json`), JSON.stringify(body));
   }
   return games.length;

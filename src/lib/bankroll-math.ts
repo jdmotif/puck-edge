@@ -17,6 +17,8 @@ export interface BetRow {
   profit: number | null;
   settledAt: number | null;
   notes: string | null;
+  closingOdds?: number | null; // best price at the close, filled once the game starts
+  closingProb?: number | null; // margin-free closing probability, for closing-line value
 }
 
 export type LossWarning = { key: "dayHit" | "dayNear" | "weekHit" | "weekNear"; limit: number };

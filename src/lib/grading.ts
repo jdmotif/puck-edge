@@ -1,6 +1,7 @@
 // Grades model picks and settles the user's bets against stored final scores.
 import { sqlite } from "@/db";
 import { outcomeFor, profitFor, type GameResult, type Market, type Outcome } from "./outcome";
+import { fillClosing } from "./data/closing";
 
 export { MARKET_LABELS, outcomeFor, profitFor, type Market, type Outcome } from "./outcome";
 
@@ -18,6 +19,7 @@ function settle(gameId: number, market: Market, selection: string, line: number 
 }
 
 export function gradePicks(): number {
+  fillClosing();
   const open = sqlite.prepare("SELECT id, game_id, market, selection, line FROM picks WHERE result IS NULL").all() as {
     id: number;
     game_id: number;
@@ -38,6 +40,7 @@ export function gradePicks(): number {
 }
 
 export function settleBets(): number {
+  fillClosing();
   const open = sqlite.prepare("SELECT id, game_id, market, selection, line, stake, odds_decimal FROM bets WHERE status = 'open'").all() as {
     id: number;
     game_id: number;

@@ -45,6 +45,9 @@ CREATE TABLE IF NOT EXISTS bets (
   game_label TEXT NOT NULL, market TEXT NOT NULL, selection TEXT NOT NULL, selection_label TEXT NOT NULL, line REAL,
   odds_decimal REAL NOT NULL, stake REAL NOT NULL, status TEXT NOT NULL DEFAULT 'open', profit REAL,
   settled_at INTEGER, notes TEXT);
+CREATE TABLE IF NOT EXISTS game_odds (
+  game_id INTEGER PRIMARY KEY, start_utc TEXT NOT NULL, home TEXT NOT NULL, away TEXT NOT NULL,
+  captured_at INTEGER NOT NULL, odds TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS game_details (game_id INTEGER PRIMARY KEY, goals TEXT NOT NULL, stars TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS model_params (key TEXT PRIMARY KEY, value TEXT NOT NULL, fitted_at INTEGER NOT NULL);
@@ -123,6 +126,12 @@ function open(): Sqlite {
   // Columns added after the first release; CREATE TABLE IF NOT EXISTS doesn't touch existing tables.
   const has = (table: string, col: string) => (raw.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[]).some((c) => c.name === col);
   if (!has("picks", "context")) raw.exec("ALTER TABLE picks ADD COLUMN context TEXT");
+  for (const col of ["blend_prob", "first_odds", "closing_odds", "closing_prob"]) {
+    if (!has("picks", col)) raw.exec(`ALTER TABLE picks ADD COLUMN ${col} REAL`);
+  }
+  for (const col of ["closing_odds", "closing_prob"]) {
+    if (!has("bets", col)) raw.exec(`ALTER TABLE bets ADD COLUMN ${col} REAL`);
+  }
   return wrap(raw);
 }
 

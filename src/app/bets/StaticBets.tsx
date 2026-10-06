@@ -5,6 +5,7 @@ import { parseBetForm } from "@/lib/bet-form";
 import { BASE_PATH } from "@/lib/static/mode";
 import { loadBets, saveBets, useLocalData } from "@/lib/static/store";
 import { SkeletonCards } from "@/components/ui";
+import { closingPrice, type OddsSnapshot } from "@/lib/clv";
 import { BetsView } from "./BetsView";
 import type { GameOption } from "./BetForm";
 
@@ -15,6 +16,7 @@ interface FinalGame {
   homeScore: number;
   awayScore: number;
   players: Record<string, [goals: number, points: number]>;
+  closing?: OddsSnapshot | null; // last odds before puck drop
 }
 
 const STATUS: Record<Outcome, string> = { win: "won", loss: "lost", push: "push", void: "void" };
@@ -40,7 +42,8 @@ async function settleOpenBets() {
       if (!g) return b;
       const p = g.players[b.selection];
       const r = outcomeFor(b.market as Market, b.selection, b.line, g, b.market.startsWith("prop_") ? (p ? { goals: p[0], points: p[1] } : null) : undefined);
-      return { ...b, status: STATUS[r], profit: profitFor(r, b.stake, b.oddsDecimal), settledAt: now };
+      const c = g.closing ? closingPrice(g.closing, g, b.market, b.selection, b.line) : null;
+      return { ...b, status: STATUS[r], profit: profitFor(r, b.stake, b.oddsDecimal), settledAt: now, closingOdds: c?.odds ?? null, closingProb: c?.prob ?? null };
     }),
   );
 }

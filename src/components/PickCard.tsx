@@ -66,6 +66,10 @@ export async function PickCard({ pick, best = false, betHref, change }: { pick: 
         </div>
       </div>
 
+      {pick.blendProb !== null && pick.blendWeight !== null && (
+        <p className="relative mt-2 text-xs text-muted">{t.pick.blendNote(f.pct(pick.blendProb, 1), f.pct(pick.blendWeight))}</p>
+      )}
+
       {pick.reasons.length > 0 && (
         <ul className="relative mt-3 space-y-1 border-t border-line pt-2.5 text-sm text-ink-2">
           {pick.reasons.map((r) => (
