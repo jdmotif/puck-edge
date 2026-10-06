@@ -11,6 +11,7 @@ import { getSettings, type Settings } from "@/lib/settings";
 import { bankrollNow } from "@/lib/data/bankroll";
 import type { Market } from "@/lib/grading";
 import { i18n, type Locale, type Messages } from "@/lib/i18n";
+import { lineupsForGame, lineupSkaterIds, type TeamLineup } from "@/lib/lineups";
 
 export type Confidence = "High" | "Medium" | "Low";
 
@@ -41,6 +42,27 @@ export interface GoalieInfo {
   status: "confirmed" | "projected" | "unknown";
 }
 
+/** What a game's picks were built from, stored with each logged pick so later changes can say why they happened. */
+export interface PickContext {
+  goalies: { home: { id: number | null; name: string }; away: { id: number | null; name: string } };
+  lineups: { home: TeamLineup["rosterSource"] | null; away: TeamLineup["rosterSource"] | null };
+  prices: string; // margin-free market probabilities, rounded, so a later run can tell whether the odds moved
+}
+
+/** Why a logged pick switched sides (or the Best Pick moved to another bet) before puck drop. */
+export type ChangeReason =
+  | { kind: "goalie"; team: string; name: string }
+  | { kind: "odds" }
+  | { kind: "model" };
+
+export interface PickChange {
+  market: Market | "best";
+  at: number; // epoch ms
+  from: { market: Market; selection: string; line: number | null; label: string };
+  to: { market: Market; selection: string; line: number | null; label: string };
+  reasons: ChangeReason[];
+}
+
 export interface TeamSide {
   abbrev: string;
   name: string;
@@ -50,6 +72,7 @@ export interface TeamSide {
   restDays: number | null;
   backToBack: boolean;
   goalie: GoalieInfo;
+  lineup: TeamLineup["rosterSource"] | null; // where the game-day lineup came from, null when it couldn't be loaded
   winProb: number;
   expGoals: number;
 }
@@ -66,6 +89,8 @@ export interface GameCard {
   propPicks: Pick[];
   uncertainty: string[];
   locked: boolean; // game started: picks frozen
+  context: PickContext;
+  changes: PickChange[]; // filled by logPicks / attachChanges, newest first
   live: { away: number; home: number; status: string } | null;
 }
 
@@ -87,13 +112,23 @@ function standingFor(rows: StandingRow[] | undefined, abbrev: string) {
   return rows?.find((r) => r.teamAbbrev.default === abbrev);
 }
 
-function goalieFrom(landing: GameLandingResponse | null, side: "homeTeam" | "awayTeam", projectedId: number | null, confirmedId: number | null, tbd: string): GoalieInfo {
+function goalieFrom(
+  landing: GameLandingResponse | null,
+  side: "homeTeam" | "awayTeam",
+  lineup: TeamLineup | null,
+  projectedId: number | null,
+  confirmedId: number | null,
+  tbd: string,
+): GoalieInfo {
   const leaders: MatchupGoalieLeader[] = landing?.matchup?.goalieComparison?.[side]?.leaders ?? [];
-  const id = confirmedId ?? (projectedId && leaders.some((l) => l.playerId === projectedId) ? projectedId : leaders[0]?.playerId ?? projectedId);
+  // The Lineups tab's goalie (game-day roster, back-to-backs) wins over the model's stored-games guess, so both pages agree.
+  if (!confirmedId && lineup?.status === "official" && lineup.goalie) confirmedId = lineup.goalie.id;
+  const fromLineup = lineup?.goalie?.id ?? null;
+  const id = confirmedId ?? fromLineup ?? (projectedId && leaders.some((l) => l.playerId === projectedId) ? projectedId : leaders[0]?.playerId ?? projectedId);
   const l = leaders.find((x) => x.playerId === id);
   return {
     id: id ?? null,
-    name: l ? `${l.firstName.default} ${l.lastName.default}` : id ? storedName(id) : tbd,
+    name: l ? `${l.firstName.default} ${l.lastName.default}` : id ? storedName(id, lineup?.goalie?.id === id ? lineup.goalie.name : null) : tbd,
     savePct: l?.savePctg ?? null,
     gaa: l?.gaa ?? null,
     record: l?.record ?? null,
@@ -101,9 +136,9 @@ function goalieFrom(landing: GameLandingResponse | null, side: "homeTeam" | "awa
   };
 }
 
-function storedName(id: number) {
+function storedName(id: number, fallback: string | null = null) {
   const r = sqlite.prepare("SELECT name FROM player_games WHERE player_id = ? ORDER BY date DESC LIMIT 1").get(id) as { name: string } | undefined;
-  return r?.name ?? `#${id}`;
+  return r?.name ?? fallback ?? `#${id}`;
 }
 
 function confidenceFor(edge: number | null, prob: number, threshold: number, uncertainty: number): Confidence {
@@ -212,10 +247,19 @@ export async function buildSlate(date: string, locale: Locale = "en"): Promise<S
 
   const league = leagueAsOf(date, season);
   const teams = [...new Set(games.flatMap((g) => [g.homeTeam.abbrev, g.awayTeam.abbrev]))];
-  const [landings, boxes, clubStats] = await Promise.all([
+  const [landings, boxes, clubStats, lineups] = await Promise.all([
     Promise.all(games.map((g) => api.landing(g.id))),
     Promise.all(games.map((g) => (STARTED.has(g.gameState) ? api.boxscore(g.id) : Promise.resolve(null)))),
     Promise.all(teams.map((t) => api.clubStats(t))),
+    // Same lineups as the Lineups tab: they move the projected goalie and drop scratched skaters from props as the day goes on.
+    Promise.all(
+      games.map((g) =>
+        lineupsForGame(g, date).catch((e) => {
+          console.warn(`lineups for ${g.id} failed:`, e instanceof Error ? e.message : e);
+          return null;
+        }),
+      ),
+    ),
   ]);
   const statsByTeam = new Map(teams.map((t, i) => [t, clubStats[i].data?.skaters ?? []]));
   const lgGoals = league.leagueGoalsPerTeamGame();
@@ -226,11 +270,12 @@ export async function buildSlate(date: string, locale: Locale = "en"): Promise<S
   const cards: GameCard[] = games.map((g, i) => {
     const landing = landings[i].data;
     const box = boxes[i]?.data ?? null;
+    const lineup = lineups[i];
     const starter = (side: "homeTeam" | "awayTeam") => box?.playerByGameStats?.[side].goalies.find((x) => x.starter)?.playerId ?? null;
     const hProj = league.projectedStarter(g.homeTeam.abbrev, date);
     const aProj = league.projectedStarter(g.awayTeam.abbrev, date);
-    const homeGoalie = goalieFrom(landing, "homeTeam", hProj, starter("homeTeam"), M.common.tbd);
-    const awayGoalie = goalieFrom(landing, "awayTeam", aProj, starter("awayTeam"), M.common.tbd);
+    const homeGoalie = goalieFrom(landing, "homeTeam", lineup?.home ?? null, hProj, starter("homeTeam"), M.common.tbd);
+    const awayGoalie = goalieFrom(landing, "awayTeam", lineup?.away ?? null, aProj, starter("awayTeam"), M.common.tbd);
 
     // The NHL schedule is the source of truth for back-to-backs even before the backfill has run.
     const pred = predictGame(
@@ -262,6 +307,7 @@ export async function buildSlate(date: string, locale: Locale = "en"): Promise<S
         restDays: prof.gp ? prof.restDays : null,
         backToBack: prof.backToBack,
         goalie,
+        lineup: (isHome ? lineup?.home : lineup?.away)?.rosterSource ?? null,
         winProb: isHome ? pred.homeWin : pred.awayWin,
         expGoals: isHome ? pred.lambdaHome : pred.lambdaAway,
       };
@@ -288,9 +334,15 @@ export async function buildSlate(date: string, locale: Locale = "en"): Promise<S
       leagueGoals: lgGoals,
       leagueSavePct: lgSv,
     });
+    // Only skaters who can play tonight: the dressed 20 once posted, the active roster before that.
+    const playing = (abbrev: string, l: TeamLineup | undefined) => {
+      const ids = l ? lineupSkaterIds(l) : null;
+      const all = statsByTeam.get(abbrev) ?? [];
+      return ids ? all.filter((p) => ids.has(p.playerId)) : all;
+    };
     const props = [
-      ...projectProps(statsByTeam.get(home.abbrev) ?? [], home.abbrev, ctx(true), M.why).slice(0, 8),
-      ...projectProps(statsByTeam.get(away.abbrev) ?? [], away.abbrev, ctx(false), M.why).slice(0, 8),
+      ...projectProps(playing(home.abbrev, lineup?.home), home.abbrev, ctx(true), M.why).slice(0, 8),
+      ...projectProps(playing(away.abbrev, lineup?.away), away.abbrev, ctx(false), M.why).slice(0, 8),
     ];
     const hot = new Map([home.abbrev, away.abbrev].map((t) => [t, props.filter((p) => p.team === t).sort((a, b) => b.last5Points - a.last5Points)[0]]));
 
@@ -428,6 +480,12 @@ export async function buildSlate(date: string, locale: Locale = "en"): Promise<S
       uncertainty,
       locked: STARTED.has(scoreById.get(g.id)?.gameState ?? g.gameState) || Date.parse(g.startTimeUTC) <= Date.now(),
       live: liveOf(scoreById.get(g.id), M),
+      context: {
+        goalies: { home: { id: homeGoalie.id, name: homeGoalie.name }, away: { id: awayGoalie.id, name: awayGoalie.name } },
+        lineups: { home: home.lineup, away: away.lineup },
+        prices: priceKey(market),
+      },
+      changes: [],
     };
   });
 
@@ -435,7 +493,7 @@ export async function buildSlate(date: string, locale: Locale = "en"): Promise<S
   return {
     date,
     cards,
-    sources: [schedule, score, standings, ...landings, ...clubStats] as Fetched<unknown>[],
+    sources: [schedule, score, standings, ...landings, ...clubStats, ...lineups.flatMap((l) => l?.fetched ?? [])] as Fetched<unknown>[],
     oddsNote: process.env.ODDS_API_KEY
       ? oddsApi.error
         ? M.odds.apiError(oddsApi.error)
@@ -466,24 +524,100 @@ function pred0(cards: GameCard[]) {
   return cards[0]?.prediction.params ?? { fitted: false, n: 0 };
 }
 
-/** Save the current pre-game picks so they can be graded later. Frozen once the game starts. */
+const r3 = (x: number | undefined) => (x === undefined ? null : Math.round(x * 1000) / 1000);
+function priceKey(m: MarketOdds) {
+  return JSON.stringify([
+    r3(m.moneyline?.home.fair),
+    m.total?.line ?? null,
+    r3(m.total?.over.fair),
+    m.puckline?.homeLine ?? null,
+    r3(m.puckline?.home.fair),
+  ]);
+}
+
+const GAME_MARKETS = new Set<string>(["moneyline", "total", "puckline"]);
+
+export interface LoggedPick {
+  market: Market;
+  selection: string;
+  line: number | null;
+  label: string;
+  isBest: boolean;
+  context: PickContext | null;
+}
+
+/** Why the picks moved between two runs: a different goalie, moved odds, or otherwise the model's own update. */
+export function changeReasons(before: PickContext | null, after: PickContext, teams: { home: string; away: string }): ChangeReason[] {
+  if (!before) return [];
+  const out: ChangeReason[] = [];
+  for (const side of ["away", "home"] as const) {
+    const a = before.goalies[side];
+    const b = after.goalies[side];
+    if (b.id !== null && a.id !== b.id) out.push({ kind: "goalie", team: teams[side], name: b.name });
+  }
+  if (before.prices !== after.prices) out.push({ kind: "odds" });
+  if (!out.length) out.push({ kind: "model" });
+  return out;
+}
+
+/** Game-market picks (and the Best Pick) that switched sides, lines or bets since the last logged version. */
+export function diffPicks(
+  prev: LoggedPick[],
+  card: { picks: Pick[]; best: Pick | null; context: PickContext; home: { abbrev: string }; away: { abbrev: string } },
+  at: number,
+): PickChange[] {
+  const ctx = prev.find((p) => p.context)?.context ?? null;
+  const reasons = changeReasons(ctx, card.context, { home: card.home.abbrev, away: card.away.abbrev });
+  const ref = (p: { market: Market; selection: string; line: number | null }, label: string) => ({ market: p.market, selection: p.selection, line: p.line, label });
+  const same = (a: { market: string; selection: string; line: number | null }, b: { market: string; selection: string; line: number | null }) =>
+    a.market === b.market && a.selection === b.selection && (a.line ?? null) === (b.line ?? null);
+  const out: PickChange[] = [];
+  for (const next of card.picks) {
+    const before = prev.find((p) => p.market === next.market);
+    if (before && !same(before, next)) out.push({ market: next.market, at, from: ref(before, before.label), to: ref(next, next.logLabel), reasons });
+  }
+  const bestBefore = prev.find((p) => p.isBest);
+  if (bestBefore && card.best && !same(bestBefore, card.best)) {
+    out.push({ market: "best", at, from: ref(bestBefore, bestBefore.label), to: ref(card.best, card.best.logLabel), reasons });
+  }
+  return out;
+}
+
+/**
+ * Save the current pre-game picks so they can be graded later. Every run before puck drop replaces the
+ * previous version, so the pick that gets graded is the last one logged before the game started; when a
+ * game-market pick or the Best Pick changes, the change and its reason are kept in pick_changes.
+ */
 export function logPicks(slate: Slate) {
   const now = Date.now();
   const firstSeen = sqlite.prepare("SELECT MIN(created_at) AS c FROM picks WHERE game_id = ? AND market = ?");
+  const prevRows = sqlite.prepare(
+    "SELECT market, selection, line, selection_label AS label, is_best AS isBest, context FROM picks WHERE game_id = ? AND result IS NULL",
+  );
   const del = sqlite.prepare("DELETE FROM picks WHERE game_id = ? AND result IS NULL");
   const ins = sqlite.prepare(`INSERT INTO picks
-    (game_id, game_date, start_utc, market, selection, selection_label, line, model_prob, market_prob, odds_decimal, edge, confidence, is_value, is_best, reasons, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+    (game_id, game_date, start_utc, market, selection, selection_label, line, model_prob, market_prob, odds_decimal, edge, confidence, is_value, is_best, reasons, created_at, updated_at, context)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+  const insChange = sqlite.prepare(`INSERT INTO pick_changes
+    (game_id, market, at, from_market, from_selection, from_line, from_label, to_market, to_selection, to_line, to_label, reasons)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
   const tx = sqlite.transaction(() => {
     for (const c of slate.cards) {
       if (c.locked || DONE.has(c.game.gameState)) continue;
       if (c.game.gameType !== 2 && c.game.gameType !== 3) continue; // don't track preseason
+      const prev = (prevRows.all(c.game.id) as { market: Market; selection: string; line: number | null; label: string; isBest: number; context: string | null }[])
+        .filter((r) => GAME_MARKETS.has(r.market))
+        .map((r): LoggedPick => ({ ...r, isBest: r.isBest === 1, context: r.context ? (JSON.parse(r.context) as PickContext) : null }));
+      for (const ch of diffPicks(prev, c, now)) {
+        insChange.run(c.game.id, ch.market, ch.at, ch.from.market, ch.from.selection, ch.from.line, ch.from.label, ch.to.market, ch.to.selection, ch.to.line, ch.to.label, JSON.stringify(ch.reasons));
+      }
       const created = new Map<string, number>();
       for (const p of [...c.picks, ...c.propPicks]) {
         const r = firstSeen.get(c.game.id, p.market) as { c: number | null };
         created.set(p.market, r.c ?? now);
       }
       del.run(c.game.id);
+      const context = JSON.stringify(c.context);
       for (const p of [...c.picks, ...c.propPicks]) {
         ins.run(
           c.game.id,
@@ -503,9 +637,28 @@ export function logPicks(slate: Slate) {
           JSON.stringify(p.reasons),
           created.get(p.market) ?? now,
           now,
+          context,
         );
       }
     }
   });
   tx();
+  attachChanges(slate);
+}
+
+/** Load each game's pre-game pick changes onto its card, newest first. */
+export function attachChanges(slate: Slate) {
+  const st = sqlite.prepare(
+    `SELECT market, at, from_market, from_selection, from_line, from_label, to_market, to_selection, to_line, to_label, reasons
+     FROM pick_changes WHERE game_id = ? ORDER BY at DESC, id DESC`,
+  );
+  for (const c of slate.cards) {
+    c.changes = (st.all(c.game.id) as Record<string, string | number | null>[]).map((r) => ({
+      market: r.market as PickChange["market"],
+      at: r.at as number,
+      from: { market: r.from_market as Market, selection: r.from_selection as string, line: r.from_line as number | null, label: r.from_label as string },
+      to: { market: r.to_market as Market, selection: r.to_selection as string, line: r.to_line as number | null, label: r.to_label as string },
+      reasons: JSON.parse(r.reasons as string) as ChangeReason[],
+    }));
+  }
 }

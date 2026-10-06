@@ -63,7 +63,7 @@ Player props are always model-only: neither free feed carries prop prices.
 
 | Page | What's there |
 |---|---|
-| **Tonight** (`/`) | Every game: local start time, venue, records, L10, streak, rest / back-to-back, probable goalies with SV% and GAA, win probabilities, projected total and a **Best Pick** card. Expand for every pick, props and reasons. `←/→` to browse other days. |
+| **Tonight** (`/`) | Every game: local start time, venue, records, L10, streak, rest / back-to-back, probable goalies with SV% and GAA, win probabilities, projected total and a **Best Pick** card. Expand for every pick, props and reasons. `←/→` to browse other days. Picks update through the day: the goalie comes from the Lineups tab, props drop skaters who aren't on the game-day roster or the posted dressed list, and odds refresh every 15 minutes. When a pick switches sides or the Best Pick moves to another bet, the card says when, what it was and why (new goalie, odds moved, model update). |
 | **Game** (`/game/[id]`) | Preview before puck drop (all picks + player projections), full box score afterwards (scoring, three stars, skaters, goalies, and how the model's picks graded). |
 | **Lineups** | Each game's lines, pairs and starting goalie. Skaters are confirmed when the NHL posts the dressed roster about 20 minutes before puck drop, and the goalie once the game starts; projected before that from the last 5 games' ice time and the last 10 goalie starts, limited to the game-day active roster once the NHL posts it. |
 | **Schedule** | Month and week calendar, filterable by team. |
@@ -71,7 +71,7 @@ Player props are always model-only: neither free feed carries prop prices.
 | **Standings** | Wild card, division, conference and league views. Team pages have stats, roster, schedule, home/road splits and head-to-head history. |
 | **Leaders** | Sortable skater (points, goals, assists, PP goals, shots, TOI) and goalie tables, plus a **Hot & Cold** list. Player pages have a game-log chart and home/away/opponent splits. |
 | **News** | Latest headlines from NHL.com, ESPN and Sportsnet merged newest first (same story from two outlets shown once). Filter by outlet or team; each article links to the original. Team pages show their five latest headlines. |
-| **Model** | Hit rate, ROI at flat 1-unit stakes and calibration charts per market, the backtest, and the model's current weights. Markets where the model is losing are flagged in red. |
+| **Model** | Each pick is graded as it stood at puck drop: the app re-logs today's picks every 5 minutes in the 3 hours before the first game while it's running, and whenever Tonight or a game preview is opened. Hit rate, ROI at flat 1-unit stakes and calibration charts per market, the backtest, and the model's current weights. Markets where the model is losing are flagged in red. |
 | **Bets** | Log bets (prefilled from any pick), automatic settlement, P&L, ROI, bankroll chart and a fractional-Kelly stake suggestion. |
 | **Settings** | Value threshold (default 3%), Kelly fraction (default ¼), max stake cap, starting bankroll, daily/weekly loss limits and a session reminder. |
 

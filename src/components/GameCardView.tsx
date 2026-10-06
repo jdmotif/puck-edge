@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
 import type { GameCard, Pick, TeamSide } from "@/lib/picks";
 import { LocalTime } from "./LocalTime";
-import { PickCard } from "./PickCard";
+import { PickCard, type PickChangeNote } from "./PickCard";
 import { ProbBar } from "./ProbBar";
 import { Card, Pill, TeamLogo } from "./ui";
 import { getI18n } from "@/lib/i18n/server";
-import type { I18n } from "@/lib/i18n";
+import { pickLabel, type I18n } from "@/lib/i18n";
 
 export function betHref(card: GameCard, p: Pick) {
   const q = new URLSearchParams({
@@ -21,6 +21,18 @@ export function betHref(card: GameCard, p: Pick) {
     prob: p.modelProb.toFixed(4),
   });
   return `/bets?${q}`;
+}
+
+/** The latest pre-game switch that led to this pick, if it's still the current one. */
+function changeNote(card: GameCard, p: Pick, best: boolean, i: I18n): PickChangeNote | undefined {
+  const c = card.changes.find((x) => (best ? x.market === "best" : x.market === p.market));
+  if (!c || c.to.market !== p.market || c.to.selection !== p.selection || c.to.line !== p.line) return undefined;
+  const W = i.t.pick.why;
+  return {
+    at: new Date(c.at).toISOString(),
+    from: pickLabel(i.t, c.from.market, c.from.selection, c.from.line, c.from.label),
+    why: c.reasons.map((r) => (r.kind === "goalie" ? W.goalie(r.team, r.name) : W[r.kind])),
+  };
 }
 
 /** "W3" → "V3" in French. */
@@ -121,7 +133,7 @@ export async function GameCardView({ card, showAll = false }: { card: GameCard; 
         ))}
       </div>
 
-      {card.best && <PickCard pick={card.best} best betHref={card.locked ? undefined : betHref(card, card.best)} />}
+      {card.best && <PickCard pick={card.best} best betHref={card.locked ? undefined : betHref(card, card.best)} change={changeNote(card, card.best, true, i)} />}
       {card.locked && <p className="text-xs text-muted">{t.card.locked}</p>}
       <details open={showAll} className="group">
         <summary className="flex cursor-pointer list-none items-center justify-between rounded-xl border border-line px-3 py-2 text-sm font-medium text-ink-2 hover:border-line-strong hover:text-ink [&::-webkit-details-marker]:hidden">
@@ -131,7 +143,7 @@ export async function GameCardView({ card, showAll = false }: { card: GameCard; 
         </summary>
         <div className="mt-3 space-y-2">
           {card.picks.filter((p) => p !== card.best).map((p) => (
-            <PickCard key={p.market + p.selection} pick={p} betHref={card.locked ? undefined : betHref(card, p)} />
+            <PickCard key={p.market + p.selection} pick={p} betHref={card.locked ? undefined : betHref(card, p)} change={changeNote(card, p, false, i)} />
           ))}
           {card.propPicks.length > 0 && <h3 className="pt-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t.card.props}</h3>}
           {card.propPicks.map((p) => (

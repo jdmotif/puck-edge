@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { sqlite } from "@/db";
 import { api } from "@/lib/nhl/client";
-import { buildSlate } from "@/lib/picks";
+import { buildSlate, logPicks } from "@/lib/picks";
 import type { BoxTeamStats } from "@/lib/nhl/types";
 import { GameCardView } from "@/components/GameCardView";
 import { LocalTime } from "@/components/LocalTime";
@@ -69,6 +69,7 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
 async function Preview({ id, date }: { id: number; date: string }) {
   const { t, f, locale } = await getI18n();
   const slate = await buildSlate(date, locale);
+  logPicks(slate); // only touches games that haven't started, so an open preview keeps the logged pick current
   const card = slate.cards.find((c) => c.game.id === id);
   if (!card) return <Empty>{t.game.noPreview}</Empty>;
   return (
