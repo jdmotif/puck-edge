@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { TOTALS_PICKS, type GameCard, type Pick, type TeamSide } from "@/lib/picks";
+import { TOTALS_PICKS, leanOf, type GameCard, type Pick, type TeamSide } from "@/lib/picks";
 import { LocalTime } from "./LocalTime";
 import { PickCard, type PickChangeNote } from "./PickCard";
 import { ProbBar } from "./ProbBar";
@@ -86,6 +86,8 @@ export async function GameCardView({ card, showAll = false }: { card: GameCard; 
   const { t, f } = i;
   const g = card.game;
   const final = card.live?.status.startsWith("Final");
+  // No positive-value bet: still show which side the model prefers, marked as a lean with no bet link.
+  const lean = card.best ? null : leanOf(card.picks);
   return (
     <Card className="card-hover space-y-4">
       <div className="flex items-center justify-between gap-2 text-xs text-muted">
@@ -134,6 +136,7 @@ export async function GameCardView({ card, showAll = false }: { card: GameCard; 
       </div>
 
       {card.best && <PickCard pick={card.best} best betHref={card.locked ? undefined : betHref(card, card.best)} change={changeNote(card, card.best, true, i)} />}
+      {lean && <PickCard pick={lean} lean />}
       {!card.best && !card.locked && (
         <p className="rounded-xl border border-line bg-surface-2/50 px-3 py-2.5 text-sm text-ink-2">{card.picks.length ? t.card.noEdge : t.card.noPrice}</p>
       )}
@@ -145,7 +148,7 @@ export async function GameCardView({ card, showAll = false }: { card: GameCard; 
           <svg viewBox="0 0 24 24" className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </summary>
         <div className="mt-3 space-y-2">
-          {card.picks.filter((p) => p !== card.best).map((p) => (
+          {card.picks.filter((p) => p !== card.best && p !== lean).map((p) => (
             <PickCard key={p.market + p.selection} pick={p} betHref={card.locked ? undefined : betHref(card, p)} change={changeNote(card, p, false, i)} />
           ))}
           {!TOTALS_PICKS && <p className="text-xs text-muted">{t.card.totalsPaused}</p>}

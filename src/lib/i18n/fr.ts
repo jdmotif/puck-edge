@@ -118,6 +118,7 @@ export const fr = (f: Format): Messages => ({
   result: { win: "gagné", loss: "perdu", push: "remboursé", void: "annulé", pending: "en attente" },
   pick: {
     best: "Meilleur choix",
+    lean: "Tendance, pas un pari",
     value: "Valeur",
     modelOnly: "Projection seulement",
     model: "Modèle",
@@ -154,7 +155,7 @@ export const fr = (f: Format): Messages => ({
     hide: "Masquer les détails",
     props: "Projections des joueurs (sans cote, non suivies)",
     noPrice: "Aucune cote affichée pour l'instant, donc aucun choix. La barre de victoire et le total projeté viennent du modèle seul.",
-    noEdge: "Aucun choix : une fois la marge du preneur aux livres retirée, aucun côté n'a une espérance positive.",
+    noEdge: "Aucun pari : l'avantage du modèle est plus petit que la marge du preneur aux livres de chaque côté, donc rien n'a une espérance positive.",
     totalsPaused: "Les choix Plus/Moins sont en pause tant que le modèle des totaux ne bat pas une simple moyenne.",
     fullPreview: "Avant-match complet →",
   },

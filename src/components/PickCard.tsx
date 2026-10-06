@@ -12,7 +12,7 @@ export interface PickChangeNote {
 
 const confTone = { High: "good", Medium: "accent", Low: "neutral" } as const;
 
-export async function PickCard({ pick, best = false, betHref, change }: { pick: Pick; best?: boolean; betHref?: string; change?: PickChangeNote }) {
+export async function PickCard({ pick, best = false, lean = false, betHref, change }: { pick: Pick; best?: boolean; lean?: boolean; betHref?: string; change?: PickChangeNote }) {
   const { t, f } = await getI18n();
   return (
     <div
@@ -23,6 +23,7 @@ export async function PickCard({ pick, best = false, betHref, change }: { pick: 
       {best && <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-accent/20 blur-2xl" />}
       <div className="relative flex flex-wrap items-center gap-2">
         {best && <span className="rounded-md bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white">{t.pick.best}</span>}
+        {lean && <span className="rounded-md border border-line-strong px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-ink-2">{t.pick.lean}</span>}
         <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">{t.markets[pick.market]}</span>
         <span className="ml-auto flex gap-1">
           {pick.isValue && <Pill tone="edge">{t.pick.value}</Pill>}
