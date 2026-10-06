@@ -1,6 +1,8 @@
 "use client";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { useI18n } from "@/lib/i18n/client";
+import { LanguageSwitch } from "./LanguageSwitch";
 
 export interface NavItem { href: string; label: string }
 
@@ -51,11 +53,12 @@ export function Logo({ compact = false }: { compact?: boolean }) {
 /** Desktop: fixed left sidebar. */
 export function Sidebar({ items }: { items: NavItem[] }) {
   const path = usePathname();
+  const { t } = useI18n();
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-[var(--sidebar)] flex-col border-r border-line bg-bg/80 px-4 py-5 backdrop-blur-xl lg:flex">
-      <div className="px-2"><Logo /></div>
+      <div className="flex items-center justify-between gap-2 px-2"><Logo /><LanguageSwitch /></div>
       <nav className="mt-8 flex flex-col gap-1 text-sm">
-        <div className="mb-1 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">Menu</div>
+        <div className="mb-1 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t.nav.menu}</div>
         {items.map((n) => {
           const active = isActive(path, n.href);
           return (
@@ -75,7 +78,7 @@ export function Sidebar({ items }: { items: NavItem[] }) {
         })}
       </nav>
       <div className="mt-auto rounded-xl border border-line bg-surface p-3 text-xs leading-relaxed text-muted">
-        Picks are probabilities, not guarantees. Bet only what you can afford to lose.
+        {t.common.disclaimer}
       </div>
     </aside>
   );
@@ -89,14 +92,18 @@ export function MobileNav({ items }: { items: NavItem[] }) {
   const primary = PRIMARY.map((h) => items.find((i) => i.href === h)).filter((i): i is NavItem => !!i);
   const more = items.filter((i) => !PRIMARY.includes(i.href));
   const moreActive = more.some((i) => isActive(path, i.href));
+  const { t } = useI18n();
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-line bg-bg/80 backdrop-blur-xl lg:hidden">
         <div className="flex items-center justify-between px-4 py-3">
           <Logo />
-          <a href="/settings" aria-label="Settings" className="grid h-9 w-9 place-items-center rounded-xl border border-line bg-surface text-ink-2">
+          <div className="flex items-center gap-2">
+          <LanguageSwitch />
+          <a href="/settings" aria-label={t.nav["/settings"]} className="grid h-9 w-9 place-items-center rounded-xl border border-line bg-surface text-ink-2">
             <NavIcon href="/settings" className="h-[18px] w-[18px]" />
           </a>
+          </div>
         </div>
       </header>
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-bg/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
@@ -117,7 +124,7 @@ export function MobileNav({ items }: { items: NavItem[] }) {
               <span className={`grid h-7 w-12 place-items-center rounded-full ${moreActive ? "bg-accent/20 text-accent-2" : ""}`}>
                 <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden><circle cx="5" cy="12" r="1.6" fill="currentColor" /><circle cx="12" cy="12" r="1.6" fill="currentColor" /><circle cx="19" cy="12" r="1.6" fill="currentColor" /></svg>
               </span>
-              More
+              {t.nav.more}
             </summary>
             <div className="absolute bottom-full right-2 mb-2 w-52 overflow-hidden rounded-2xl border border-line-strong bg-surface-2 p-1.5 shadow-2xl">
               {more.map((n) => (

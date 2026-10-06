@@ -3,6 +3,7 @@ import { sqlite } from "@/db";
 import type { ClubSkaterStats } from "@/lib/nhl/types";
 import { clamp, probAtLeastOne, probAtLeastTwo, shrink } from "./math";
 import type { GoalieProfile, TeamProfile } from "./features";
+import { i18n, type Messages } from "@/lib/i18n";
 
 const PRIOR = {
   F: { goals: 0.2, points: 0.5 },
@@ -62,6 +63,7 @@ export function projectProps(
     leagueGoals: number;
     leagueSavePct: number;
   },
+  W: Messages["why"] = i18n("en").t.why,
 ): PropProjection[] {
   // Points and goals scale with how many goals the team is expected to score tonight vs normal.
   const matchup = clamp(ctx.teamExpectedGoals / Math.max(1.5, ctx.teamAvgGoals), 0.7, 1.4);
@@ -93,15 +95,14 @@ export function projectProps(
       const lambdaPoints = pointRate * matchup * toiFactor * venue * Math.sqrt(goalieFactor);
 
       const reasons: string[] = [];
-      reasons.push(`${s.goals} G, ${s.points} P in ${s.gamesPlayed} GP this season`);
-      if (l10.gp >= 3) reasons.push(`${l10.goals} G, ${l10.points} P in last ${l10.gp}`);
-      if (s.powerPlayGoals >= 2) reasons.push(`${s.powerPlayGoals} power-play goals: on the PP unit`);
-      if (toiFactor >= 1.05) reasons.push(`Ice time up lately (${Math.round(recentToi / 60)} min vs ${Math.round(s.avgTimeOnIcePerGame / 60)} avg)`);
-      if (toiFactor <= 0.95) reasons.push(`Ice time down lately (${Math.round(recentToi / 60)} min vs ${Math.round(s.avgTimeOnIcePerGame / 60)} avg)`);
-      if (ctx.opponent.gapg > ctx.leagueGoals * 1.06) reasons.push(`${ctx.opponent.abbrev} allow ${ctx.opponent.gapg.toFixed(2)} GA/GP (league ${ctx.leagueGoals.toFixed(2)})`);
-      if (ctx.opponent.gapg < ctx.leagueGoals * 0.94) reasons.push(`Tough matchup: ${ctx.opponent.abbrev} allow only ${ctx.opponent.gapg.toFixed(2)} GA/GP`);
-      if (ctx.opponentGoalie.name && Math.abs(goalieFactor - 1) > 0.05)
-        reasons.push(`Facing ${ctx.opponentGoalie.name} (${ctx.opponentGoalie.savePct.toFixed(3).replace(/^0/, "")} SV%, regressed)`);
+      reasons.push(W.propSeason(s.goals, s.points, s.gamesPlayed));
+      if (l10.gp >= 3) reasons.push(W.propRecent(l10.goals, l10.points, l10.gp));
+      if (s.powerPlayGoals >= 2) reasons.push(W.propPP(s.powerPlayGoals));
+      if (toiFactor >= 1.05) reasons.push(W.propToiUp(Math.round(recentToi / 60), Math.round(s.avgTimeOnIcePerGame / 60)));
+      if (toiFactor <= 0.95) reasons.push(W.propToiDown(Math.round(recentToi / 60), Math.round(s.avgTimeOnIcePerGame / 60)));
+      if (ctx.opponent.gapg > ctx.leagueGoals * 1.06) reasons.push(W.propSoftD(ctx.opponent.abbrev, ctx.opponent.gapg, ctx.leagueGoals));
+      if (ctx.opponent.gapg < ctx.leagueGoals * 0.94) reasons.push(W.propToughD(ctx.opponent.abbrev, ctx.opponent.gapg));
+      if (ctx.opponentGoalie.name && Math.abs(goalieFactor - 1) > 0.05) reasons.push(W.propGoalie(ctx.opponentGoalie.name, ctx.opponentGoalie.savePct));
 
       return {
         playerId: s.playerId,

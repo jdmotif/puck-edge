@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import { ago } from "@/lib/format";
+import { getI18n } from "@/lib/i18n/server";
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return <section className={`card p-4 sm:p-5 ${className}`}>{children}</section>;
@@ -92,7 +92,8 @@ export function TeamLogo({ abbrev, size = 28 }: { abbrev: string; size?: number 
 }
 
 /** Shown whenever a page is rendering cached data because the live request failed. */
-export function StaleBanner({ items }: { items: { fetchedAt: number; stale: boolean; error?: string; data?: unknown }[] }) {
+export async function StaleBanner({ items }: { items: { fetchedAt: number; stale: boolean; error?: string; data?: unknown }[] }) {
+  const { t, f } = await getI18n();
   const stale = items.filter((i) => i.stale);
   if (!stale.length) return null;
   const missing = stale.filter((i) => i.data === null || i.fetchedAt === 0);
@@ -101,9 +102,9 @@ export function StaleBanner({ items }: { items: { fetchedAt: number; stale: bool
     <div role="status" className="mb-4 flex gap-2.5 rounded-xl border border-warn/30 bg-warn/10 px-4 py-2.5 text-sm text-warn">
       <span aria-hidden>●</span>
       <span>
-        {Number.isFinite(oldest) && <>Live data unavailable — showing data stale since {new Date(oldest).toLocaleString()} ({ago(oldest)}). </>}
-        {missing.length > 0 && <>Some data couldn&apos;t be loaded ({missing[0].error}). </>}
-        It will refresh automatically.
+        {Number.isFinite(oldest) && t.common.stale(f.dateTime(oldest), f.ago(oldest))}
+        {missing.length > 0 && t.common.missing(missing[0].error ?? "")}
+        {t.common.willRefresh}
       </span>
     </div>
   );
@@ -158,4 +159,9 @@ export function Tabs({ tabs, active }: { tabs: { href: string; label: string; ke
       ))}
     </nav>
   );
+}
+
+/** Renders a translated string, turning `backticked` spans into <code>. */
+export function Rich({ text }: { text: string }) {
+  return <>{text.split("`").map((part, i) => (i % 2 ? <code key={i} className="text-ink">{part}</code> : part))}</>;
 }

@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useI18n } from "@/lib/i18n/client";
 
 export interface LogPoint {
   date: string;
@@ -12,6 +13,7 @@ export interface LogPoint {
 
 /** Stacked bars per game (series A bottom, B top) with hover tooltip. One y-axis. */
 export function GameLogChart({ points, labelA, labelB }: { points: LogPoint[]; labelA: string; labelB?: string }) {
+  const { t } = useI18n();
   const [hover, setHover] = useState<number | null>(null);
   if (!points.length) return null;
   const W = 640, H = 180, padL = 24, padB = 18, padT = 8;
@@ -30,7 +32,7 @@ export function GameLogChart({ points, labelA, labelB }: { points: LogPoint[]; l
           <span className="flex items-center gap-1"><span className="inline-block h-2.5 w-2.5 rounded-sm bg-s2" />{labelB}</span>
         </div>
       )}
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={labelB ? `${labelA} and ${labelB} by game` : `${labelA} by game`} onMouseLeave={() => setHover(null)}>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={t.player.by(labelA, labelB)} onMouseLeave={() => setHover(null)}>
         {ticks.map((t) => (
           <g key={t}>
             <line x1={padL} x2={W} y1={y(t)} y2={y(t)} stroke="var(--border)" strokeWidth={t === 0 ? 1 : 0.5} />
@@ -54,7 +56,7 @@ export function GameLogChart({ points, labelA, labelB }: { points: LogPoint[]; l
       </svg>
       {h && (
         <div className="pointer-events-none absolute right-2 top-6 rounded-md border border-line bg-surface-2 px-2 py-1 text-xs shadow">
-          <div className="font-medium">{h.date} {h.home ? "vs" : "@"} {h.opp}</div>
+          <div className="font-medium">{h.date} {h.home ? t.common.vs(h.opp) : t.common.at(h.opp)}</div>
           <div className="tabular text-ink-2">{labelA} {h.a}{labelB ? ` · ${labelB} ${h.b}` : ""}</div>
           {h.extra && <div className="text-ink-2">{h.extra}</div>}
         </div>

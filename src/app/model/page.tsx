@@ -4,23 +4,14 @@ import { loadMoneylineParams } from "@/lib/model/engine";
 import { FEATURE_NAMES } from "@/lib/model/features";
 import { MARKET_LABELS, type Market } from "@/lib/grading";
 import { CalibrationChart } from "@/components/CalibrationChart";
-import { Card, Empty, PageTitle, Pill } from "@/components/ui";
-import { pct, units } from "@/lib/format";
+import { Card, Empty, PageTitle, Pill, Rich } from "@/components/ui";
+import { getI18n } from "@/lib/i18n/server";
+import { pickLabel } from "@/lib/i18n";
 import { refreshRecentInBackground } from "@/lib/data/refresh";
 
 export const dynamic = "force-dynamic";
 
-interface Graded { market: Market; p: number; odds: number | null; edge: number | null; result: string; isValue: number; isBest: number; label: string; date: string; gameId: number }
-
-const FEATURE_TEXT: Record<string, string> = {
-  homeIce: "Home ice (intercept)",
-  shotShare: "Shot share gap (×10)",
-  goalDiff: "Goal differential per game gap",
-  form: "Recent form gap (weighted L10 points %, ×2)",
-  rest: "Rest days gap (/3)",
-  backToBack: "Back-to-back (home − away)",
-  goalie: "Goalie quality gap (goals saved per 30 shots)",
-};
+interface Graded { market: Market; selection: string; line: number | null; p: number; odds: number | null; edge: number | null; result: string; isValue: number; isBest: number; label: string; date: string; gameId: number }
 
 function summarize(rows: Graded[]) {
   const decided = rows.filter((r) => r.result === "win" || r.result === "loss");
@@ -38,11 +29,14 @@ function summarize(rows: Graded[]) {
   };
 }
 
-export default function ModelPage() {
+export default async function ModelPage() {
   refreshRecentInBackground();
+  const { t, f } = await getI18n();
+  const M = t.model;
+  const FEATURE_TEXT = M.features;
   const graded = sqlite
     .prepare(
-      `SELECT market, model_prob AS p, odds_decimal AS odds, edge, result, is_value AS isValue, is_best AS isBest, selection_label AS label, game_date AS date, game_id AS gameId
+      `SELECT market, selection, line, model_prob AS p, odds_decimal AS odds, edge, result, is_value AS isValue, is_best AS isBest, selection_label AS label, game_date AS date, game_id AS gameId
        FROM picks WHERE result IS NOT NULL ORDER BY game_date DESC, id DESC`,
     )
     .all() as Graded[];
@@ -60,7 +54,7 @@ export default function ModelPage() {
 
   return (
     <>
-      <PageTitle sub="Every pick is logged before puck drop and graded automatically after the final.">Model tracking</PageTitle>
+      <PageTitle sub={M.sub}>{M.title}</PageTitle>
 
       <div className="grid gap-3 md:grid-cols-3">
         {markets.map((m) => {
@@ -72,86 +66,86 @@ export default function ModelPage() {
           return (
             <Card key={m} className={losing ? "border-bad/60" : ""}>
               <div className="flex items-center justify-between">
-                <h2 className="font-display text-lg font-bold uppercase tracking-wide">{MARKET_LABELS[m]}</h2>
-                {losing ? <Pill tone="bad">Losing money</Pill> : s.roi !== null && s.priced >= 20 ? <Pill tone="good">Profitable</Pill> : null}
+                <h2 className="font-display text-lg font-bold uppercase tracking-wide">{t.markets[m]}</h2>
+                {losing ? <Pill tone="bad">{M.losing}</Pill> : s.roi !== null && s.priced >= 20 ? <Pill tone="good">{M.profitable}</Pill> : null}
               </div>
               {s.n === 0 ? (
-                <p className="mt-2 text-sm text-muted">No graded picks yet.</p>
+                <p className="mt-2 text-sm text-muted">{M.noGraded}</p>
               ) : (
                 <dl className="mt-2 grid grid-cols-2 gap-y-1 text-sm tabular">
-                  <dt className="text-muted">Graded</dt><dd className="text-right">{s.n}</dd>
-                  <dt className="text-muted">Hit rate</dt><dd className="text-right">{pct(s.hitRate, 1)} <span className="text-xs text-muted">(model said {pct(s.expected, 1)})</span></dd>
-                  <dt className="text-muted">ROI, 1u flat</dt>
-                  <dd className={`text-right ${s.roi === null ? "" : s.roi >= 0 ? "text-good" : "text-bad"}`}>{s.roi === null ? "no odds logged" : `${pct(s.roi, 1)} (${units(s.profit)} over ${s.priced})`}</dd>
-                  {v.n > 0 && <><dt className="text-muted">Value picks only</dt><dd className="text-right">{v.roi === null ? `${pct(v.hitRate, 1)} hit` : `${pct(v.roi, 1)} ROI, n=${v.priced}`}</dd></>}
+                  <dt className="text-muted">{M.graded}</dt><dd className="text-right">{s.n}</dd>
+                  <dt className="text-muted">{M.hitRate}</dt><dd className="text-right">{f.pct(s.hitRate, 1)} <span className="text-xs text-muted">{M.modelSaid(f.pct(s.expected, 1))}</span></dd>
+                  <dt className="text-muted">{M.roi}</dt>
+                  <dd className={`text-right ${s.roi === null ? "" : s.roi >= 0 ? "text-good" : "text-bad"}`}>{s.roi === null ? M.noOdds : M.roiLine(f.pct(s.roi, 1), f.units(s.profit), s.priced)}</dd>
+                  {v.n > 0 && <><dt className="text-muted">{M.valueOnly}</dt><dd className="text-right">{v.roi === null ? M.valueHit(f.pct(v.hitRate, 1)) : M.valueRoi(f.pct(v.roi, 1), v.priced)}</dd></>}
                 </dl>
               )}
-              {losing && <p className="mt-2 text-xs text-bad">The model has lost {units(s.profit)} in this market at flat stakes. Treat its picks here with caution until it recovers.</p>}
-              {underperf && !losing && <p className="mt-2 text-xs text-warn">Hitting well below what the model predicts: it may be overconfident here.</p>}
+              {losing && <p className="mt-2 text-xs text-bad">{M.lostWarn(f.units(s.profit))}</p>}
+              {underperf && !losing && <p className="mt-2 text-xs text-warn">{M.underWarn}</p>}
             </Card>
           );
         })}
       </div>
-      <p className="mt-2 text-xs text-muted">{pending} picks waiting for results. ROI uses the best available price logged with each pick; model-only picks (no odds) count toward hit rate but not ROI.</p>
+      <p className="mt-2 text-xs text-muted">{M.pending(pending)}</p>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <Card>
-          <h2 className="mb-1 font-display text-lg font-bold uppercase tracking-wide">Moneyline calibration</h2>
-          <p className="mb-2 text-xs text-muted">When the model says 60%, does that side win 60% of the time? Dots on the dashed line mean yes. Backtest = walk-forward predictions on stored games, refit each month on earlier games only.</p>
+          <h2 className="mb-1 font-display text-lg font-bold uppercase tracking-wide">{M.mlCal}</h2>
+          <p className="mb-2 text-xs text-muted">{M.mlCalSub}</p>
           {backtest.length || liveMl.length ? (
             <CalibrationChart series={[
-              ...(liveMl.length ? [{ label: `Live picks (n=${liveMl.length})`, color: "var(--series-1)", buckets: liveCal }] : []),
-              ...(backtest.length ? [{ label: `Backtest, home win (n=${backtest.length})`, color: "var(--series-2)", buckets: btCal }] : []),
+              ...(liveMl.length ? [{ label: M.livePicks(liveMl.length), color: "var(--series-1)", buckets: liveCal }] : []),
+              ...(backtest.length ? [{ label: M.backtestHome(backtest.length), color: "var(--series-2)", buckets: btCal }] : []),
             ]} />
-          ) : <Empty>No data yet. Run <code className="text-ink">npm run sync</code> to backfill games and build the backtest.</Empty>}
+          ) : <Empty><Rich text={M.noData} /></Empty>}
           {backtest.length > 0 && (
             <p className="mt-2 text-xs text-ink-2 tabular">
-              Backtest log loss {logLoss(backtest.map((b) => b.p), backtest.map((b) => b.y)).toFixed(4)} (coin flip 0.6931) · Brier {brier(backtest.map((b) => b.p), backtest.map((b) => b.y)).toFixed(4)} (coin flip 0.25)
+              {M.btLine(logLoss(backtest.map((b) => b.p), backtest.map((b) => b.y)), brier(backtest.map((b) => b.p), backtest.map((b) => b.y)))}
             </p>
           )}
         </Card>
         <Card>
-          <h2 className="mb-1 font-display text-lg font-bold uppercase tracking-wide">Totals and puck line calibration (backtest)</h2>
-          <p className="mb-2 text-xs text-muted">Over 5.5 goals and home −1.5, predicted vs actual.</p>
+          <h2 className="mb-1 font-display text-lg font-bold uppercase tracking-wide">{M.otherCal}</h2>
+          <p className="mb-2 text-xs text-muted">{M.otherCalSub}</p>
           {backtest.length ? (
             <CalibrationChart series={[
-              { label: "Over 5.5", color: "var(--series-1)", buckets: btOver },
-              { label: "Home −1.5", color: "var(--series-2)", buckets: btPl },
+              { label: M.over55, color: "var(--series-1)", buckets: btOver },
+              { label: M.homeMinus, color: "var(--series-2)", buckets: btPl },
             ]} />
-          ) : <Empty>No backtest yet.</Empty>}
+          ) : <Empty>{M.noBacktest}</Empty>}
         </Card>
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <Card>
-          <h2 className="mb-2 font-display text-lg font-bold uppercase tracking-wide">Moneyline weights</h2>
+          <h2 className="mb-2 font-display text-lg font-bold uppercase tracking-wide">{M.weights}</h2>
           <p className="mb-2 text-xs text-muted">
-            {params.fitted ? `Logistic regression fitted on ${params.n} stored games${params.logLoss ? `, log loss ${params.logLoss.toFixed(4)}` : ""}.` : "Prior weights: the model refits once 300+ games are stored."}
-            {" "}Positive = favours the team with more of it.
+            {params.fitted ? M.fitted(params.n, params.logLoss ?? null) : M.prior}
+            {" "}{M.positive}
           </p>
           <table className="tabular w-full text-sm">
             <tbody>
-              <tr className="border-t border-line"><td className="py-1">{FEATURE_TEXT.homeIce}</td><td className="text-right">{params.intercept.toFixed(3)}</td></tr>
-              {FEATURE_NAMES.map((f, i) => (
-                <tr key={f} className="border-t border-line"><td className="py-1">{FEATURE_TEXT[f]}</td><td className="text-right">{params.weights[i].toFixed(3)}</td></tr>
+              <tr className="border-t border-line"><td className="py-1">{FEATURE_TEXT.homeIce}</td><td className="text-right">{f.num(params.intercept, 3)}</td></tr>
+              {FEATURE_NAMES.map((feat, i) => (
+                <tr key={feat} className="border-t border-line"><td className="py-1">{FEATURE_TEXT[feat]}</td><td className="text-right">{f.num(params.weights[i], 3)}</td></tr>
               ))}
             </tbody>
           </table>
         </Card>
         <Card>
-          <h2 className="mb-2 font-display text-lg font-bold uppercase tracking-wide">Recent graded picks</h2>
+          <h2 className="mb-2 font-display text-lg font-bold uppercase tracking-wide">{M.recent}</h2>
           {graded.length ? (
             <ul className="space-y-1 text-sm">
               {graded.slice(0, 25).map((g, i) => (
                 <li key={i} className="flex items-center gap-2">
                   <span className="w-20 text-xs text-muted">{g.date}</span>
-                  <a href={`/game/${g.gameId}`} className="flex-1 truncate hover:text-accent-2">{g.label}</a>
-                  <span className="tabular text-xs text-ink-2">{pct(g.p)}</span>
-                  <Pill tone={g.result === "win" ? "good" : g.result === "loss" ? "bad" : "neutral"}>{g.result}</Pill>
+                  <a href={`/game/${g.gameId}`} className="flex-1 truncate hover:text-accent-2">{pickLabel(t, g.market, g.selection, g.line, g.label)}</a>
+                  <span className="tabular text-xs text-ink-2">{f.pct(g.p)}</span>
+                  <Pill tone={g.result === "win" ? "good" : g.result === "loss" ? "bad" : "neutral"}>{t.result[g.result] ?? g.result}</Pill>
                 </li>
               ))}
             </ul>
-          ) : <p className="text-sm text-muted">Nothing graded yet. Picks shown on the Tonight page are logged automatically.</p>}
+          ) : <p className="text-sm text-muted">{M.nothing}</p>}
         </Card>
       </div>
     </>
