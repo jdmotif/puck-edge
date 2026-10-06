@@ -18,6 +18,15 @@ const ordinal = (n: number) => (n === 1 ? "1re" : `${n}e`);
 export const fr = (f: Format): Messages => ({
   lang: { name: "Français", short: "FR", switchTo: "Langue" },
   meta: { description: "Choix de paris LNH appuyés par les données, calendrier et résultats" },
+  static: {
+    updated: "Version en ligne · mise à jour",
+    refresh: "Les données sont rafraîchies environ toutes les 30 minutes. Vos paris et réglages sont enregistrés dans ce navigateur seulement.",
+    notFoundTitle: "Page introuvable",
+    notFound: "Cette page n'existe pas.",
+    notInSnapshot:
+      "La version en ligne comprend seulement les matchs de cette saison, les dates proches d'aujourd'hui et les filtres de base. Les anciens matchs, l'historique des face-à-face et les filtres personnalisés demandent l'application sur votre ordinateur.",
+    home: "Retour à Ce soir",
+  },
   nav: {
     "/": "Ce soir",
     "/lineups": "Alignements",
@@ -447,6 +456,9 @@ export const fr = (f: Format): Messages => ({
     noSync: "L'import initial n'a pas encore été fait.",
     syncHint: (key: boolean) =>
       `Lancez \`npm run sync\` chaque nuit (voir le README pour un exemple de tâche planifiée). Cotes : ${key ? "la clé The Odds API est configurée." : "aucune clé ODDS_API_KEY; les cotes (gagnant du match, totaux et écarts de buts) proviennent des flux gratuits de la LNH."}`,
+    staticSyncHint: "La version en ligne va chercher les nouveaux matchs, alignements et cotes de la LNH environ toutes les 30 minutes.",
+    staticFixed: (edge: string, where: string) => `Dans la version en ligne, les choix Valeur utilisent un seuil d'avantage de ${edge} et les cotes pour : ${where}.`,
+    staticStored: "Enregistrés dans ce navigateur seulement. Effacer les données de votre navigateur efface vos paris et réglages.",
   },
   game: {
     notLoaded: "Ce match n'a pas pu être chargé.",

@@ -1,7 +1,8 @@
 import { todayIso } from "@/lib/nhl/client";
 import { loadLineups, type LineupPlayer, type TeamLineup } from "@/lib/lineups";
 import { LocalTime } from "@/components/LocalTime";
-import { ButtonLink, Card, Empty, PageTitle, Pill, StaleBanner, Tabs, TeamLogo } from "@/components/ui";
+import { ButtonLink, Card, Empty, PageTitle, Pill, Tabs, TeamLogo } from "@/components/ui";
+import { StaleBanner } from "@/components/StaleBanner";
 import { getI18n } from "@/lib/i18n/server";
 import type { I18n, Messages } from "@/lib/i18n";
 import type { GoalieWhy } from "@/lib/lineups";

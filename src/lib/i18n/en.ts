@@ -8,6 +8,15 @@ type Team = string;
 export const en = (f: Format) => ({
   lang: { name: "English", short: "EN", switchTo: "Language" },
   meta: { description: "Data-driven NHL picks, schedules and results" },
+  static: {
+    updated: "Online version · updated",
+    refresh: "Data refreshes about every 30 minutes. Your bets and settings are saved in this browser only.",
+    notFoundTitle: "Page not found",
+    notFound: "This page doesn't exist.",
+    notInSnapshot:
+      "The online version only includes this season's games, dates close to today and the standard filters. Older games, head-to-head history and custom filters need the app on your computer.",
+    home: "Back to Tonight",
+  },
   nav: {
     "/": "Tonight",
     "/lineups": "Lineups",
@@ -434,6 +443,9 @@ export const en = (f: Format) => ({
     noSync: "The backfill hasn't run yet.",
     syncHint: (key: boolean) =>
       `Run \`npm run sync\` nightly (see README for a scheduler example). Odds: ${key ? "The Odds API key is set." : "no ODDS_API_KEY set; moneyline, totals and puck-line prices come from the free NHL feeds."}`,
+    staticSyncHint: "The online version pulls new games, lineups and odds from the NHL about every 30 minutes.",
+    staticFixed: (edge: string, where: string) => `On the online version, Value picks use a ${edge} edge threshold and odds for ${where}.`,
+    staticStored: "Saved in this browser only. Clearing your browser data erases your bets and settings.",
   },
   game: {
     notLoaded: "This game couldn't be loaded.",

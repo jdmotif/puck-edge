@@ -1,56 +1,20 @@
 import { sqlite } from "@/db";
 import { getSettings } from "@/lib/settings";
+import { bankrollOf, lossLimits, type BetRow } from "@/lib/bankroll-math";
 
-export interface BetRow {
-  id: number;
-  createdAt: number;
-  gameId: number;
-  gameDate: string;
-  gameLabel: string;
-  market: string;
-  selection: string;
-  selectionLabel: string;
-  line: number | null;
-  oddsDecimal: number;
-  stake: number;
-  status: string;
-  profit: number | null;
-  settledAt: number | null;
-  notes: string | null;
-}
+export type { BetRow };
 
 export function listBets(): BetRow[] {
-  return sqlite
+  // node:sqlite rows have a null prototype; copy them so they can be passed to client components.
+  return (sqlite
     .prepare(
       `SELECT id, created_at AS createdAt, game_id AS gameId, game_date AS gameDate, game_label AS gameLabel, market, selection,
         selection_label AS selectionLabel, line, odds_decimal AS oddsDecimal, stake, status, profit, settled_at AS settledAt, notes
        FROM bets ORDER BY game_date DESC, id DESC`,
     )
-    .all() as BetRow[];
+    .all() as BetRow[]).map((r) => ({ ...r }));
 }
 
-export function bankrollNow(): number {
-  const s = getSettings();
-  const r = sqlite.prepare("SELECT COALESCE(SUM(profit), 0) AS p FROM bets WHERE status != 'open'").get() as { p: number };
-  return s.startingBankroll + r.p;
-}
+export const bankrollNow = (): number => bankrollOf(listBets(), getSettings());
 
-/** Realised P&L for bets settled since a time (ms). */
-export function pnlSince(ms: number): number {
-  const r = sqlite.prepare("SELECT COALESCE(SUM(profit), 0) AS p FROM bets WHERE status != 'open' AND settled_at >= ?").get(ms) as { p: number };
-  return r.p;
-}
-
-export function lossLimitStatus() {
-  const s = getSettings();
-  const now = new Date();
-  const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const weekStart = dayStart - ((now.getDay() + 6) % 7) * 86_400_000; // Monday
-  const day = pnlSince(dayStart);
-  const week = pnlSince(weekStart);
-  // Message keys (see `limits` in the i18n dictionaries) with the limit they refer to.
-  const warnings: { key: "dayHit" | "dayNear" | "weekHit" | "weekNear"; limit: number }[] = [];
-  if (s.dailyLossLimit > 0 && -day >= s.dailyLossLimit * 0.8) warnings.push({ key: -day >= s.dailyLossLimit ? "dayHit" : "dayNear", limit: s.dailyLossLimit });
-  if (s.weeklyLossLimit > 0 && -week >= s.weeklyLossLimit * 0.8) warnings.push({ key: -week >= s.weeklyLossLimit ? "weekHit" : "weekNear", limit: s.weeklyLossLimit });
-  return { day, week, warnings };
-}
+export const lossLimitStatus = () => lossLimits(listBets(), getSettings());

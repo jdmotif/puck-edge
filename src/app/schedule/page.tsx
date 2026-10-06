@@ -1,7 +1,8 @@
 import { api, todayIso } from "@/lib/nhl/client";
 import type { ScheduleGame } from "@/lib/nhl/types";
 import { LocalTime } from "@/components/LocalTime";
-import { ButtonLink, PageTitle, StaleBanner, Tabs, TeamLogo } from "@/components/ui";
+import { ButtonLink, PageTitle, Tabs, TeamLogo } from "@/components/ui";
+import { StaleBanner } from "@/components/StaleBanner";
 import { getI18n } from "@/lib/i18n/server";
 import type { Messages } from "@/lib/i18n";
 

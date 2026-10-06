@@ -1,7 +1,8 @@
 import { sqlite } from "@/db";
 import { api, seasonFor, todayIso } from "@/lib/nhl/client";
 import { SortableTable } from "@/components/SortableTable";
-import { Card, Empty, PageTitle, StaleBanner, Tabs } from "@/components/ui";
+import { Card, Empty, PageTitle, Tabs } from "@/components/ui";
+import { StaleBanner } from "@/components/StaleBanner";
 import type { LeaderEntry } from "@/lib/nhl/types";
 import { getI18n } from "@/lib/i18n/server";
 import { Rich } from "@/components/ui";

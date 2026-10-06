@@ -1,6 +1,7 @@
 import { sqlite } from "@/db";
 import { api } from "@/lib/nhl/client";
-import { Card, Empty, Pill, SectionTitle, StaleBanner, StatTile, TEAM_COLORS, TeamLogo } from "@/components/ui";
+import { Card, Empty, Pill, SectionTitle, StatTile, TEAM_COLORS, TeamLogo } from "@/components/ui";
+import { StaleBanner } from "@/components/StaleBanner";
 import { LocalTime } from "@/components/LocalTime";
 import { getI18n } from "@/lib/i18n/server";
 import { latestNews } from "@/lib/news";

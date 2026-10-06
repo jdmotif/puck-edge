@@ -1,17 +1,19 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { addBet } from "./actions";
 import { kellyFraction, parseOdds } from "@/lib/model/math";
 import { useI18n } from "@/lib/i18n/client";
 
 export interface GameOption { id: number; date: string; label: string; home: string; away: string }
 
-export function BetForm({ games, prefill, bankroll, kelly, cap }: {
+export function BetForm({ games, prefill, bankroll, kelly, cap, onAdd }: {
   games: GameOption[];
   prefill: Record<string, string | undefined>;
   bankroll: number;
   kelly: number;
   cap: number;
+  /** Static site: handle the form in the browser instead of the `addBet` server action. */
+  onAdd?: (form: FormData) => void;
 }) {
   const { t, f } = useI18n();
   const B = t.bets;
@@ -33,7 +35,9 @@ export function BetForm({ games, prefill, bankroll, kelly, cap }: {
   const input = "mt-1 w-full border px-3 py-2";
 
   return (
-    <form action={addBet} className="grid gap-3 text-sm sm:grid-cols-2">
+    <form
+      {...(onAdd ? { onSubmit: (e: FormEvent<HTMLFormElement>) => { e.preventDefault(); onAdd(new FormData(e.currentTarget)); } } : { action: addBet })}
+      className="grid gap-3 text-sm sm:grid-cols-2">
       <label className="sm:col-span-2">
         <span className="text-xs text-muted">{B.game}</span>
         {prefill.game && !game ? (
