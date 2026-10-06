@@ -8,10 +8,17 @@ import { Card, Empty, PageTitle, Pill, Rich } from "@/components/ui";
 import { getI18n } from "@/lib/i18n/server";
 import { pickLabel } from "@/lib/i18n";
 import { refreshRecentInBackground } from "@/lib/data/refresh";
+import { blendWeight, fillClosing } from "@/lib/data/closing";
+import { MIN_BLEND_FIT } from "@/lib/model/blend";
+import { clv, summarizeClv } from "@/lib/clv";
 
 export const dynamic = "force-dynamic";
 
-interface Graded { market: Market; selection: string; line: number | null; p: number; odds: number | null; edge: number | null; result: string; isValue: number; isBest: number; label: string; date: string; gameId: number }
+interface Graded { market: Market; selection: string; line: number | null; p: number; bp: number | null; odds: number | null; edge: number | null; result: string; isValue: number; isBest: number; label: string; date: string; gameId: number; firstOdds: number | null; closingProb: number | null }
+type Priced = Pick<Graded, "market" | "isValue" | "isBest" | "firstOdds" | "closingProb">;
+
+// Totals and props are no longer picked, so their cards only show while they have graded history.
+const ACTIVE_MARKETS = new Set<Market>(["moneyline", "puckline"]);
 
 function summarize(rows: Graded[]) {
   const decided = rows.filter((r) => r.result === "win" || r.result === "loss");
@@ -22,7 +29,7 @@ function summarize(rows: Graded[]) {
     n: rows.length,
     decided: decided.length,
     hitRate: decided.length ? wins / decided.length : null,
-    expected: decided.length ? decided.reduce((s, r) => s + r.p, 0) / decided.length : null,
+    expected: decided.length ? decided.reduce((s, r) => s + (r.bp ?? r.p), 0) / decided.length : null,
     priced: priced.length,
     profit,
     roi: priced.length ? profit / priced.length : null,
@@ -31,17 +38,34 @@ function summarize(rows: Graded[]) {
 
 export default async function ModelPage() {
   refreshRecentInBackground();
+  fillClosing();
   const { t, f } = await getI18n();
   const M = t.model;
   const FEATURE_TEXT = M.features;
   const graded = sqlite
     .prepare(
-      `SELECT market, selection, line, model_prob AS p, odds_decimal AS odds, edge, result, is_value AS isValue, is_best AS isBest, selection_label AS label, game_date AS date, game_id AS gameId
+      `SELECT market, selection, line, model_prob AS p, blend_prob AS bp, odds_decimal AS odds, edge, result, is_value AS isValue, is_best AS isBest, selection_label AS label,
+         game_date AS date, game_id AS gameId, first_odds AS firstOdds, closing_prob AS closingProb
        FROM picks WHERE result IS NOT NULL ORDER BY game_date DESC, id DESC`,
     )
     .all() as Graded[];
   const pending = (sqlite.prepare("SELECT COUNT(*) AS n FROM picks WHERE result IS NULL").get() as { n: number }).n;
-  const markets = Object.keys(MARKET_LABELS) as Market[];
+  const markets = (Object.keys(MARKET_LABELS) as Market[]).filter((m) => ACTIVE_MARKETS.has(m) || graded.some((g) => g.market === m));
+  // Closing-line value is known at puck drop, so started games count before they're graded.
+  const priced = sqlite
+    .prepare(
+      `SELECT market, is_value AS isValue, is_best AS isBest, first_odds AS firstOdds, closing_prob AS closingProb
+       FROM picks WHERE first_odds IS NOT NULL AND closing_prob IS NOT NULL`,
+    )
+    .all() as Priced[];
+  const clvGroups: [string, Priced[]][] = [
+    ["all", priced],
+    ["moneyline", priced.filter((r) => r.market === "moneyline")],
+    ["puckline", priced.filter((r) => r.market === "puckline")],
+    ["value", priced.filter((r) => r.isValue)],
+    ["best", priced.filter((r) => r.isBest)],
+  ];
+  const bw = blendWeight();
   const backtest = sqlite.prepare("SELECT home_win_prob AS p, home_won AS y, over55_prob AS o, actual_total AS t, home_cover15_prob AS c FROM backtest").all() as { p: number; y: number; o: number; t: number; c: number }[];
   const params = loadMoneylineParams();
   const margins = sqlite.prepare("SELECT b.home_cover15_prob AS c, g.home_score - g.away_score AS m FROM backtest b JOIN games g ON g.id = b.game_id").all() as { c: number; m: number }[];
@@ -88,6 +112,34 @@ export default async function ModelPage() {
       </div>
       <p className="mt-2 text-xs text-muted">{M.pending(pending)}</p>
 
+      <Card className="mt-6">
+        <h2 className="mb-1 font-display text-lg font-bold uppercase tracking-wide">{M.clvTitle}</h2>
+        <p className="mb-3 text-xs text-muted">{M.clvSub}</p>
+        {priced.length ? (
+          <>
+            <table className="tabular w-full text-sm">
+              <thead className="text-xs text-muted">
+                <tr className="[&>th]:py-1 [&>th]:text-right [&>th:first-child]:text-left"><th></th><th>n</th><th>{M.clvAvg}</th><th>{M.clvBeat}</th></tr>
+              </thead>
+              <tbody>
+                {clvGroups.map(([key, rows]) => {
+                  const s = summarizeClv(rows.map((r) => ({ odds: r.firstOdds, closingProb: r.closingProb })));
+                  return (
+                    <tr key={key} className="border-t border-line [&>td]:py-1.5 [&>td]:text-right [&>td:first-child]:text-left">
+                      <td>{M.clvGroups[key]}</td>
+                      <td>{s.n}</td>
+                      <td className={s.avg === null ? "" : s.avg >= 0 ? "text-good" : "text-bad"}>{s.avg === null ? "–" : f.signedPct(s.avg)}</td>
+                      <td>{s.beat === null ? "–" : f.pct(s.beat)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            <p className="mt-2 text-xs text-muted">{M.clvHelp}</p>
+          </>
+        ) : <p className="text-sm text-muted">{M.clvNone}</p>}
+      </Card>
+
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <Card>
           <h2 className="mb-1 font-display text-lg font-bold uppercase tracking-wide">{M.mlCal}</h2>
@@ -123,6 +175,7 @@ export default async function ModelPage() {
             {params.fitted ? M.fitted(params.n, params.logLoss ?? null) : M.prior}
             {" "}{M.positive}
           </p>
+          <p className="mb-2 text-xs text-ink-2">{M.blendLine(f.pct(bw.w), bw.n, bw.fitted, MIN_BLEND_FIT)}</p>
           <table className="tabular w-full text-sm">
             <tbody>
               <tr className="border-t border-line"><td className="py-1">{FEATURE_TEXT.homeIce}</td><td className="text-right">{f.num(params.intercept, 3)}</td></tr>
@@ -140,7 +193,10 @@ export default async function ModelPage() {
                 <li key={i} className="flex items-center gap-2">
                   <span className="w-20 text-xs text-muted">{g.date}</span>
                   <a href={`/game/${g.gameId}`} className="flex-1 truncate hover:text-accent-2">{pickLabel(t, g.market, g.selection, g.line, g.label)}</a>
-                  <span className="tabular text-xs text-ink-2">{f.pct(g.p)}</span>
+                  {g.firstOdds !== null && g.closingProb !== null && (
+                    <span className={`tabular text-xs ${clv(g.firstOdds, g.closingProb) >= 0 ? "text-good" : "text-bad"}`} title={M.clvTitle}>{f.signedPct(clv(g.firstOdds, g.closingProb))}</span>
+                  )}
+                  <span className="tabular text-xs text-ink-2">{f.pct(g.bp ?? g.p)}</span>
                   <Pill tone={g.result === "win" ? "good" : g.result === "loss" ? "bad" : "neutral"}>{t.result[g.result] ?? g.result}</Pill>
                 </li>
               ))}

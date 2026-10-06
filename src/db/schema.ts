@@ -88,6 +88,10 @@ export const picks = sqliteTable(
     result: text("result"), // win | loss | push | void
     gradedAt: integer("graded_at"),
     context: text("context"), // JSON PickContext: goalies, lineup source and odds the pick was built from
+    blendProb: real("blend_prob"), // model blended toward the margin-free market; what edge, EV and stake use
+    firstOdds: real("first_odds"), // best price when this selection was first logged, i.e. when you could have bet it
+    closingOdds: real("closing_odds"), // best price in the last odds captured before puck drop
+    closingProb: real("closing_prob"), // margin-free market probability at the close
   },
   (t) => [index("picks_game_idx").on(t.gameId)],
 );
@@ -149,6 +153,19 @@ export const bets = sqliteTable("bets", {
   profit: real("profit"),
   settledAt: integer("settled_at"),
   notes: text("notes"),
+  closingOdds: real("closing_odds"), // best price in the last odds captured before puck drop
+  closingProb: real("closing_prob"), // margin-free market probability at the close
+});
+
+// The last market odds captured before each game's puck drop (JSON MarketOdds). Odds seen after the
+// game starts are live lines and are never stored, so this row is the closing line.
+export const gameOdds = sqliteTable("game_odds", {
+  gameId: integer("game_id").primaryKey(),
+  startUtc: text("start_utc").notNull(),
+  home: text("home").notNull(),
+  away: text("away").notNull(),
+  capturedAt: integer("captured_at").notNull(),
+  odds: text("odds").notNull(),
 });
 
 export const settings = sqliteTable("settings", {

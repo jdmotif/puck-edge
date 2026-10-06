@@ -29,7 +29,7 @@ export default async function BetsPage({ searchParams }: { searchParams: Promise
     );
   }
   refreshRecentInBackground();
-  settleBets();
+  settleBets(); // also stores closing lines for bets whose game has started
   const sp = await searchParams;
   return (
     <>

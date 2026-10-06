@@ -56,8 +56,10 @@ ODDS_API_REGION=us     # us, us2, uk, eu or au
 ```
 
 Responses are cached for 15 minutes to save quota (one request covers every game).
-When no feed prices a market, its pick is shown as **model-only** (probability, no edge).
-Player props are always model-only: neither free feed carries prop prices.
+No price, no pick: when no feed prices a market, the card shows the model's projections but makes no pick there.
+Player props are projections only (neither free feed carries prop prices) and aren't logged.
+Over/Under picks are paused until the totals model beats a constant guess (`TOTALS_PICKS` in `src/lib/picks.ts`).
+Once a game starts, its card uses the last odds captured before puck drop, never in-game lines.
 
 ## Pages
 
@@ -147,18 +149,26 @@ season), venue and the opposing goalie. `P(anytime goal) = 1 − e^−λ`, `P(2+
 
 Market odds are converted to implied probabilities and the bookmaker margin is removed (multiplicative method;
 the power method is also available in `math.ts`). Prices from several books are averaged; obvious 3-way prices and
-outlier books are dropped. **Edge = model − fair market probability.** A pick is a **Value Pick** only when the edge
-is at least your threshold (default 3%). Confidence:
+outlier books are dropped. Picks are **anchored on the market**: the pick probability is
+`market + w × (model − market)`, with `w = 0.2` (see `src/lib/model/blend.ts` for why; it refits from stored closing
+lines once 300 moneyline picks are graded). **Edge = blended − fair market probability**, and EV and Kelly stakes use
+the blend too. A pick is a **Value Pick** only when the edge is at least your threshold (default 3%). Confidence:
 
 - **High:** edge ≥ 2 × threshold with at most one uncertainty flag
 - **Medium:** edge ≥ threshold with at most two flags
 - **Low:** everything else
 
 Uncertainty flags: fewer than 10 games stored for a team, unconfirmed goalies, and model vs market disagreeing by
-more than 12 points (often injury or lineup news the model can't see). Without odds, confidence comes from how far
-the probability is from 50%.
+more than 12 points (often injury or lineup news the model can't see).
 
-**Best Pick** per game = the largest Value edge; otherwise the best positive-EV price; otherwise the strongest lean.
+**Best Pick** per game = the largest Value edge; otherwise the best positive-EV price; otherwise no pick.
+
+### Closing-line value
+
+The last odds captured before each puck drop are stored per game (`game_odds`). Every logged pick keeps the price it had
+when that selection first appeared, and every bet keeps the price you took. Once the game starts, both get the closing
+price, and **CLV = price taken × closing fair probability − 1**. The Model page shows average CLV and how often picks
+beat the close (all, by market, value picks, best picks); the Bets page shows it per bet and overall.
 Stake suggestions use fractional Kelly: `f = (b·p − q) / b × fraction`, capped at your max stake.
 
 ### Honesty layer

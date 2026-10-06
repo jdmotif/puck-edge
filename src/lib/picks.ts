@@ -1,5 +1,9 @@
 // Builds everything the Tonight dashboard and game previews show: predictions, market odds,
 // picks with edge, confidence and plain-language reasons (English or French). Also logs picks for model tracking.
+//
+// Picks are anchored on the market: the pick probability is the margin-free price nudged toward the
+// model (see model/blend.ts), a market with no price gets no pick, and Over/Under picks are paused.
+// Once a game starts, its odds come from the last pre-game snapshot, never from live lines.
 import { sqlite } from "@/db";
 import { api, seasonFor, type Fetched } from "@/lib/nhl/client";
 import type { GameLandingResponse, MatchupGoalieLeader, ScheduleGame, StandingRow } from "@/lib/nhl/types";
@@ -7,6 +11,8 @@ import { leagueAsOf, predictGame, expectedGoals, type GamePrediction } from "@/l
 import { kellyFraction, expectedValue } from "@/lib/model/math";
 import { projectProps, type PropProjection } from "@/lib/model/props";
 import { fetchOddsApi, marketFor, type MarketOdds, type SidePrice } from "@/lib/odds";
+import { blend } from "@/lib/model/blend";
+import { blendWeight, loadSnapshot, saveSnapshot, type BlendWeight } from "@/lib/data/closing";
 import { getSettings, type Settings } from "@/lib/settings";
 import { bankrollNow } from "@/lib/data/bankroll";
 import type { Market } from "@/lib/grading";
@@ -21,7 +27,9 @@ export interface Pick {
   label: string; // display label in the slate's language: "TBL moneyline", "Over 6.5", "PHI +1.5", "McDavid anytime goal"
   logLabel: string; // the same in English, which is what gets stored with logged picks and bets
   line: number | null;
-  modelProb: number;
+  modelProb: number; // the model on its own
+  blendProb: number | null; // model blended toward the market: what edge, EV and the stake use (null without a price)
+  blendWeight: number | null; // the model's share in blendProb
   marketProb: number | null;
   odds: number | null; // best decimal price
   book: string | null;
@@ -102,11 +110,14 @@ export interface Slate {
   modelFitted: boolean;
   modelGames: number;
   hasHistory: boolean; // any stored games to judge teams by
+  blend: BlendWeight; // the model's share in each pick probability
 }
 
 const DONE = new Set(["OFF", "FINAL"]);
 const STARTED = new Set(["LIVE", "CRIT", "OFF", "FINAL"]);
-const DEFAULT_TOTAL_LINE = 6.5;
+// Over/Under picks are off: in the backtest the projected total barely correlates with the real one
+// (0.06) and Over 5.5 does worse than a constant guess. Turn back on once a rebuilt totals model beats that.
+export const TOTALS_PICKS = false;
 
 function standingFor(rows: StandingRow[] | undefined, abbrev: string) {
   return rows?.find((r) => r.teamAbbrev.default === abbrev);
@@ -153,18 +164,27 @@ function confidenceFor(edge: number | null, prob: number, threshold: number, unc
   return "Low";
 }
 
-function priced(modelProb: number, side: SidePrice | undefined, settings: Settings, bankroll: number) {
-  if (!side) return { marketProb: null, odds: null, book: null, edge: null, ev: null, stake: null };
-  const edge = modelProb - side.fair;
-  const k = kellyFraction(modelProb, side.best, settings.kellyFraction, settings.maxStakePct);
+/** Price a side: blend the model toward the margin-free market, then edge, EV and Kelly stake from the blend. */
+export function priced(modelProb: number, side: SidePrice, w: number, settings: { kellyFraction: number; maxStakePct: number }, bankroll: number) {
+  const p = blend(modelProb, side.fair, w);
+  const k = kellyFraction(p, side.best, settings.kellyFraction, settings.maxStakePct);
   return {
+    blendProb: p,
+    blendWeight: w,
     marketProb: side.fair,
     odds: side.best,
     book: side.bestBook,
-    edge,
-    ev: expectedValue(modelProb, side.best),
+    edge: p - side.fair,
+    ev: expectedValue(p, side.best),
     stake: k > 0 ? Math.round(k * bankroll * 100) / 100 : 0,
   };
+}
+
+/** Best Pick: the biggest value edge, otherwise the best positive-EV price, otherwise no pick at all. */
+export function bestOf(picks: Pick[]): Pick | null {
+  const values = picks.filter((p) => p.isValue).sort((a, b) => (b.edge ?? 0) - (a.edge ?? 0));
+  const withOdds = picks.filter((p) => p.ev !== null).sort((a, b) => (b.ev ?? 0) - (a.ev ?? 0));
+  return values[0] ?? (withOdds[0] && (withOdds[0].ev ?? 0) > 0 ? withOdds[0] : null);
 }
 
 /** Reasons for a team-side pick, strongest first, from the model's own feature contributions. */
@@ -225,6 +245,7 @@ export async function buildSlate(date: string, locale: Locale = "en"): Promise<S
   const EN = i18n("en").t;
   const settings = getSettings();
   const bankroll = bankrollNow();
+  const bw = blendWeight();
   const season = seasonFor(date);
   const yesterday = new Date(Date.parse(date + "T12:00:00Z") - 86_400_000).toISOString().slice(0, 10);
 
@@ -314,8 +335,17 @@ export async function buildSlate(date: string, locale: Locale = "en"): Promise<S
     };
     const home = side(g.homeTeam.abbrev, true, homeGoalie);
     const away = side(g.awayTeam.abbrev, false, awayGoalie);
-    const pg = partnerGames.get(g.id);
-    const market = marketFor(g, partners, oddsApi.events, pg && { game: pg, book: partnerBook }, settings.oddsCountry);
+    const gameState = scoreById.get(g.id)?.gameState ?? g.gameState;
+    const locked = STARTED.has(gameState) || Date.parse(g.startTimeUTC) <= Date.now();
+    // After puck drop the feeds carry in-game lines: use the last pre-game odds we captured instead.
+    let market: MarketOdds;
+    if (locked) {
+      market = { ...(loadSnapshot(g.id) ?? {}), sources: [] };
+    } else {
+      const pg = partnerGames.get(g.id);
+      market = marketFor(g, partners, oddsApi.events, pg && { game: pg, book: partnerBook }, settings.oddsCountry);
+      saveSnapshot(g, market);
+    }
 
     // Uncertainty flags feed the confidence tier.
     const uncertainty: string[] = [];
@@ -350,11 +380,11 @@ export async function buildSlate(date: string, locale: Locale = "en"): Promise<S
     const picks: Pick[] = [];
     const cardSides = { home, away };
 
-    // Moneyline: the side with more value (or the model's favourite when there are no odds).
-    {
-      const hp = priced(pred.homeWin, market.moneyline?.home, settings, bankroll);
-      const ap = priced(pred.awayWin, market.moneyline?.away, settings, bankroll);
-      const homeSide = market.moneyline ? (hp.edge ?? 0) >= (ap.edge ?? 0) : pred.homeWin >= 0.5;
+    // Moneyline: the side with more value. No price, no pick.
+    if (market.moneyline) {
+      const hp = priced(pred.homeWin, market.moneyline.home, bw.w, settings, bankroll);
+      const ap = priced(pred.awayWin, market.moneyline.away, bw.w, settings, bankroll);
+      const homeSide = hp.edge >= ap.edge;
       const s = homeSide ? hp : ap;
       const prob = homeSide ? pred.homeWin : pred.awayWin;
       const abbrev = homeSide ? home.abbrev : away.abbrev;
@@ -368,17 +398,17 @@ export async function buildSlate(date: string, locale: Locale = "en"): Promise<S
         ...s,
         isValue: hasHistory && s.edge !== null && s.edge >= settings.edgeThreshold,
         confidence: confidenceFor(s.edge, prob, settings.edgeThreshold, u),
-        reasons: teamReasons(homeSide, pred, cardSides, hot, s.marketProb ?? null, M),
+        reasons: teamReasons(homeSide, pred, cardSides, hot, s.marketProb, M),
       });
     }
 
-    // Totals at the market line (or 6.5 when we have no line).
-    {
-      const line = market.total?.line ?? DEFAULT_TOTAL_LINE;
+    // Totals at the market line (paused, see TOTALS_PICKS).
+    if (TOTALS_PICKS && market.total) {
+      const line = market.total.line;
       const t = pred.totals(line);
-      const op = priced(t.over / (1 - t.push), market.total?.over, settings, bankroll);
-      const up = priced(t.under / (1 - t.push), market.total?.under, settings, bankroll);
-      const over = market.total ? (op.edge ?? 0) >= (up.edge ?? 0) : t.over >= t.under;
+      const op = priced(t.over / (1 - t.push), market.total.over, bw.w, settings, bankroll);
+      const up = priced(t.under / (1 - t.push), market.total.under, bw.w, settings, bankroll);
+      const over = op.edge >= up.edge;
       const s = over ? op : up;
       const prob = (over ? t.over : t.under) / (1 - t.push);
       const W = M.why;
@@ -390,7 +420,6 @@ export async function buildSlate(date: string, locale: Locale = "en"): Promise<S
       const goalies = [homeGoalie, awayGoalie].filter((gl) => gl.savePct).map((gl) => W.goalieSv(gl.name, gl.savePct!));
       if (goalies.length) reasons.push(W.inNetList(goalies));
       if (home.backToBack || away.backToBack) reasons.push(W.totalB2B([home, away].filter((x) => x.backToBack).map((x) => x.abbrev)));
-      if (!market.total) reasons.push(W.noMarketTotal(DEFAULT_TOTAL_LINE));
       picks.push({
         market: "total",
         selection: over ? "over" : "under",
@@ -405,16 +434,17 @@ export async function buildSlate(date: string, locale: Locale = "en"): Promise<S
       });
     }
 
-    // Puck line: favourite −1.5 or underdog +1.5.
-    {
+    // Puck line: favourite −1.5 or underdog +1.5, only against a price (the +1.5 dog covers about
+    // two games in three, so without odds the "lean" would just be that base rate every night).
+    if (market.puckline) {
       const pl = pred.puckLine;
       const homeFav = pred.homeWin >= 0.5;
-      const homeLine = market.puckline?.homeLine ?? (homeFav ? -1.5 : 1.5);
+      const homeLine = market.puckline.homeLine;
       const homeProb = homeLine < 0 ? pl.homeMinus15 : pl.homePlus15;
       const awayProb = 1 - homeProb;
-      const hp = priced(homeProb, market.puckline?.home, settings, bankroll);
-      const ap = priced(awayProb, market.puckline?.away, settings, bankroll);
-      const homeSide = market.puckline ? (hp.edge ?? 0) >= (ap.edge ?? 0) : homeProb >= 0.5;
+      const hp = priced(homeProb, market.puckline.home, bw.w, settings, bankroll);
+      const ap = priced(awayProb, market.puckline.away, bw.w, settings, bankroll);
+      const homeSide = hp.edge >= ap.edge;
       const s = homeSide ? hp : ap;
       const prob = homeSide ? homeProb : awayProb;
       const t = homeSide ? home : away;
@@ -439,7 +469,7 @@ export async function buildSlate(date: string, locale: Locale = "en"): Promise<S
       });
     }
 
-    // Props: model-only (no prop odds in the free feeds). Top two per market per game.
+    // Props: projections only (no prop odds in the free feeds, so no pick and nothing logged). Top two per market per game.
     const propPicks: Pick[] = [];
     const propPick = (p: PropProjection, market: "prop_goal" | "prop_point1" | "prop_point2", prob: number): Pick => ({
       market,
@@ -448,6 +478,8 @@ export async function buildSlate(date: string, locale: Locale = "en"): Promise<S
       logLabel: EN.label[market](p.name),
       line: null,
       modelProb: prob,
+      blendProb: null,
+      blendWeight: null,
       marketProb: null,
       odds: null,
       book: null,
@@ -462,23 +494,20 @@ export async function buildSlate(date: string, locale: Locale = "en"): Promise<S
     for (const p of [...props].sort((a, b) => b.pPoint1 - a.pPoint1).slice(0, 2)) propPicks.push(propPick(p, "prop_point1", p.pPoint1));
     for (const p of [...props].sort((a, b) => b.pPoint2 - a.pPoint2).slice(0, 1)) propPicks.push(propPick(p, "prop_point2", p.pPoint2));
 
-    // Best pick: biggest value edge; otherwise best EV; otherwise the strongest lean.
-    const values = picks.filter((p) => p.isValue).sort((a, b) => (b.edge ?? 0) - (a.edge ?? 0));
-    const withOdds = picks.filter((p) => p.ev !== null).sort((a, b) => (b.ev ?? 0) - (a.ev ?? 0));
-    const best = values[0] ?? (withOdds[0] && (withOdds[0].ev ?? 0) > 0 ? withOdds[0] : null) ?? [...picks].sort((a, b) => Math.abs(b.modelProb - 0.5) - Math.abs(a.modelProb - 0.5))[0];
+    const best = bestOf(picks);
 
     return {
-      game: { ...g, gameState: scoreById.get(g.id)?.gameState ?? g.gameState },
+      game: { ...g, gameState },
       away,
       home,
       prediction: pred,
       market,
       picks,
-      best: best ?? null,
+      best,
       props,
       propPicks,
       uncertainty,
-      locked: STARTED.has(scoreById.get(g.id)?.gameState ?? g.gameState) || Date.parse(g.startTimeUTC) <= Date.now(),
+      locked,
       live: liveOf(scoreById.get(g.id), M),
       context: {
         goalies: { home: { id: homeGoalie.id, name: homeGoalie.name }, away: { id: awayGoalie.id, name: awayGoalie.name } },
@@ -504,6 +533,7 @@ export async function buildSlate(date: string, locale: Locale = "en"): Promise<S
     modelFitted: params.fitted,
     modelGames: params.n,
     hasHistory: cards.length ? hasHistory : true,
+    blend: bw,
   };
 }
 
@@ -544,6 +574,7 @@ export interface LoggedPick {
   label: string;
   isBest: boolean;
   context: PickContext | null;
+  firstOdds: number | null;
 }
 
 /** Why the picks moved between two runs: a different goalie, moved odds, or otherwise the model's own update. */
@@ -587,17 +618,22 @@ export function diffPicks(
  * Save the current pre-game picks so they can be graded later. Every run before puck drop replaces the
  * previous version, so the pick that gets graded is the last one logged before the game started; when a
  * game-market pick or the Best Pick changes, the change and its reason are kept in pick_changes.
+ * Each pick keeps the price it had when that selection was first logged (when you could have bet it),
+ * which is what its closing-line value is measured from. A market whose price disappears before puck
+ * drop keeps its last logged pick; props (never priced) and paused totals aren't logged.
  */
 export function logPicks(slate: Slate) {
   const now = Date.now();
   const firstSeen = sqlite.prepare("SELECT MIN(created_at) AS c FROM picks WHERE game_id = ? AND market = ?");
   const prevRows = sqlite.prepare(
-    "SELECT market, selection, line, selection_label AS label, is_best AS isBest, context FROM picks WHERE game_id = ? AND result IS NULL",
+    "SELECT market, selection, line, selection_label AS label, is_best AS isBest, context, first_odds AS firstOdds FROM picks WHERE game_id = ? AND result IS NULL",
   );
-  const del = sqlite.prepare("DELETE FROM picks WHERE game_id = ? AND result IS NULL");
+  const del = sqlite.prepare("DELETE FROM picks WHERE game_id = ? AND result IS NULL AND market = ?");
+  const delStale = sqlite.prepare(`DELETE FROM picks WHERE game_id = ? AND result IS NULL AND (market LIKE 'prop_%'${TOTALS_PICKS ? "" : " OR market = 'total'"})`);
+  const unBest = sqlite.prepare("UPDATE picks SET is_best = 0 WHERE game_id = ? AND result IS NULL");
   const ins = sqlite.prepare(`INSERT INTO picks
-    (game_id, game_date, start_utc, market, selection, selection_label, line, model_prob, market_prob, odds_decimal, edge, confidence, is_value, is_best, reasons, created_at, updated_at, context)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+    (game_id, game_date, start_utc, market, selection, selection_label, line, model_prob, market_prob, odds_decimal, edge, confidence, is_value, is_best, reasons, created_at, updated_at, context, blend_prob, first_odds)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
   const insChange = sqlite.prepare(`INSERT INTO pick_changes
     (game_id, market, at, from_market, from_selection, from_line, from_label, to_market, to_selection, to_line, to_label, reasons)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
@@ -605,20 +641,24 @@ export function logPicks(slate: Slate) {
     for (const c of slate.cards) {
       if (c.locked || DONE.has(c.game.gameState)) continue;
       if (c.game.gameType !== 2 && c.game.gameType !== 3) continue; // don't track preseason
-      const prev = (prevRows.all(c.game.id) as { market: Market; selection: string; line: number | null; label: string; isBest: number; context: string | null }[])
+      const prev = (prevRows.all(c.game.id) as { market: Market; selection: string; line: number | null; label: string; isBest: number; context: string | null; firstOdds: number | null }[])
         .filter((r) => GAME_MARKETS.has(r.market))
         .map((r): LoggedPick => ({ ...r, isBest: r.isBest === 1, context: r.context ? (JSON.parse(r.context) as PickContext) : null }));
       for (const ch of diffPicks(prev, c, now)) {
         insChange.run(c.game.id, ch.market, ch.at, ch.from.market, ch.from.selection, ch.from.line, ch.from.label, ch.to.market, ch.to.selection, ch.to.line, ch.to.label, JSON.stringify(ch.reasons));
       }
       const created = new Map<string, number>();
-      for (const p of [...c.picks, ...c.propPicks]) {
+      for (const p of c.picks) {
         const r = firstSeen.get(c.game.id, p.market) as { c: number | null };
         created.set(p.market, r.c ?? now);
       }
-      del.run(c.game.id);
+      delStale.run(c.game.id);
+      unBest.run(c.game.id);
+      for (const p of c.picks) del.run(c.game.id, p.market);
       const context = JSON.stringify(c.context);
-      for (const p of [...c.picks, ...c.propPicks]) {
+      for (const p of c.picks) {
+        const before = prev.find((r) => r.market === p.market);
+        const sameBet = before && before.selection === p.selection && (before.line ?? null) === (p.line ?? null);
         ins.run(
           c.game.id,
           slate.date,
@@ -638,6 +678,8 @@ export function logPicks(slate: Slate) {
           created.get(p.market) ?? now,
           now,
           context,
+          p.blendProb,
+          (sameBet ? before.firstOdds : null) ?? p.odds,
         );
       }
     }

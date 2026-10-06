@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { GameCard, Pick, TeamSide } from "@/lib/picks";
+import { TOTALS_PICKS, type GameCard, type Pick, type TeamSide } from "@/lib/picks";
 import { LocalTime } from "./LocalTime";
 import { PickCard, type PickChangeNote } from "./PickCard";
 import { ProbBar } from "./ProbBar";
@@ -18,7 +18,7 @@ export function betHref(card: GameCard, p: Pick) {
     labelText: p.label,
     ...(p.line !== null ? { line: String(p.line) } : {}),
     ...(p.odds ? { odds: p.odds.toFixed(3) } : {}),
-    prob: p.modelProb.toFixed(4),
+    prob: (p.blendProb ?? p.modelProb).toFixed(4),
   });
   return `/bets?${q}`;
 }
@@ -134,6 +134,9 @@ export async function GameCardView({ card, showAll = false }: { card: GameCard; 
       </div>
 
       {card.best && <PickCard pick={card.best} best betHref={card.locked ? undefined : betHref(card, card.best)} change={changeNote(card, card.best, true, i)} />}
+      {!card.best && !card.locked && (
+        <p className="rounded-xl border border-line bg-surface-2/50 px-3 py-2.5 text-sm text-ink-2">{card.picks.length ? t.card.noEdge : t.card.noPrice}</p>
+      )}
       {card.locked && <p className="text-xs text-muted">{t.card.locked}</p>}
       <details open={showAll} className="group">
         <summary className="flex cursor-pointer list-none items-center justify-between rounded-xl border border-line px-3 py-2 text-sm font-medium text-ink-2 hover:border-line-strong hover:text-ink [&::-webkit-details-marker]:hidden">
@@ -145,6 +148,7 @@ export async function GameCardView({ card, showAll = false }: { card: GameCard; 
           {card.picks.filter((p) => p !== card.best).map((p) => (
             <PickCard key={p.market + p.selection} pick={p} betHref={card.locked ? undefined : betHref(card, p)} change={changeNote(card, p, false, i)} />
           ))}
+          {!TOTALS_PICKS && <p className="text-xs text-muted">{t.card.totalsPaused}</p>}
           {card.propPicks.length > 0 && <h3 className="pt-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t.card.props}</h3>}
           {card.propPicks.map((p) => (
             <PickCard key={p.market + p.selection} pick={p} betHref={card.locked ? undefined : betHref(card, p)} />
