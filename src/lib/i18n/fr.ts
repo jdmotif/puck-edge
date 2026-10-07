@@ -20,7 +20,7 @@ export const fr = (f: Format): Messages => ({
   meta: { description: "Choix de paris LNH appuyés par les données, calendrier et résultats" },
   static: {
     updated: "Version en ligne · mise à jour",
-    refresh: "Les données sont rafraîchies environ toutes les 30 minutes. Vos paris et réglages sont enregistrés dans ce navigateur seulement.",
+    refresh: "Les pointages se mettent à jour environ chaque minute pendant les matchs; le reste est rafraîchi environ toutes les 20 à 30 minutes. Vos paris et réglages sont enregistrés dans ce navigateur seulement.",
     notFoundTitle: "Page introuvable",
     notFound: "Cette page n'existe pas.",
     notInSnapshot:

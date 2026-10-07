@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { TOTALS_PICKS, leanOf, type GameCard, type Pick, type TeamSide } from "@/lib/picks";
+import { LiveScore, LiveStatus } from "./LiveScore";
 import { LocalTime } from "./LocalTime";
 import { PickCard, type PickChangeNote } from "./PickCard";
 import { ProbBar } from "./ProbBar";
@@ -94,21 +95,25 @@ export async function GameCardView({ card, showAll = false }: { card: GameCard; 
         <span className="truncate">
           <span className="font-semibold text-ink-2"><LocalTime iso={g.startTimeUTC} /></span> · {g.venue.default}
         </span>
-        {card.live ? (
-          <Pill tone={final ? "neutral" : "bad"}>{!final && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-bad" />}{card.live.status}</Pill>
-        ) : g.gameType === 1 ? (
-          <Pill>{t.common.preseason}</Pill>
-        ) : null}
+        <LiveStatus id={g.id}>
+          {card.live ? (
+            <Pill tone={final ? "neutral" : "bad"}>{!final && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-bad" />}{card.live.status}</Pill>
+          ) : g.gameType === 1 ? (
+            <Pill>{t.common.preseason}</Pill>
+          ) : null}
+        </LiveStatus>
       </div>
 
       <div className="flex items-center gap-2">
         <TeamHead t={card.away} home={false} />
         <div className="shrink-0 px-1 text-center">
-          {card.live ? (
-            <div className="font-display tabular text-3xl font-bold">{card.live.away}<span className="px-1 text-muted">–</span>{card.live.home}</div>
-          ) : (
-            <div className="font-display text-xl font-bold text-muted" title={t.card.awayAtHome}>@</div>
-          )}
+          <LiveScore id={g.id} className="font-display tabular text-3xl font-bold">
+            {card.live ? (
+              <div className="font-display tabular text-3xl font-bold">{card.live.away}<span className="px-1 text-muted">–</span>{card.live.home}</div>
+            ) : (
+              <div className="font-display text-xl font-bold text-muted" title={t.card.awayAtHome}>@</div>
+            )}
+          </LiveScore>
         </div>
         <TeamHead t={card.home} home />
       </div>

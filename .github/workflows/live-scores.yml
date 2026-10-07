@@ -1,0 +1,46 @@
+# Live scores for the online copy. The NHL API can't be read from a browser, so while games are on
+# this job copies the scoreboard once a minute to the `live-scores` branch, where the site's pages
+# read it (scripts/live-scores.ts, src/lib/live/feed.ts). It also asks "Deploy site" for a full
+# rebuild every 20 minutes during games and after the last final.
+#
+# GitHub often starts scheduled runs late or skips them, so there are several start times; a run
+# that finds nothing to do exits in a few seconds, and one already running makes the next wait.
+name: Live scores
+
+on:
+  schedule:
+    # Afternoon and evening puck drops, Eastern (cron is UTC).
+    - cron: "15 16 * * *"
+    - cron: "15 18 * * *"
+    - cron: "15 20 * * *"
+    - cron: "15 22 * * *"
+    - cron: "45 22 * * *"
+    - cron: "15 23 * * *"
+    - cron: "15 0 * * *"
+    - cron: "15 1 * * *"
+    - cron: "15 2 * * *"
+    - cron: "15 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: live-scores
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx scripts/live-scores.ts
+        env:
+          GITHUB_TOKEN: ${{ github.token }}

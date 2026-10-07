@@ -4,6 +4,7 @@ import { api } from "@/lib/nhl/client";
 import { buildSlate, logPicks } from "@/lib/picks";
 import type { BoxTeamStats } from "@/lib/nhl/types";
 import { GameCardView } from "@/components/GameCardView";
+import { LiveRefresh, LiveScore, LiveStatus } from "@/components/LiveScore";
 import { LocalTime } from "@/components/LocalTime";
 import { Card, Empty, Pill, SkeletonCards, TEAM_COLORS, TeamLogo } from "@/components/ui";
 import { StaleBanner } from "@/components/StaleBanner";
@@ -23,6 +24,7 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
   return (
     <>
       <StaleBanner items={[landing]} />
+      <LiveRefresh active={l.gameState !== "OFF" && l.gameState !== "FINAL" && Date.parse(l.startTimeUTC) <= Date.now()} />
       <header
         className="card relative mb-5 overflow-hidden px-4 py-6 sm:px-8"
         style={{ background: `linear-gradient(100deg, color-mix(in srgb, ${TEAM_COLORS[l.awayTeam.abbrev] ?? "#3d6bff"} 26%, var(--surface)) 0%, var(--surface) 42%, var(--surface) 58%, color-mix(in srgb, ${TEAM_COLORS[l.homeTeam.abbrev] ?? "#3d6bff"} 26%, var(--surface)) 100%)` }}
@@ -36,17 +38,21 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
             <span className="order-1 sm:order-2"><TeamLogo abbrev={l.awayTeam.abbrev} size={64} /></span>
           </a>
           <div className="px-2 text-center">
-            {pre ? (
-              <div className="font-display text-lg font-bold uppercase tracking-wide text-ink-2 sm:text-xl"><LocalTime iso={l.startTimeUTC} format="datetime" /></div>
-            ) : (
-              <div className="font-display tabular text-5xl font-bold leading-none sm:text-6xl">{l.awayTeam.score ?? 0}<span className="px-2 text-muted">–</span>{l.homeTeam.score ?? 0}</div>
-            )}
+            <LiveScore id={id} className="font-display tabular text-5xl font-bold leading-none sm:text-6xl">
+              {pre ? (
+                <div className="font-display text-lg font-bold uppercase tracking-wide text-ink-2 sm:text-xl"><LocalTime iso={l.startTimeUTC} format="datetime" /></div>
+              ) : (
+                <div className="font-display tabular text-5xl font-bold leading-none sm:text-6xl">{l.awayTeam.score ?? 0}<span className="px-2 text-muted">–</span>{l.homeTeam.score ?? 0}</div>
+              )}
+            </LiveScore>
             <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5 text-xs text-muted">
-              {l.gameState === "OFF" || l.gameState === "FINAL" ? (
-                <Pill>{t.status.final(l.gameOutcome?.lastPeriodType)}</Pill>
-              ) : l.gameState === "LIVE" || l.gameState === "CRIT" ? (
-                <Pill tone="bad"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-bad" />{t.common.live}</Pill>
-              ) : <Pill tone="accent">{t.common.preview}</Pill>}
+              <LiveStatus id={id}>
+                {l.gameState === "OFF" || l.gameState === "FINAL" ? (
+                  <Pill>{t.status.final(l.gameOutcome?.lastPeriodType)}</Pill>
+                ) : l.gameState === "LIVE" || l.gameState === "CRIT" ? (
+                  <Pill tone="bad"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-bad" />{t.common.live}</Pill>
+                ) : <Pill tone="accent">{t.common.preview}</Pill>}
+              </LiveStatus>
               <span className="hidden sm:inline">{l.venue.default}</span>
             </div>
           </div>

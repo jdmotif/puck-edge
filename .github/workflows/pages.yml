@@ -31,6 +31,8 @@ jobs:
       TZ: America/Toronto
       NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
       NEXT_TELEMETRY_DISABLED: "1"
+      # Minute-by-minute scores published by the "Live scores" workflow.
+      NEXT_PUBLIC_LIVE_FEED_URL: https://raw.githubusercontent.com/${{ github.repository }}/live-scores
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -69,3 +71,16 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  # Makes sure the live-score job is running when games are on, in case its own schedule ran late.
+  # It exits right away when there's nothing to do, and waits its turn when one is already running.
+  live-scores:
+    needs: deploy
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - run: gh workflow run live-scores.yml --repo "$GITHUB_REPOSITORY" --ref main
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -10,7 +10,7 @@ export const en = (f: Format) => ({
   meta: { description: "Data-driven NHL picks, schedules and results" },
   static: {
     updated: "Online version · updated",
-    refresh: "Data refreshes about every 30 minutes. Your bets and settings are saved in this browser only.",
+    refresh: "Scores update about every minute during games; everything else refreshes about every 20 to 30 minutes. Your bets and settings are saved in this browser only.",
     notFoundTitle: "Page not found",
     notFound: "This page doesn't exist.",
     notInSnapshot:

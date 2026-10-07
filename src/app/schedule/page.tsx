@@ -1,5 +1,6 @@
 import { api, todayIso } from "@/lib/nhl/client";
 import type { ScheduleGame } from "@/lib/nhl/types";
+import { LiveRefresh, LiveScoreText } from "@/components/LiveScore";
 import { LocalTime } from "@/components/LocalTime";
 import { ButtonLink, PageTitle, Tabs, TeamLogo } from "@/components/ui";
 import { StaleBanner } from "@/components/StaleBanner";
@@ -65,6 +66,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
     <>
       <PageTitle>{t.schedule.title}</PageTitle>
       <StaleBanner items={results} />
+      <LiveRefresh active={(byDay.get(today) ?? []).some((g) => g.gameState !== "OFF" && g.gameState !== "FINAL" && Date.parse(g.startTimeUTC) <= Date.now())} />
       <Tabs
         active={view}
         tabs={[
@@ -141,7 +143,9 @@ function GameLine({ g, t, compact = false }: { g: ScheduleGame; t: Messages; com
         {!compact && <TeamLogo abbrev={g.homeTeam.abbrev} size={24} />}
         <span className="font-medium">{g.homeTeam.abbrev}</span>
         <span className={`ml-auto tabular ${live ? "text-bad" : "text-muted"}`}>
-          {(done || live) && score ? `${g.awayTeam.score}–${g.homeTeam.score}${done && g.gameOutcome?.lastPeriodType !== "REG" && g.gameOutcome ? ` ${t.status.period(0, g.gameOutcome.lastPeriodType)}` : ""}` : <LocalTime iso={g.startTimeUTC} />}
+          <LiveScoreText id={g.id}>
+            {(done || live) && score ? `${g.awayTeam.score}–${g.homeTeam.score}${done && g.gameOutcome?.lastPeriodType !== "REG" && g.gameOutcome ? ` ${t.status.period(0, g.gameOutcome.lastPeriodType)}` : ""}` : <LocalTime iso={g.startTimeUTC} />}
+          </LiveScoreText>
         </span>
       </a>
     </li>
