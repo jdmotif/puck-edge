@@ -11,6 +11,7 @@ export interface BookRow {
   book: string;
   country: string; // ISO 3166 alpha-2 (US, FR, CA, SE…), "" when unknown
   ml?: { away: number; home: number };
+  ml3?: { away: number; draw: number; home: number }; // regulation-time result (1X2), as many European books price hockey
   pl?: { homeLine: number; away: number; home: number }; // homeLine is −1.5 or +1.5
   total?: { line: number; over: number; under: number };
 }
@@ -84,10 +85,12 @@ export function oddsApiRows(ev: OddsApiEvent, regions: string[]): BookRow[] {
     const row: BookRow = { book: bk.title, country: oddsApiCountry(bk.key, regions) };
     for (const m of bk.markets) {
       if (m.key === "h2h") {
-        if (m.outcomes.some((o) => o.name === "Draw")) continue; // 3-way, not comparable
         const h = m.outcomes.find((o) => o.name === ev.home_team);
         const a = m.outcomes.find((o) => o.name === ev.away_team);
-        if (h && a && twoWay(h.price, a.price)) row.ml = { away: a.price, home: h.price };
+        const d = m.outcomes.find((o) => o.name === "Draw");
+        // 3-way (60-minute) prices aren't comparable with the moneyline, so they're kept apart.
+        if (h && a && d) row.ml3 = { away: a.price, draw: d.price, home: h.price };
+        else if (h && a && twoWay(h.price, a.price)) row.ml = { away: a.price, home: h.price };
       } else if (m.key === "spreads") {
         const h = m.outcomes.find((o) => o.name === ev.home_team);
         const a = m.outcomes.find((o) => o.name === ev.away_team);
@@ -98,7 +101,7 @@ export function oddsApiRows(ev: OddsApiEvent, regions: string[]): BookRow[] {
         if (o && u && o.point !== undefined && twoWay(o.price, u.price)) row.total = { line: o.point, over: o.price, under: u.price };
       }
     }
-    return row.ml || row.pl || row.total ? [row] : [];
+    return row.ml || row.ml3 || row.pl || row.total ? [row] : [];
   });
 }
 
@@ -114,6 +117,7 @@ export function mergeRows(...sources: BookRow[][]): BookRow[] {
     if (!cur) out.set(k, { ...row });
     else {
       cur.ml ??= row.ml;
+      cur.ml3 ??= row.ml3;
       cur.pl ??= row.pl;
       cur.total ??= row.total;
     }
@@ -127,7 +131,7 @@ export function mergeRows(...sources: BookRow[][]): BookRow[] {
     for (const r of rows) if (r.ml && Math.abs(fairHome(r) - median) > 0.06) delete r.ml;
   }
   return rows
-    .filter((r) => r.ml || r.pl || r.total)
+    .filter((r) => r.ml || r.ml3 || r.pl || r.total)
     .sort((a, b) => (a.country === b.country ? a.book.localeCompare(b.book) : a.country.localeCompare(b.country)));
 }
 
