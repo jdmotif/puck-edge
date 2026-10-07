@@ -22,7 +22,7 @@ export const dynamic = "force-dynamic";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const barlow = Barlow_Condensed({ subsets: ["latin"], weight: ["600", "700"], variable: "--font-barlow", display: "swap" });
 
-const ROUTES = ["/", "/lineups", "/schedule", "/results", "/standings", "/leaders", "/news", "/model", "/bets", "/settings"];
+const ROUTES = ["/", "/lineups", "/schedule", "/results", "/standings", "/leaders", "/news", "/model", "/odds", "/parlay", "/bets", "/roi", "/settings"];
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { locale, t, f } = await getI18n();

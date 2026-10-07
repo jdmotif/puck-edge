@@ -76,6 +76,7 @@ export interface ScheduleResponse {
   nextStartDate: string;
   previousStartDate: string;
   gameWeek: ScheduleDay[];
+  oddsPartners?: OddsPartner[];
 }
 
 // ---------- score/{date} ----------

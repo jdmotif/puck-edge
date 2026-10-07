@@ -65,7 +65,11 @@ function makeRules(today: string, gameIds: Set<number>) {
         return only(p, ["tab"]);
       case "/news":
         return [...p.keys()].length <= 1 && only(p, ["team", "source"]);
+      case "/odds":
+        return only(p, ["date"]) && (!p.has("date") || near(p.get("date")!, -7, 7));
       case "/model":
+      case "/parlay":
+      case "/roi":
       case "/settings":
       case "/bets":
         return none;
