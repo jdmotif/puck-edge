@@ -2,15 +2,16 @@ import { Suspense } from "react";
 import { sqlite } from "@/db";
 import { api } from "@/lib/nhl/client";
 import { buildSlate, logPicks } from "@/lib/picks";
-import type { BoxTeamStats } from "@/lib/nhl/types";
 import { GameCardView } from "@/components/GameCardView";
 import { LiveRefresh, LiveScore, LiveStatus } from "@/components/LiveScore";
+import { LiveGameStats } from "@/components/LiveGameStats";
+import { boxOf, goalsOfLanding } from "@/lib/live/feed";
 import { LocalTime } from "@/components/LocalTime";
 import { Card, Empty, Pill, SkeletonCards, TEAM_COLORS, TeamLogo } from "@/components/ui";
 import { StaleBanner } from "@/components/StaleBanner";
 import type { Market } from "@/lib/grading";
 import { getI18n } from "@/lib/i18n/server";
-import { pickLabel, type I18n } from "@/lib/i18n";
+import { pickLabel } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -67,7 +68,13 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
         <p className="mt-3 text-center text-xs text-muted sm:hidden">{l.venue.default}</p>
       </header>
       <Suspense fallback={<SkeletonCards n={2} h={240} />}>
-        {pre ? <Preview id={id} date={l.gameDate} /> : <BoxScore id={id} />}
+        {pre ? (
+          // On the online copy a game that started after this page was built gets its stats from the live feed.
+          <div className="space-y-4">
+            <LiveGameStats id={id} initial={null} />
+            <Preview id={id} date={l.gameDate} />
+          </div>
+        ) : <BoxScore id={id} />}
       </Suspense>
     </>
   );
@@ -125,35 +132,10 @@ async function BoxScore({ id }: { id: number }) {
     <div className="grid gap-4 lg:grid-cols-3">
       <div className="space-y-4 lg:col-span-2">
         <StaleBanner items={[box, landing]} />
-        {summary && (
-          <Card>
-            <h2 className="mb-2 font-display text-lg font-bold uppercase tracking-wide">{t.game.scoring}</h2>
-            {summary.scoring.map((p) => (
-              <div key={`${p.periodDescriptor.number}${p.periodDescriptor.periodType}`} className="mb-2">
-                <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t.status.periodLong(p.periodDescriptor.number, p.periodDescriptor.periodType)}</div>
-                {p.goals.length === 0 ? <p className="text-sm text-muted">{t.game.noGoals}</p> : (
-                  <ul className="text-sm">
-                    {p.goals.map((g) => (
-                      <li key={g.eventId} className="flex gap-2 py-0.5">
-                        <span className="w-12 tabular text-muted">{g.timeInPeriod}</span>
-                        <span className="w-10 font-display font-bold">{g.teamAbbrev.default}</span>
-                        <span className="flex-1">
-                          <a className="hover:text-accent-2" href={`/players/${g.playerId}`}>{g.name.default}</a> ({g.goalsToDate})
-                          {g.assists.length > 0 && <span className="text-ink-2"> · {g.assists.map((a) => a.name.default).join(", ")}</span>}
-                          {g.strength !== "ev" && <span className="ml-1"><Pill>{t.stats.strength(g.strength)}</Pill></span>}
-                        </span>
-                        <span className="tabular text-muted">{g.awayScore}–{g.homeScore}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            ))}
-          </Card>
-        )}
-        {b?.playerByGameStats && (["awayTeam", "homeTeam"] as const).map((side) => (
-          <TeamBox key={side} i={{ t, f }} abbrev={b[side].abbrev} sog={b[side].sog} stats={b.playerByGameStats![side]} />
-        ))}
+        <LiveGameStats
+          id={id}
+          initial={landing.data ? { state: landing.data.gameState, period: landing.data.periodDescriptor?.number ?? null, periodType: landing.data.periodDescriptor?.periodType ?? null, goals: goalsOfLanding(landing.data), box: b ? boxOf(b) : null } : null}
+        />
       </div>
       <div className="space-y-4">
         {summary?.threeStars?.length ? (
@@ -187,41 +169,5 @@ async function BoxScore({ id }: { id: number }) {
         </Card>
       </div>
     </div>
-  );
-}
-
-function TeamBox({ i: { t, f }, abbrev, sog, stats }: { i: Pick<I18n, "t" | "f">; abbrev: string; sog: number; stats: BoxTeamStats }) {
-  const s = t.stats;
-  return (
-    <Card className="overflow-x-auto !p-0">
-      <h2 className="flex items-center gap-2 px-3 pt-3 font-display text-lg font-bold uppercase tracking-wide"><TeamLogo abbrev={abbrev} size={20} />{abbrev} <span className="font-normal text-muted">{t.game.shots(sog)}</span></h2>
-      <table className="tabular mt-2 w-full min-w-[520px] text-sm">
-        <thead className="text-xs text-muted">
-          <tr className="[&>th]:px-2 [&>th]:py-2 [&>th]:text-right [&>th:first-child]:text-left"><th>{t.game.skater}</th><th>{s.pos}</th><th>{s.g}</th><th>{s.a}</th><th>{s.p}</th><th>{s.sog}</th><th>{s.pm}</th><th>{s.hits}</th><th>{s.toi}</th></tr>
-        </thead>
-        <tbody>
-          {[...stats.forwards, ...stats.defense].sort((a, b) => b.points - a.points || b.sog - a.sog).map((s) => (
-            <tr key={s.playerId} className="border-t border-line [&>td]:px-2 [&>td]:py-2 [&>td]:text-right">
-              <td className="!text-left"><a className="hover:text-accent-2" href={`/players/${s.playerId}`}>{s.name.default}</a></td>
-              <td className="text-muted">{t.stats.position(s.position)}</td><td>{s.goals}</td><td>{s.assists}</td><td className="font-semibold">{s.points}</td>
-              <td>{s.sog}</td><td>{s.plusMinus > 0 ? "+" : ""}{s.plusMinus}</td><td>{s.hits}</td><td>{s.toi}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <table className="tabular mb-2 mt-2 w-full text-sm">
-        <thead className="text-xs text-muted">
-          <tr className="[&>th]:px-2 [&>th]:py-2 [&>th]:text-right [&>th:first-child]:text-left"><th>{t.common.goalie}</th><th>{s.sa}</th><th>{s.saves}</th><th>{s.sv}</th><th>{s.toi}</th><th>{s.dec}</th></tr>
-        </thead>
-        <tbody>
-          {stats.goalies.filter((g) => g.toi !== "00:00").map((g) => (
-            <tr key={g.playerId} className="border-t border-line [&>td]:px-2 [&>td]:py-2 [&>td]:text-right">
-              <td className="!text-left"><a className="hover:text-accent-2" href={`/players/${g.playerId}`}>{g.name.default}</a>{g.starter && <span className="ml-1 text-xs text-muted">{t.game.starter}</span>}</td>
-              <td>{g.shotsAgainst}</td><td>{g.saves}</td><td>{g.savePctg !== undefined ? f.svPct(g.savePctg) : "–"}</td><td>{g.toi}</td><td>{g.decision ? t.stats.decision(g.decision) : ""}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </Card>
   );
 }

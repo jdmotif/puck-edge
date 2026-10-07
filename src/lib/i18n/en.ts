@@ -10,7 +10,7 @@ export const en = (f: Format) => ({
   meta: { description: "Data-driven NHL picks, schedules and results" },
   static: {
     updated: "Online version · updated",
-    refresh: "Scores update about every minute during games; everything else refreshes about every 20 to 30 minutes. Your bets and settings are saved in this browser only.",
+    refresh: "Scores, scorers and player stats update about every minute during games; everything else refreshes about every 20 to 30 minutes. Your bets and settings are saved in this browser only.",
     notFoundTitle: "Page not found",
     notFound: "This page doesn't exist.",
     notInSnapshot:
@@ -133,6 +133,7 @@ export const en = (f: Format) => ({
     win: (t: Team) => `${t} win`,
     winAria: (a: Team, ap: string, h: Team, hp: string) => `${a} ${ap}, ${h} ${hp}`,
     awayAtHome: "Away @ home",
+    scorers: (t: Team) => `${t} goals`,
     last10: "Last 10",
     streak: "Streak",
     rest: "Rest",
@@ -481,6 +482,7 @@ export const en = (f: Format) => ({
     shots: (n: number) => `${n} shots`,
     skater: "Skater",
     starter: "starter",
+    updating: "Updates every minute while the game is on.",
   },
   team: {
     gfpg: "Goals/game",

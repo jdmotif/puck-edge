@@ -20,7 +20,7 @@ export const fr = (f: Format): Messages => ({
   meta: { description: "Choix de paris LNH appuyés par les données, calendrier et résultats" },
   static: {
     updated: "Version en ligne · mise à jour",
-    refresh: "Les pointages se mettent à jour environ chaque minute pendant les matchs; le reste est rafraîchi environ toutes les 20 à 30 minutes. Vos paris et réglages sont enregistrés dans ce navigateur seulement.",
+    refresh: "Les pointages, les buteurs et les statistiques des joueurs se mettent à jour environ chaque minute pendant les matchs; le reste est rafraîchi environ toutes les 20 à 30 minutes. Vos paris et réglages sont enregistrés dans ce navigateur seulement.",
     notFoundTitle: "Page introuvable",
     notFound: "Cette page n'existe pas.",
     notInSnapshot:
@@ -140,6 +140,7 @@ export const fr = (f: Format): Messages => ({
     win: (t: Team) => `Victoire ${t}`,
     winAria: (a: Team, ap: string, h: Team, hp: string) => `${a} ${ap}, ${h} ${hp}`,
     awayAtHome: "Visiteurs à domicile",
+    scorers: (t: Team) => `Buts ${t}`,
     last10: "10 derniers",
     streak: "Séquence",
     rest: "Repos",
@@ -495,6 +496,7 @@ export const fr = (f: Format): Messages => ({
     shots: (n: number) => `${n} tirs`,
     skater: "Patineur",
     starter: "partant",
+    updating: "Mise à jour chaque minute pendant le match.",
   },
   team: {
     gfpg: "Buts pour/match",

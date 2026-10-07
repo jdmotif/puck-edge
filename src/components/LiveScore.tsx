@@ -4,7 +4,7 @@
 // In the app on your computer pages are rendered on request, so this does nothing there.
 import { useEffect, useSyncExternalStore, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { DONE_STATES, feedFile, liveStatus, started, type LiveFeed, type LiveGame } from "@/lib/live/feed";
+import { DONE_STATES, boxFile, feedFile, liveStatus, started, type LiveBox, type LiveFeed, type LiveGame } from "@/lib/live/feed";
 import { useI18n } from "@/lib/i18n/client";
 import { STATIC_SITE } from "@/lib/static/mode";
 import { Pill } from "./ui";
@@ -15,6 +15,11 @@ const MIN = 60_000;
 
 let games = new Map<number, LiveGame>();
 let lastFile = "";
+let builtAt = NaN;
+// Player boxes, fetched only for the games a page asks for (the game page), from the same minute.
+const boxes = new Map<number, LiveBox>();
+const boxWanted = new Map<number, number>(); // game id → subscribers
+const boxFrom = new Map<number, string>(); // game id → minute file its box was last read for
 let timer: ReturnType<typeof setInterval> | null = null;
 const listeners = new Set<() => void>();
 
@@ -31,14 +36,31 @@ async function poll() {
       const feed = (await res.json()) as LiveFeed;
       lastFile = file;
       // A snapshot built after this minute already has these scores or newer ones.
-      const builtAt = Date.parse(document.documentElement.dataset.builtAt ?? "");
+      builtAt = Date.parse(document.documentElement.dataset.builtAt ?? "");
       if (Date.parse(feed.at) <= builtAt) return;
       games = new Map(feed.games.map((g) => [g.id, g]));
       listeners.forEach((l) => l());
+      await Promise.all([...boxWanted.keys()].map(pollBox));
       return;
     } catch {
       // Offline or blocked: keep what's shown.
     }
+  }
+}
+
+async function pollBox(id: number) {
+  const g = games.get(id);
+  if (!lastFile || !g || !started(g.state) || boxFrom.get(id) === lastFile) return;
+  boxFrom.set(id, lastFile);
+  try {
+    const res = await fetch(`${FEED_URL}/${boxFile(lastFile, id)}`, { cache: "no-store" });
+    if (!res.ok) return;
+    const box = (await res.json()) as LiveBox;
+    if (Date.parse(box.at) <= builtAt) return;
+    boxes.set(id, box);
+    listeners.forEach((l) => l());
+  } catch {
+    boxFrom.delete(id); // try again next minute
   }
 }
 
@@ -61,6 +83,21 @@ function subscribe(l: () => void) {
 export function useLiveGame(id: number): LiveGame | null {
   const g = useSyncExternalStore(subscribe, () => games.get(id), () => undefined);
   return g && started(g.state) && g.away !== null && g.home !== null ? g : null;
+}
+
+/** The latest published player box of a game, or null to keep the page's own. */
+export function useLiveBox(id: number): LiveBox | null {
+  useEffect(() => {
+    if (!FEED_URL) return;
+    boxWanted.set(id, (boxWanted.get(id) ?? 0) + 1);
+    void pollBox(id);
+    return () => {
+      const n = (boxWanted.get(id) ?? 1) - 1;
+      if (n > 0) boxWanted.set(id, n);
+      else boxWanted.delete(id);
+    };
+  }, [id]);
+  return useSyncExternalStore(subscribe, () => boxes.get(id) ?? null, () => null);
 }
 
 /** Score in the middle of a game card or header; `children` is what the snapshot shows. */
