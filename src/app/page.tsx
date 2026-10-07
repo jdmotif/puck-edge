@@ -3,6 +3,7 @@ import { attachChanges, buildSlate, logPicks } from "@/lib/picks";
 import { todayIso } from "@/lib/nhl/client";
 import { refreshRecentInBackground } from "@/lib/data/refresh";
 import { GameCardView } from "@/components/GameCardView";
+import { LiveRefresh } from "@/components/LiveScore";
 import { ButtonLink, Empty, PageTitle, Rich, SkeletonCards, StatTile } from "@/components/ui";
 import { StaleBanner } from "@/components/StaleBanner";
 import { getSettings } from "@/lib/settings";
@@ -50,6 +51,7 @@ async function SlateView({ date }: { date: string }) {
   return (
     <>
       <StaleBanner items={slate.sources} />
+      <LiveRefresh active={slate.cards.some((c) => c.locked && c.game.gameState !== "OFF" && c.game.gameState !== "FINAL")} />
       {!slate.hasHistory && (
         <div className="mb-4 rounded-xl border border-accent/40 bg-accent/10 px-4 py-2.5 text-sm">
           <Rich text={t.tonight.noHistory} />

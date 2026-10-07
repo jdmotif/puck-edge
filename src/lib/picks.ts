@@ -5,6 +5,7 @@
 // model (see model/blend.ts), a market with no price gets no pick, and Over/Under picks are paused.
 // Once a game starts, its odds come from the last pre-game snapshot, never from live lines.
 import { sqlite } from "@/db";
+import { liveGameOf, liveStatus } from "@/lib/live/feed";
 import { api, seasonFor, type Fetched } from "@/lib/nhl/client";
 import type { GameLandingResponse, MatchupGoalieLeader, ScheduleGame, StandingRow } from "@/lib/nhl/types";
 import { leagueAsOf, predictGame, expectedGoals, type GamePrediction } from "@/lib/model/engine";
@@ -544,15 +545,7 @@ export async function buildSlate(date: string, locale: Locale = "en"): Promise<S
 
 function liveOf(s: import("@/lib/nhl/types").ScoreGame | undefined, M: Messages): GameCard["live"] {
   if (!s || !STARTED.has(s.gameState) || s.awayTeam.score === undefined || s.homeTeam.score === undefined) return null;
-  const done = DONE.has(s.gameState);
-  const pd = s.periodDescriptor;
-  const period = pd ? M.status.period(pd.number, pd.periodType) : "";
-  const status = done
-    ? M.status.final(s.gameOutcome?.lastPeriodType)
-    : s.clock?.inIntermission
-      ? M.status.intermission(period)
-      : `${period} ${s.clock?.timeRemaining ?? ""}`.trim();
-  return { away: s.awayTeam.score, home: s.homeTeam.score, status };
+  return { away: s.awayTeam.score, home: s.homeTeam.score, status: liveStatus(liveGameOf(s), M.status) };
 }
 
 function pred0(cards: GameCard[]) {

@@ -30,7 +30,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const limits = STATIC_SITE ? { warnings: [] as LossWarning[] } : lossLimitStatus();
   const nav = ROUTES.map((href) => ({ href, label: t.nav[href] }));
   return (
-    <html lang={locale} className={`${inter.variable} ${barlow.variable}`}>
+    <html lang={locale} className={`${inter.variable} ${barlow.variable}`} data-built-at={STATIC_SITE ? new Date().toISOString() : undefined}>
       {STATIC_SITE && (
         <head>
           <script dangerouslySetInnerHTML={{ __html: bootScript(BASE_PATH) }} />
