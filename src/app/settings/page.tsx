@@ -6,6 +6,7 @@ import { getI18n } from "@/lib/i18n/server";
 import { sqlite } from "@/db";
 import { STATIC_SITE } from "@/lib/static/mode";
 import { StaticSettings } from "./StaticSettings";
+import { ThemeSwitch } from "@/components/ThemeSwitch";
 
 export const dynamic = "force-dynamic";
 
@@ -51,6 +52,11 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   return (
     <>
       <PageTitle>{S.title}</PageTitle>
+      <Card className="mb-4">
+        <h2 className="font-display text-lg font-bold uppercase tracking-wide">{t.theme.appearance}</h2>
+        <ThemeSwitch className="mt-3 max-w-sm" />
+        <p className="mt-2 text-xs text-muted">{t.theme.hint}</p>
+      </Card>
       {STATIC_SITE ? <StaticSettings /> : <>
       {saved && <div className="mb-3 rounded-xl border border-good/40 bg-good/10 px-4 py-2.5 text-sm text-good">{S.saved}</div>}
       <form action={save} className="grid gap-4 lg:grid-cols-2">
