@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { TOTALS_PICKS, leanOf, type GameCard, type Pick, type TeamSide } from "@/lib/picks";
 import { LiveScore, LiveStatus } from "./LiveScore";
+import { LiveScorers } from "./LiveGameStats";
 import { LocalTime } from "./LocalTime";
 import { PickCard, type PickChangeNote } from "./PickCard";
 import { ProbBar } from "./ProbBar";
@@ -117,6 +118,8 @@ export async function GameCardView({ card, showAll = false }: { card: GameCard; 
         </div>
         <TeamHead t={card.home} home />
       </div>
+
+      <LiveScorers id={g.id} away={card.away.abbrev} home={card.home.abbrev} initial={card.live?.goals ?? []} />
 
       <ProbBar away={card.away.winProb} home={card.home.winProb} awayLabel={t.card.win(card.away.abbrev)} homeLabel={t.card.win(card.home.abbrev)} awayPct={f.pct(card.away.winProb)} homePct={f.pct(card.home.winProb)} aria={t.card.winAria(card.away.abbrev, f.pct(card.away.winProb), card.home.abbrev, f.pct(card.home.winProb))} />
 

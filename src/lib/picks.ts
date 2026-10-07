@@ -5,7 +5,7 @@
 // model (see model/blend.ts), a market with no price gets no pick, and Over/Under picks are paused.
 // Once a game starts, its odds come from the last pre-game snapshot, never from live lines.
 import { sqlite } from "@/db";
-import { liveGameOf, liveStatus } from "@/lib/live/feed";
+import { goalOfScore, liveGameOf, liveStatus, type LiveGoal } from "@/lib/live/feed";
 import { api, seasonFor, type Fetched } from "@/lib/nhl/client";
 import type { GameLandingResponse, MatchupGoalieLeader, ScheduleGame, StandingRow } from "@/lib/nhl/types";
 import { leagueAsOf, predictGame, expectedGoals, type GamePrediction } from "@/lib/model/engine";
@@ -100,7 +100,7 @@ export interface GameCard {
   locked: boolean; // game started: picks frozen
   context: PickContext;
   changes: PickChange[]; // filled by logPicks / attachChanges, newest first
-  live: { away: number; home: number; status: string } | null;
+  live: { away: number; home: number; status: string; goals: LiveGoal[] } | null;
 }
 
 export interface Slate {
@@ -545,7 +545,7 @@ export async function buildSlate(date: string, locale: Locale = "en"): Promise<S
 
 function liveOf(s: import("@/lib/nhl/types").ScoreGame | undefined, M: Messages): GameCard["live"] {
   if (!s || !STARTED.has(s.gameState) || s.awayTeam.score === undefined || s.homeTeam.score === undefined) return null;
-  return { away: s.awayTeam.score, home: s.homeTeam.score, status: liveStatus(liveGameOf(s), M.status) };
+  return { away: s.awayTeam.score, home: s.homeTeam.score, status: liveStatus(liveGameOf(s), M.status), goals: (s.goals ?? []).map(goalOfScore) };
 }
 
 function pred0(cards: GameCard[]) {

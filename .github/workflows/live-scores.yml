@@ -1,5 +1,5 @@
-# Live scores for the online copy. The NHL API can't be read from a browser, so while games are on
-# this job copies the scoreboard once a minute to the `live-scores` branch, where the site's pages
+# Live scores and player stats for the online copy. The NHL API can't be read from a browser, so while games are on
+# this job copies the scoreboard and box scores once a minute to the `live-scores` branch, where the site's pages
 # read it (scripts/live-scores.ts, src/lib/live/feed.ts). It also asks "Deploy site" for a full
 # rebuild every 20 minutes during games and after the last final.
 #
