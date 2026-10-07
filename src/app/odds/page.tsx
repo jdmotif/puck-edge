@@ -144,14 +144,31 @@ function GameBoard({ card, rows, w, i }: { card: GameCard; rows: BookRow[]; w: n
                     <td className="whitespace-nowrap px-2 py-2 text-left">
                       <span className="font-medium">{r.book}</span>
                       {r.country && <span className="ml-1.5 rounded bg-surface-3 px-1 py-0.5 text-[10px] font-semibold text-muted">{r.country}</span>}
+                      {!r.ml && r.ml3 && (
+                        <span className="mt-0.5 block text-[11px] text-muted" title={O.threeWayHint}>
+                          {O.threeWay} · {O.draw} <Odds d={r.ml3.draw} />
+                        </span>
+                      )}
                     </td>
-                    <td className={`${td} border-l border-line`}><Odds d={r.ml?.away} best={!!r.ml && r.ml.away === best.mlAway} /></td>
-                    <td className={td}><Odds d={r.ml?.home} best={!!r.ml && r.ml.home === best.mlHome} /></td>
+                    {!r.ml && r.ml3 ? (
+                      // 60-minute result: shown greyed, never the best moneyline.
+                      <>
+                        <td className={`${td} border-l border-line text-muted`} title={O.threeWayHint}><Odds d={r.ml3.away} /></td>
+                        <td className={`${td} text-muted`} title={O.threeWayHint}><Odds d={r.ml3.home} /></td>
+                      </>
+                    ) : (
+                      <>
+                        <td className={`${td} border-l border-line`}><Odds d={r.ml?.away} best={!!r.ml && r.ml.away === best.mlAway} /></td>
+                        <td className={td}><Odds d={r.ml?.home} best={!!r.ml && r.ml.home === best.mlHome} /></td>
+                      </>
+                    )}
                     <td className={`${td} border-l border-line`}><Odds d={plOn?.away} best={!!plOn && plOn.away === best.plAway} /></td>
                     <td className={td}><Odds d={plOn?.home} best={!!plOn && plOn.home === best.plHome} /></td>
                     <td className={`${td} border-l border-line`}><Odds d={totOn?.over} best={!!totOn && totOn.over === best.over} /></td>
                     <td className={td}><Odds d={totOn?.under} best={!!totOn && totOn.under === best.under} /></td>
-                    <td className={`${td} border-l border-line text-ink-2`}>{r.ml ? f.pct(margin(r.ml.away, r.ml.home), 1) : "–"}</td>
+                    <td className={`${td} border-l border-line text-ink-2`}>
+                      {r.ml ? f.pct(margin(r.ml.away, r.ml.home), 1) : r.ml3 ? f.pct(1 / r.ml3.away + 1 / r.ml3.draw + 1 / r.ml3.home - 1, 1) : "–"}
+                    </td>
                   </tr>
                 );
               })}

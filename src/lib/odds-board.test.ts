@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bestPrices, mergeRows, oddsApiCountry } from "./odds-board";
+import { bestPrices, mergeRows, oddsApiCountry, oddsApiRows } from "./odds-board";
 
 describe("odds board", () => {
   it("merges the same book from two feeds and drops a swapped moneyline", () => {
@@ -20,5 +20,19 @@ describe("odds board", () => {
     expect(oddsApiCountry("winamax_fr", ["us", "fr"])).toBe("FR");
     expect(oddsApiCountry("draftkings", ["us", "fr"])).toBe("US");
     expect(oddsApiCountry("betclic", ["fr"])).toBe("FR");
+  });
+});
+
+describe("3-way prices", () => {
+  it("keeps a book that only prices the 60-minute result", () => {
+    const ev = {
+      id: "x", commence_time: "2026-10-07T23:00:00Z", home_team: "Boston Bruins", away_team: "Ottawa Senators",
+      bookmakers: [{ key: "winamax_fr", title: "Winamax (FR)", markets: [{ key: "h2h" as const, outcomes: [
+        { name: "Boston Bruins", price: 2.3 }, { name: "Ottawa Senators", price: 2.6 }, { name: "Draw", price: 4.1 },
+      ] }] }],
+    };
+    const rows = oddsApiRows(ev, ["us", "fr"]);
+    expect(rows).toEqual([{ book: "Winamax (FR)", country: "FR", ml3: { away: 2.6, draw: 4.1, home: 2.3 } }]);
+    expect(bestPrices(mergeRows(rows)).mlHome).toBeNull();
   });
 });
