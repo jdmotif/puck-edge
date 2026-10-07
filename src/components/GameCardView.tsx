@@ -83,6 +83,12 @@ function Goalie({ t, i }: { t: TeamSide; i: I18n }) {
   );
 }
 
+/** Which slate filter a card belongs to (see SlateFilter). */
+export function cardState(card: GameCard): "upcoming" | "live" | "final" {
+  const s = card.game.gameState;
+  return s === "OFF" || s === "FINAL" ? "final" : card.locked ? "live" : "upcoming";
+}
+
 export async function GameCardView({ card, showAll = false }: { card: GameCard; showAll?: boolean }) {
   const i = await getI18n();
   const { t, f } = i;
@@ -123,28 +129,12 @@ export async function GameCardView({ card, showAll = false }: { card: GameCard; 
 
       <ProbBar away={card.away.winProb} home={card.home.winProb} awayLabel={t.card.win(card.away.abbrev)} homeLabel={t.card.win(card.home.abbrev)} awayPct={f.pct(card.away.winProb)} homePct={f.pct(card.home.winProb)} aria={t.card.winAria(card.away.abbrev, f.pct(card.away.winProb), card.home.abbrev, f.pct(card.home.winProb))} />
 
-      <div className="divide-y divide-line rounded-xl bg-surface-2/50 px-3">
-        <Compare label={t.card.last10} away={card.away.l10} home={card.home.l10} />
-        <Compare label={t.card.streak} away={streak(card.away.streak, i)} home={streak(card.home.streak, i)} />
-        <Compare label={t.card.rest} away={<Rest t={card.away} i={i} />} home={<Rest t={card.home} i={i} />} />
+      <div className="rounded-xl bg-surface-2/50 px-3">
         <Compare label={t.card.goalie} away={<Goalie t={card.away} i={i} />} home={<Goalie t={card.home} i={i} />} />
       </div>
 
-      <div className="grid grid-cols-3 gap-2 text-center">
-        {[
-          [t.card.projTotal, f.num(card.prediction.expTotal, 2)],
-          [t.card.otChance, f.pct(card.prediction.regTie)],
-          [t.card.market, card.market.moneyline ? `${card.home.abbrev} ${f.pct(card.market.moneyline.home.fair)}` : "–"],
-        ].map(([k, v]) => (
-          <div key={k} className="rounded-xl border border-line px-2 py-2">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">{k}</div>
-            <div className="font-display tabular mt-0.5 text-lg font-bold leading-none">{v}</div>
-          </div>
-        ))}
-      </div>
-
-      {card.best && <PickCard pick={card.best} best betHref={card.locked ? undefined : betHref(card, card.best)} change={changeNote(card, card.best, true, i)} />}
-      {lean && <PickCard pick={lean} lean />}
+      {card.best && <PickCard pick={card.best} best compact={!showAll} betHref={card.locked ? undefined : betHref(card, card.best)} change={changeNote(card, card.best, true, i)} />}
+      {lean && <PickCard pick={lean} lean compact={!showAll} />}
       {!card.best && !card.locked && (
         <p className="rounded-xl border border-line bg-surface-2/50 px-3 py-2.5 text-sm text-ink-2">{card.picks.length ? t.card.noEdge : t.card.noPrice}</p>
       )}
@@ -156,6 +146,23 @@ export async function GameCardView({ card, showAll = false }: { card: GameCard; 
           <svg viewBox="0 0 24 24" className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </summary>
         <div className="mt-3 space-y-2">
+          <div className="divide-y divide-line rounded-xl bg-surface-2/50 px-3">
+            <Compare label={t.card.last10} away={card.away.l10} home={card.home.l10} />
+            <Compare label={t.card.streak} away={streak(card.away.streak, i)} home={streak(card.home.streak, i)} />
+            <Compare label={t.card.rest} away={<Rest t={card.away} i={i} />} home={<Rest t={card.home} i={i} />} />
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            {[
+              [t.card.projTotal, f.num(card.prediction.expTotal, 2)],
+              [t.card.otChance, f.pct(card.prediction.regTie)],
+              [t.card.market, card.market.moneyline ? `${card.home.abbrev} ${f.pct(card.market.moneyline.home.fair)}` : "–"],
+            ].map(([k, v]) => (
+              <div key={k} className="rounded-xl border border-line px-2 py-2">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">{k}</div>
+                <div className="font-display tabular mt-0.5 text-lg font-bold leading-none">{v}</div>
+              </div>
+            ))}
+          </div>
           {card.picks.filter((p) => p !== card.best && p !== lean).map((p) => (
             <PickCard key={p.market + p.selection} pick={p} betHref={card.locked ? undefined : betHref(card, p)} change={changeNote(card, p, false, i)} />
           ))}

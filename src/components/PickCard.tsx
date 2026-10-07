@@ -1,6 +1,6 @@
 import type { Pick } from "@/lib/picks";
 import { getI18n } from "@/lib/i18n/server";
-import { Pill } from "./ui";
+import { CONFIDENCE_STARS, Pill, Stars } from "./ui";
 import { LocalTime } from "./LocalTime";
 
 /** A pick that switched before puck drop: when, what it was, and why. */
@@ -10,9 +10,10 @@ export interface PickChangeNote {
   why: string[];
 }
 
-const confTone = { High: "good", Medium: "accent", Low: "neutral" } as const;
+/** Reasons shown on a slate card; the game page shows them all. */
+const COMPACT_REASONS = 3;
 
-export async function PickCard({ pick, best = false, lean = false, betHref, change }: { pick: Pick; best?: boolean; lean?: boolean; betHref?: string; change?: PickChangeNote }) {
+export async function PickCard({ pick, best = false, lean = false, compact = false, betHref, change }: { pick: Pick; best?: boolean; lean?: boolean; compact?: boolean; betHref?: string; change?: PickChangeNote }) {
   const { t, f } = await getI18n();
   return (
     <div
@@ -28,7 +29,7 @@ export async function PickCard({ pick, best = false, lean = false, betHref, chan
         <span className="ml-auto flex gap-1">
           {pick.isValue && <Pill tone="edge">{t.pick.value}</Pill>}
           {pick.odds === null && <Pill>{t.pick.modelOnly}</Pill>}
-          <Pill tone={confTone[pick.confidence]}>{t.confidence[pick.confidence]}</Pill>
+          <Stars n={CONFIDENCE_STARS[pick.confidence]} label={t.confidenceShort[pick.confidence]} aria={t.confidenceAria(t.confidence[pick.confidence])} />
         </span>
       </div>
 
@@ -67,13 +68,13 @@ export async function PickCard({ pick, best = false, lean = false, betHref, chan
         </div>
       </div>
 
-      {pick.blendProb !== null && pick.blendWeight !== null && (
+      {!compact && pick.blendProb !== null && pick.blendWeight !== null && (
         <p className="relative mt-2 text-xs text-muted">{t.pick.blendNote(f.pct(pick.blendProb, 1), f.pct(pick.blendWeight))}</p>
       )}
 
       {pick.reasons.length > 0 && (
         <ul className="relative mt-3 space-y-1 border-t border-line pt-2.5 text-sm text-ink-2">
-          {pick.reasons.map((r) => (
+          {(compact ? pick.reasons.slice(0, COMPACT_REASONS) : pick.reasons).map((r) => (
             <li key={r} className="flex gap-2"><span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-accent-2" />{r}</li>
           ))}
         </ul>

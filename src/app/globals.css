@@ -147,3 +147,11 @@ table tbody tr:hover { background: color-mix(in srgb, var(--surface-3) 55%, tran
 
 /* Let wide tables scroll inside their card instead of stretching grid columns past the viewport. */
 .grid > * { min-width: 0; }
+
+/* Slate filter chips (SlateFilter.tsx): hide the game cards that don't match. */
+.slate[data-filter="value"] > [data-card]:not([data-value]),
+.slate[data-filter="upcoming"] > [data-card]:not([data-state="upcoming"]),
+.slate[data-filter="live"] > [data-card]:not([data-state="live"]),
+.slate[data-filter="final"] > [data-card]:not([data-state="final"]) { display: none; }
+[data-card] { scroll-margin-top: 1.25rem; }
+[data-card]:target > .card { border-color: color-mix(in srgb, var(--accent) 60%, transparent); }

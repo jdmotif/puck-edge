@@ -145,3 +145,19 @@ export function Tabs({ tabs, active }: { tabs: { href: string; label: string; ke
 export function Rich({ text }: { text: string }) {
   return <>{text.split("`").map((part, i) => (i % 2 ? <code key={i} className="text-ink">{part}</code> : part))}</>;
 }
+
+/** Confidence as 1–3 filled stars, with a short label beside them. */
+export function Stars({ n, label, aria }: { n: 1 | 2 | 3; label: string; aria: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 whitespace-nowrap text-[11px] font-semibold text-ink-2" role="img" aria-label={aria} title={aria}>
+      <span aria-hidden className="tracking-[0.06em]">
+        {[1, 2, 3].map((i) => (
+          <span key={i} className={i <= n ? "text-warn" : "text-surface-3"}>★</span>
+        ))}
+      </span>
+      <span aria-hidden>{label}</span>
+    </span>
+  );
+}
+
+export const CONFIDENCE_STARS = { Low: 1, Medium: 2, High: 3 } as const;
