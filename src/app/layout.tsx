@@ -10,13 +10,21 @@ import { getI18n } from "@/lib/i18n/server";
 import { I18nProvider } from "@/lib/i18n/client";
 import { BASE_PATH, STATIC_SITE } from "@/lib/static/mode";
 import { bootScript } from "@/lib/static/paths";
+import { themeScript } from "@/lib/theme";
 import { LocalSessionReminder, LossLimitAlerts, SnapshotNotice } from "@/components/StaticExtras";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
   return { title: "Puck Edge", description: t.meta.description };
 }
-export const viewport: Viewport = { themeColor: "#080b12", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f3f5f9" },
+    { media: "(prefers-color-scheme: dark)", color: "#080b12" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+};
 export const dynamic = "force-dynamic";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -30,12 +38,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const limits = STATIC_SITE ? { warnings: [] as LossWarning[] } : lossLimitStatus();
   const nav = ROUTES.map((href) => ({ href, label: t.nav[href] }));
   return (
-    <html lang={locale} className={`${inter.variable} ${barlow.variable}`} data-built-at={STATIC_SITE ? new Date().toISOString() : undefined}>
-      {STATIC_SITE && (
-        <head>
-          <script dangerouslySetInnerHTML={{ __html: bootScript(BASE_PATH) }} />
-        </head>
-      )}
+    <html lang={locale} className={`${inter.variable} ${barlow.variable}`} data-built-at={STATIC_SITE ? new Date().toISOString() : undefined} suppressHydrationWarning>
+      <head>
+        {STATIC_SITE && <script dangerouslySetInnerHTML={{ __html: bootScript(BASE_PATH) }} />}
+        <script dangerouslySetInnerHTML={{ __html: themeScript() }} />
+      </head>
       <body className="min-h-dvh font-sans">
         <I18nProvider locale={locale}>
         <Sidebar items={nav} />

@@ -5,6 +5,7 @@ import { appPathOf } from "@/lib/static/paths";
 import type { ReactNode } from "react";
 import { useI18n } from "@/lib/i18n/client";
 import { LanguageSwitch } from "./LanguageSwitch";
+import { ThemeCycle, ThemeSwitch } from "./ThemeSwitch";
 
 export interface NavItem { href: string; label: string }
 
@@ -87,7 +88,8 @@ export function Sidebar({ items }: { items: NavItem[] }) {
           );
         })}
       </nav>
-      <div className="mt-auto rounded-xl border border-line bg-surface p-3 text-xs leading-relaxed text-muted">
+      <ThemeSwitch className="mt-auto" />
+      <div className="mt-3 rounded-xl border border-line bg-surface p-3 text-xs leading-relaxed text-muted">
         {t.common.disclaimer}
       </div>
     </aside>
@@ -110,6 +112,7 @@ export function MobileNav({ items }: { items: NavItem[] }) {
           <Logo />
           <div className="flex items-center gap-2">
           <LanguageSwitch />
+          <ThemeCycle />
           <a href="/settings" aria-label={t.nav["/settings"]} className="grid h-9 w-9 place-items-center rounded-xl border border-line bg-surface text-ink-2">
             <NavIcon href="/settings" className="h-[18px] w-[18px]" />
           </a>

@@ -17,6 +17,15 @@ const ordinal = (n: number) => (n === 1 ? "1re" : `${n}e`);
 
 export const fr = (f: Format): Messages => ({
   lang: { name: "Français", short: "FR", switchTo: "Langue" },
+  theme: {
+    label: "Thème",
+    appearance: "Apparence",
+    system: "Système",
+    light: "Clair",
+    dark: "Sombre",
+    hint: "Système suit le réglage clair ou sombre de votre appareil. Votre choix est enregistré dans ce navigateur.",
+    cycle: (current: string) => `Thème : ${current}. Touchez pour changer.`,
+  },
   meta: { description: "Choix de paris LNH appuyés par les données, calendrier et résultats" },
   static: {
     updated: "Version en ligne · mise à jour",

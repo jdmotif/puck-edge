@@ -7,6 +7,15 @@ type Team = string;
 
 export const en = (f: Format) => ({
   lang: { name: "English", short: "EN", switchTo: "Language" },
+  theme: {
+    label: "Theme",
+    appearance: "Appearance",
+    system: "System",
+    light: "Light",
+    dark: "Dark",
+    hint: "System follows your device's light or dark setting. Your choice is saved in this browser.",
+    cycle: (current: string) => `Theme: ${current}. Tap to change.`,
+  },
   meta: { description: "Data-driven NHL picks, schedules and results" },
   static: {
     updated: "Online version · updated",
