@@ -155,3 +155,14 @@ table tbody tr:hover { background: color-mix(in srgb, var(--surface-3) 55%, tran
 .slate[data-filter="final"] > [data-card]:not([data-state="final"]) { display: none; }
 [data-card] { scroll-margin-top: 1.25rem; }
 [data-card]:target > .card { border-color: color-mix(in srgb, var(--accent) 60%, transparent); }
+
+/* Odds shown in both formats; OddsFormat.tsx picks one (American by default). */
+.odds-dec { display: none; }
+html[data-odds="dec"] .odds-dec { display: inline; }
+html[data-odds="dec"] .odds-us { display: none; }
+
+/* Sportsbook filter on the odds page (CountryFilter in OddsBoard.tsx). */
+.board[data-group="US"] [data-g]:not([data-g="US"]),
+.board[data-group="FR"] [data-g]:not([data-g="FR"]),
+.board[data-group="CA"] [data-g]:not([data-g="CA"]),
+.board[data-group="INT"] [data-g]:not([data-g="INT"]) { display: none; }

@@ -267,7 +267,7 @@ export async function buildSlate(date: string, locale: Locale = "en"): Promise<S
   const playedYesterday = new Set(
     (prevSchedule.data?.gameWeek.find((d) => d.date === yesterday)?.games ?? []).flatMap((g) => [g.homeTeam.abbrev, g.awayTeam.abbrev]),
   );
-  const partners = score.data?.oddsPartners ?? [];
+  const partners = score.data?.oddsPartners ?? schedule.data?.oddsPartners ?? [];
   const partnerBook = partnerOdds.data?.bettingPartner.name ?? "";
   const partnerGames = new Map((partnerOdds.data?.games ?? []).map((pg) => [pg.gameId, pg]));
   const scoreById = new Map((score.data?.games ?? []).map((g) => [g.id, g]));

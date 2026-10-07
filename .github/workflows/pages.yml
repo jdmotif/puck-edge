@@ -33,6 +33,11 @@ jobs:
       NEXT_TELEMETRY_DISABLED: "1"
       # Minute-by-minute scores published by the "Live scores" workflow.
       NEXT_PUBLIC_LIVE_FEED_URL: https://raw.githubusercontent.com/${{ github.repository }}/live-scores
+      # Optional: more sportsbooks (e.g. French books) from The Odds API. Add the key as a repository
+      # secret; each call costs markets × regions credits, so the default cache keeps it to ~2 calls a day.
+      ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+      ODDS_API_REGION: ${{ vars.ODDS_API_REGION || 'us,fr' }}
+      ODDS_API_TTL_MIN: ${{ vars.ODDS_API_TTL_MIN || '720' }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5

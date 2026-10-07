@@ -52,8 +52,15 @@ For more books (and a fallback if the partner feed has no line for a game), add 
 cp .env.example .env
 # then edit .env:
 ODDS_API_KEY=your_key_here
-ODDS_API_REGION=us     # us, us2, uk, eu or au
+ODDS_API_REGION=us,fr  # one or more of us, us2, uk, eu, fr, se, au (comma-separated)
+ODDS_API_TTL_MIN=15    # minutes between refreshes
 ```
+
+Each request costs (markets × regions) credits from the key's monthly quota, so `us,fr` costs twice as much as `us`;
+raise `ODDS_API_TTL_MIN` if you run out. The **Odds** page lists every book's price side by side (French books such as
+Winamax, Betclic and Unibet come from the `fr` region). On the online version, add the key as a repository secret named
+`ODDS_API_KEY`; the site then refreshes it about twice a day (repository variables `ODDS_API_REGION` and
+`ODDS_API_TTL_MIN` change that).
 
 Responses are cached for 15 minutes to save quota (one request covers every game).
 No price, no pick: when no feed prices a market, the card shows the model's projections but makes no pick there.

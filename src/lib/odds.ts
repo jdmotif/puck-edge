@@ -102,7 +102,7 @@ export function partnerMarkets(pg: PartnerGame, book: string): Omit<MarketOdds, 
 
 // ---------- The Odds API (optional) ----------
 
-interface OddsApiEvent {
+export interface OddsApiEvent {
   id: string;
   commence_time: string;
   home_team: string;
@@ -114,7 +114,8 @@ interface OddsApiEvent {
   }[];
 }
 
-const ODDS_TTL = 15 * 60_000;
+// Each call costs (markets × regions) credits of the key's monthly quota; ODDS_API_TTL_MIN stretches the cache.
+const ODDS_TTL = Math.max(1, Number(process.env.ODDS_API_TTL_MIN) || 15) * 60_000;
 
 export async function fetchOddsApi(): Promise<{ events: OddsApiEvent[]; error?: string; fetchedAt?: number }> {
   const key = process.env.ODDS_API_KEY;

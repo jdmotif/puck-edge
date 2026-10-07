@@ -21,6 +21,9 @@ const ICONS: Record<string, ReactNode> = {
   "/leaders": <><path d="m12 4 2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 16.3 7.2 18.9l.9-5.4-3.9-3.8 5.4-.8L12 4Z" {...stroke} /></>,
   "/model": <><path d="M4 19 9 13l4 3 7-9" {...stroke} /><path d="M15 7h5v5" {...stroke} /></>,
   "/bets": <><rect x="3" y="6" width="18" height="13" rx="2" {...stroke} /><path d="M3 10h18M7 15h3" {...stroke} /></>,
+  "/odds": <><path d="M4 7h16M4 12h16M4 17h16M9 4v16" {...stroke} /></>,
+  "/parlay": <><path d="M6 6h5v5H6zM13 13h5v5h-5zM11 8.5h4.5V13" {...stroke} /></>,
+  "/roi": <><path d="M4 18h16M6 15l4-4 3 2 5-6" {...stroke} /><circle cx="18" cy="7" r="1.5" {...stroke} /></>,
   "/settings": <><circle cx="12" cy="12" r="3" {...stroke} /><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.4 2.7h4l.4-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2Z" {...stroke} /></>,
 };
 
